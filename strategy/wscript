@@ -1,0 +1,17 @@
+#!/usr/bin/python
+
+
+
+def options(opt):
+        opt.recurse('test')
+    
+
+def configure(conf):
+        conf.recurse('test')
+
+def build(bld):
+        bld.shlib(
+                source          = bld.path.ant_glob('*.cpp'),
+                target          = 'simpleLib',
+                use             = 'com_interface')
+        bld.recurse('test') 

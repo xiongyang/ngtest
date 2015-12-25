@@ -1,0 +1,17 @@
+#!/usr/bin/python
+
+
+
+def options(opt):
+        pass
+    
+
+def configure(conf):
+        pass
+
+def build(bld):
+        pass
+        # bld.shlib(
+        #         source          = bld.path.ant_glob('*.cpp'),
+        #         target          = 'backtestbed',
+        #         use             = 'com_interface') 

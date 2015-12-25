@@ -1,0 +1,12 @@
+#!/usr/bin/python
+
+
+def options(opt):
+        pass
+    
+
+def configure(conf):
+        pass
+
+def build(bld):
+        bld(export_includes = '.', name = 'com_interface')

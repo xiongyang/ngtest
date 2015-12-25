@@ -1,0 +1,16 @@
+#!/usr/bin/python
+
+
+def options(opt):
+        pass
+    
+
+def configure(conf):
+        pass
+
+def build(bld):
+    bld.stlib(
+        source          = bld.path.ant_glob('*.cpp'),
+        target          = 'util',
+        export_includes = '.',
+        use             = 'com_interface') 
