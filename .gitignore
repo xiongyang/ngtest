@@ -9,3 +9,8 @@ googletestbuild
 .configuretools.sh.un~
 backtestbedtest.exe.stackdump
 configure_tool_libs.sh~
+ngtest_sln/backtestbed/Debug
+ngtest_sln/ipch
+*sdf
+*suo
+ngtest_sln/simple_strategy/Debug
