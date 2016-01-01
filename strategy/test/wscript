@@ -1,30 +1,28 @@
 #!/usr/bin/python
 
 
-
 def options(opt):
-        opt.load("waf_unit_test")
         pass
     
 
 def configure(conf):
-        conf.load("waf_unit_test")
-        #conf.check(execute=True)
-
         pass
 
+def fun(task):
 
-def post(bld):
-        print("run test loader")
-        #print (bld.get_tgen_by_name('simpletestload').bld.retval)
-        bld.exec_command(['_build/strategy/test/simpletestload.exe',  "_build/strategy/cygsimpleLib.dll"])
+    dlllibpath = task.generator.bld.get_tgen_by_name('simpleLib').link_task.outputs[0].abspath()
+    task.ut_exec.append(dlllibpath)
+
 
 def build(bld):
+        #bld.get_tgen_by_name('simpleLib').link_task.outputs[0].abspath()
         bld.program(
                 source          = bld.path.ant_glob('*.cpp'),
                 target          = 'simpletestload',
-              #  features         = 'test',
-                use             = ['com_interface', 'util', 'simpleLib']) 
-       # from waflib.Tools import waf_unit_test
-       # bld.add_post_fun(waf_unit_test.summary)
+                features        = 'test',
+                use             = ['com_interface', 'util', 'simpleLib'],
+               # ut_cwd   = bld.path.abspath(),
+                ut_fun   = fun
+    ) 
+
        # bld.add_post_fun(post)

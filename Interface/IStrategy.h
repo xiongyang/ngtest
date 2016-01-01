@@ -12,21 +12,21 @@
 
 namespace BluesTrading
 {
-	class IStrategy :
-		public ITimerConsumer, public IOrderDataConsumer, public ITickDataConsumer, public IConfigureable
-	{
-	public:
-		//virtual void onTimer(uint32_t eventID);
+    class IStrategy :
+        public ITimerConsumer, public IOrderDataConsumer, public ITickDataConsumer, public IConfigureable
+    {
+    public:
+        //virtual void onTimer(uint32_t eventID);
 
-	};
+    };
 
-	typedef  IStrategy* StrategyFactoryFun(ILogger* , IConfigureManager*, IMarketDataProvider* , ITimerProvider*, IOrderManger*);
-	//IStrategy* createStrategy(ILogger* , IConfigureManager*, IMarketDataProvider* , ITimerProvider*, IOrderManger*)
-	//class IStrategyFactory
-	//{
-	//public:
-	//	virtual  = 0;
-	//};
+    typedef  IStrategy* StrategyFactoryFun(ILogger* , IConfigureManager*, IMarketDataProvider* , ITimerProvider*, IOrderManger*);
+    //IStrategy* createStrategy(ILogger* , IConfigureManager*, IMarketDataProvider* , ITimerProvider*, IOrderManger*)
+    //class IStrategyFactory
+    //{
+    //public:
+    //	virtual  = 0;
+    //};
 }
 
 
