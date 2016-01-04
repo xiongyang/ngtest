@@ -4,7 +4,7 @@ out = '_build'
 
 packageList = 'interface strategy util backtestbed'
 
-BluesCXXFlag= ['-std=gnu++11' , '-O2']
+BluesCXXFlag= ['-std=gnu++11' , '-O2', '-ggdb']
 
 
 
@@ -82,8 +82,6 @@ def buildgmock(bld):
         includes     =  gmockinclude,
         export_includes = [gtestinc, gmockinc],
         lib = ['pthread']
-
-
         )
 
 def build(bld):

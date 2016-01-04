@@ -21,6 +21,7 @@ def build(bld):
                 source          = bld.path.ant_glob('*.cpp'),
                 target          = 'backtestbedtest',
                 features         = 'test',
+               # cxxflags =        ['-ggdb'],
                 use             = ['com_interface', 'backtestbed', 'gmock']) 
 
 

@@ -63,20 +63,20 @@ void MarketDataReplayer::unSubscribeAllInstrument(ITickDataConsumer* handler)
     //TODO
 }
 
-void MarketDataReplayer::setTimer(ITimerConsumer* consumer, uint32_t eventID, uint32_t timeInMS, bool repeat)
-{
-
-}
-
-std::uint32_t MarketDataReplayer::getCurrentTimeMsInDay()
-{
-
-}
-
-std::uint32_t MarketDataReplayer::getCurrentDate()
-{
-
-}
+//void MarketDataReplayer::setTimer(ITimerConsumer* consumer, uint32_t eventID, uint32_t timeInMS, bool repeat)
+//{
+//
+//}
+//
+//std::uint32_t MarketDataReplayer::getCurrentTimeMsInDay()
+//{
+//
+//}
+//
+//std::uint32_t MarketDataReplayer::getCurrentDate()
+//{
+//
+//}
 
 
 void MarketDataReplayer::startReplay(uint32_t startdate, uint32_t enddate)

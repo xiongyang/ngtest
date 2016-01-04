@@ -89,13 +89,6 @@ namespace BluesTrading
         FakeTickDataConsumer fake;
     };
 
-    class MockTimerConsumer: public ITimerConsumer
-    {
-    public:
-        MOCK_METHOD2(onTimer,  void(uint32_t eventID, uint32_t currentTime));
-    };
-
-
 
     class marketdatareplayerTest : public ::testing::Test {
     protected:
@@ -189,12 +182,11 @@ namespace BluesTrading
         MockTickDataConsumer mockconsumer;
         replayer->subscribeInstrument(1, &mockconsumer);
 
-        using ::testing::_;
-        using ::testing::An;
-        using ::testing::Field;
-
-        EXPECT_CALL(mockconsumer, onMarketData(An<const TickDataLevel1&>())).Times(tickNum);
-
+ 
+        Sequence s1;
+        EXPECT_CALL(mockconsumer, onStartDay(20151230)).InSequence(s1);
+        EXPECT_CALL(mockconsumer, onMarketData(An<const TickDataLevel1&>())).Times(tickNum).InSequence(s1);
+        EXPECT_CALL(mockconsumer, onEndDay(20151230)).InSequence(s1);
 
 
         replayer->startReplay(20151230, 20151231);  
@@ -215,7 +207,10 @@ namespace BluesTrading
         using ::testing::An;
         using ::testing::Field;
 
+        Sequence s1;
+        EXPECT_CALL(mockconsumer, onStartDay(20151230)).InSequence(s1);
         EXPECT_CALL(mockconsumer, onMarketData(An<const TickDataLevel1&>())).Times(tickNum);
+        EXPECT_CALL(mockconsumer, onEndDay(20151230)).InSequence(s1);
 
 
 
@@ -234,11 +229,10 @@ namespace BluesTrading
         MockTickDataConsumer mockconsumer;
         replayer->subscribeInstrument(1, &mockconsumer);
 
-        using ::testing::_;
-        using ::testing::An;
-        using ::testing::Field;
-
-        EXPECT_CALL(mockconsumer, onMarketData(An<const TickDataLevel1&>())).Times(tickNum * 2);
+        Sequence s1;
+        EXPECT_CALL(mockconsumer, onStartDay(20151230)).InSequence(s1);
+        EXPECT_CALL(mockconsumer, onMarketData(An<const TickDataLevel1&>())).Times(tickNum * 2).InSequence(s1);
+        EXPECT_CALL(mockconsumer, onEndDay(20151230)).InSequence(s1);
 
 
 
@@ -262,8 +256,12 @@ namespace BluesTrading
         using ::testing::An;
         using ::testing::Field;
 
+        Sequence s1;
+        EXPECT_CALL(mockconsumer, onStartDay(20151230)).InSequence(s1);
+
         EXPECT_CALL(mockconsumer, onMarketData(An<const TickDataLevel1&>())).Times(tickNum);
         EXPECT_CALL(mockconsumer, onMarketData(An<const TickDataLevel5&>())).Times(tickNum);
+        EXPECT_CALL(mockconsumer, onEndDay(20151230)).InSequence(s1);
         replayer->startReplay(20151230, 20151231);  
     }
 
@@ -284,8 +282,11 @@ namespace BluesTrading
         using ::testing::An;
         using ::testing::Field;
 
+        Sequence s1;
+        EXPECT_CALL(mockconsumer, onStartDay(20151230)).InSequence(s1);
         EXPECT_CALL(mockconsumer, onMarketData(An<const TickDataLevel1&>())).Times(tickNum * 2);
         EXPECT_CALL(mockconsumer, onMarketData(An<const TickDataLevel5&>())).Times(tickNum);
+        EXPECT_CALL(mockconsumer, onEndDay(20151230)).InSequence(s1);
         replayer->startReplay(20151230, 20151231);  
     }
 
@@ -299,19 +300,31 @@ namespace BluesTrading
         MockTickDataConsumer mockconsumer;
         replayer->subscribeInstrument(1, &mockconsumer);
 
-
+      
+        Sequence s1;
+        EXPECT_CALL(mockconsumer, onStartDay(20151230)).InSequence(s1);
         EXPECT_CALL(mockconsumer, onMarketData(An<const TickDataLevel1&>())).Times(tickNum );
+        EXPECT_CALL(mockconsumer, onEndDay(20151230)).InSequence(s1);
+        
         
         replayer->startReplay(20151230, 20151231);  
 
     
+        Sequence s2;
+        EXPECT_CALL(mockconsumer, onStartDay(20151230)).InSequence(s2);
         //ensure the recall startReplay will play the tick  
         EXPECT_CALL(mockconsumer, onMarketData(An<const TickDataLevel1&>())).Times(tickNum);
+        EXPECT_CALL(mockconsumer, onEndDay(20151230)).InSequence(s2);
         mockconsumer.resetFakeTime();
         replayer->startReplay(20151230, 20151231);  
 
         replayer->unSubscribeInstrument(1, &mockconsumer);
+
+       // Sequence s3;
+        // if does not subsribe anything, will not start Day and EndDay
+        EXPECT_CALL(mockconsumer, onStartDay(20151230)).Times(0);
         EXPECT_CALL(mockconsumer, onMarketData(An<const TickDataLevel5&>())).Times(0);
+        EXPECT_CALL(mockconsumer, onEndDay(20151230)).Times(0);
         mockconsumer.resetFakeTime();
         replayer->startReplay(20151230, 20151231);  
     }
@@ -330,38 +343,49 @@ namespace BluesTrading
         MockTickDataConsumer mockconsumer;
         replayer->subscribeInstrument(1, &mockconsumer);
 
+        {
+            Sequence s1 ;
 
-        Sequence s1, s2;
-
-        //EXPECT_CALL(mockconsumer, onStartDay(20151230)).InSequence(s1);
-        EXPECT_CALL(mockconsumer, onMarketData(An<const TickDataLevel1&>())).Times(10).InSequence(s1);
-       // EXPECT_CALL(mockconsumer, onEndDay(20151230)).InSequence(s1);
-
-      
-      //  EXPECT_CALL(mockconsumer, onStartDay(20151231)).InSequence(s1);
-        EXPECT_CALL(mockconsumer, onMarketData(An<const TickDataLevel1&>())).Times(100).InSequence(s1);
-       // EXPECT_CALL(mockconsumer, onEndDay(20151231)).InSequence(s1);
-
-        replayer->startReplay(20151230, 20160101);  
+            EXPECT_CALL(mockconsumer, onStartDay(20151230)).InSequence(s1);
+            EXPECT_CALL(mockconsumer, onMarketData(An<const TickDataLevel1&>())).Times(10).InSequence(s1);
+            EXPECT_CALL(mockconsumer, onEndDay(20151230)).InSequence(s1);
 
 
-        //EXPECT_CALL(mockconsumer, onStartDay(20151230)).InSequence(s1);
-        EXPECT_CALL(mockconsumer, onMarketData(An<const TickDataLevel1&>())).Times(10).InSequence(s1);
-        //EXPECT_CALL(mockconsumer, onEndDay(20151230)).InSequence(s1);
+            EXPECT_CALL(mockconsumer, onStartDay(20151231)).InSequence(s1);
+            EXPECT_CALL(mockconsumer, onMarketData(An<const TickDataLevel1&>())).Times(100).InSequence(s1);
+            EXPECT_CALL(mockconsumer, onEndDay(20151231)).InSequence(s1);
 
-        mockconsumer.resetFakeTime();
-        replayer->startReplay(20151230, 20151231);  
-
-        //EXPECT_CALL(mockconsumer, onStartDay(20151231)).InSequence(s1);
-        EXPECT_CALL(mockconsumer, onMarketData(An<const TickDataLevel1&>())).Times(100).InSequence(s1);
-        //EXPECT_CALL(mockconsumer, onEndDay(20151231)).InSequence(s1);
+            mockconsumer.resetFakeTime();
+            replayer->startReplay(20151230, 20160101);  
+        }
 
 
-       // EXPECT_CALL(mockconsumer, onStartDay(20160101)).InSequence(s1);
-        EXPECT_CALL(mockconsumer, onMarketData(An<const TickDataLevel1&>())).Times(1000).InSequence(s1);
-       // EXPECT_CALL(mockconsumer, onEndDay(20160101)).InSequence(s1);
-        mockconsumer.resetFakeTime();
-        replayer->startReplay(20151231, 20160102); 
+        
+
+        {
+            Sequence s1 ;
+            EXPECT_CALL(mockconsumer, onStartDay(20151230)).InSequence(s1);
+            EXPECT_CALL(mockconsumer, onMarketData(An<const TickDataLevel1&>())).Times(10).InSequence(s1);
+            EXPECT_CALL(mockconsumer, onEndDay(20151230)).InSequence(s1);
+            mockconsumer.resetFakeTime();
+            replayer->startReplay(20151230, 20151231);  
+        }
+
+
+        {
+            Sequence s1 ;
+            EXPECT_CALL(mockconsumer, onStartDay(20151231)).InSequence(s1);
+            EXPECT_CALL(mockconsumer, onMarketData(An<const TickDataLevel1&>())).Times(100).InSequence(s1);
+            EXPECT_CALL(mockconsumer, onEndDay(20151231)).InSequence(s1);
+
+
+            EXPECT_CALL(mockconsumer, onStartDay(20160101)).InSequence(s1);
+            EXPECT_CALL(mockconsumer, onMarketData(An<const TickDataLevel1&>())).Times(1000).InSequence(s1);
+            EXPECT_CALL(mockconsumer, onEndDay(20160101)).InSequence(s1);
+            mockconsumer.resetFakeTime();
+            replayer->startReplay(20151231, 20160102); 
+        }
+
     }
 
 }

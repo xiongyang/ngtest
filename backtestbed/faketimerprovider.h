@@ -8,6 +8,17 @@ namespace BluesTrading
     class FakeTimerProvider :public ITimerProvider
     {
     public:
+
+        struct TimerInfo
+        {
+            ITimerConsumer* consumer;
+            uint32_t eventid;
+            uint32_t nextTriggerTime;
+            uint32_t interval;
+            bool isRepeat;
+        };
+
+    public:
         virtual bool setTimer(ITimerConsumer* consumer, uint32_t eventID, uint32_t timeInMSFromNow, bool repeat) override;
         virtual bool cancelTimer(ITimerConsumer* consumer, uint32_t eventID) override;
       
@@ -21,19 +32,18 @@ namespace BluesTrading
         void setDate(uint32_t a_date);
 
         void invokeAllTimerOnce();
+        void advanceToTime(uint32_t timeInMs);
+
+       
     private:
         uint32_t current_date;
         uint32_t current_time;
         uint32_t nexttick_time;
 
-        struct TimerInfo
-        {
-            uint32_t nextTriggerTime;
-            uint32_t interval;
-            bool isRepeat;
-        };
 
-        typedef std::map<uint32_t, TimerInfo> ConsumerTimerMap;
+        TimerInfo* getNextTimer();
+
+        typedef std::map<uint32_t, TimerInfo*> ConsumerTimerMap;
         //key is event
 
         std::map<ITimerConsumer* , ConsumerTimerMap>  allTimers;

@@ -23,9 +23,9 @@ namespace BluesTrading
 
 
     public:
-        virtual void setTimer(ITimerConsumer* consumer, uint32_t eventID, uint32_t timeInMS, bool repeat) override;
-        virtual uint32_t getCurrentTimeMsInDay() override;  
-        virtual uint32_t getCurrentDate() override; 
+ //       virtual void setTimer(ITimerConsumer* consumer, uint32_t eventID, uint32_t timeInMS, bool repeat) ;
+  //      virtual uint32_t getCurrentTimeMsInDay() ;  
+  //      virtual uint32_t getCurrentDate() ; 
 
 
     public:
