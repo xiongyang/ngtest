@@ -14,9 +14,10 @@ int main(int argc, char** argv)
         return -1;
     }
 
-    CDynamicLibrary dll;
-    dll.Open(argv[1]);
-    auto funptr = reinterpret_cast<BluesTrading::StrategyFactoryFun*>(dll.GetProc("createStrategy"));
+    auto funptr = GetSharedLibFun<BluesTrading::StrategyFactoryFun>(argv[1],"createStrategy");
+    //CDynamicLibrary dll;
+    //dll.Open(argv[1]);
+    //auto funptr = reinterpret_cast<BluesTrading::StrategyFactoryFun*>(dll.GetProc("createStrategy"));
     BluesTrading::IStrategy* strp =  funptr(NULL,NULL,NULL,NULL,NULL);
     if (strp != NULL)
     {

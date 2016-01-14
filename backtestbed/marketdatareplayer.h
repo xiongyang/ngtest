@@ -1,7 +1,7 @@
 #pragma once
 
 #include "IMarketDataProvider.h"
-#include "ITimer.h"
+#include "faketimerprovider.h"
 
 #include <map>
 #include <vector>
@@ -23,9 +23,7 @@ namespace BluesTrading
 
 
     public:
- //       virtual void setTimer(ITimerConsumer* consumer, uint32_t eventID, uint32_t timeInMS, bool repeat) ;
-  //      virtual uint32_t getCurrentTimeMsInDay() ;  
-  //      virtual uint32_t getCurrentDate() ; 
+        ITimerProvider* getTimerProvider() {return &timerProvider;}
 
 
     public:
@@ -38,7 +36,8 @@ namespace BluesTrading
         std::map<uint32_t, std::set<ITickDataConsumer*> > subscribeByInst;
         std::map<uint32_t, std::vector<MarketDataStore*> > dataByDate;
         std::map<uint32_t, std::vector<CTickData<1>*> >   dataByDateSorted;
-    
+        
+        FakeTimerProvider   timerProvider;
     
     };
 

@@ -102,12 +102,15 @@ void MarketDataReplayer::startReplay(uint32_t startdate, uint32_t enddate)
             each->onStartDay(iter->first);
         }
 
+        timerProvider.setDate(iter->first);
+
       //  std::cout << "Start Tick Data Replay date " << iter->first << std::endl;
 
         std::vector<CTickData<1>*>& tickForDay = iter->second;
 
         for(auto tick : tickForDay)
         {
+            timerProvider.setNextTickTime(tick->timeInMS);
             auto& subscribeVec = subscribeByInst[tick->instIndex];
             for (auto eachsubscribe : subscribeVec)
             {

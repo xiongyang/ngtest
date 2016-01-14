@@ -9,6 +9,7 @@ namespace BluesTrading
         virtual void onUpdateOrder(OrderDataDetail* orderData) = 0;
     };
 
+
     class IOrderManger
     {
     public:

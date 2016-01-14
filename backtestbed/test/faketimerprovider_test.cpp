@@ -46,7 +46,9 @@ namespace BluesTrading
         MockTimerConsumer inst;
         timerProvider.setTimer(&inst, 1, 1000, false);
         EXPECT_CALL(inst, onTimer(1,startUpTimerInMs  + 1000)).Times(1);
-        timerProvider.setNextTickTime(10000 + 2001);
+        timerProvider.setNextTickTime(startUpTimerInMs + 2001);
+
+        EXPECT_EQ(startUpTimerInMs + 2001, timerProvider.getCurrentTimeMsInDay());
     }
 
 
@@ -138,12 +140,14 @@ namespace BluesTrading
         EXPECT_CALL(inst2, onTimer(1,startUpTimerInMs  + 1500)).Times(1).InSequence(s1);
         EXPECT_CALL(inst, onTimer(1,startUpTimerInMs  + 2000 )).Times(1).InSequence(s1);
         EXPECT_CALL(inst2, onTimer(1,startUpTimerInMs  + 2500)).Times(1).InSequence(s1);
-         EXPECT_CALL(inst, onTimer(1,startUpTimerInMs  + 3000 )).Times(1).InSequence(s1);
+        EXPECT_CALL(inst, onTimer(1,startUpTimerInMs  + 3000 )).Times(1).InSequence(s1);
 
         timerProvider.setNextTickTime(startUpTimerInMs + 3000);
 
         EXPECT_CALL(inst2, onTimer(1,startUpTimerInMs  + 3500)).Times(1).InSequence(s1);
-         timerProvider.setNextTickTime(startUpTimerInMs + 3500);
+        timerProvider.setNextTickTime(startUpTimerInMs + 3500);
+
+      
     }
 
 

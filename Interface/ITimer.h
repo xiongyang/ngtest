@@ -18,7 +18,7 @@ namespace BluesTrading
         virtual bool cancelTimer(ITimerConsumer* consumer, uint32_t eventID) = 0;
        
         virtual uint32_t getCurrentTimeMsInDay() = 0;  
-        virtual uint32_t getCurrentDate() = 0;  
+        virtual uint32_t getCurrentDate() = 0;  //YYYYMMDD
     };
 
 }
