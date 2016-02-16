@@ -1,3 +1,4 @@
+#pragma once
 #include "IOrderManager.h"
 #include<map>
 #include<vector>

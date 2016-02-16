@@ -34,7 +34,7 @@ namespace BluesTrading
 
         virtual void onMessage(const std::string& propName) override {};	//Receive ProtoBuf Message From Console
         virtual std::string getDisplayMessage() override {return "DisplayMessage For Simple";};		//ProtoBuf Message For Display
-        virtual std::string getConfigureableMessage() override {return "ConfigureMessage  For Simple";};	//ProtoBuf Message For Configure
+        virtual std::string getConfigurableMessage() override {return "ConfigureMessage  For Simple";};	//ProtoBuf Message For Configure
         virtual std::string getName() override {return "TestStrategy Name  For Simple";};	
     };
 }

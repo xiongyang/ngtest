@@ -6,6 +6,8 @@
 #include "marketdatastore.h"
 #include "IStrategy.h"
 
+#include "nullLogger.h"
+
 #include <memory>
 #include <vector>
 #include <thread>
@@ -27,5 +29,7 @@ namespace BluesTrading
         std::shared_ptr<MarketDataReplayer> dataReplayer;
         std::thread orderManagerNotifyThread;
         std::shared_ptr<IStrategy>  testStrategy;
+        nullLogger  logger;
+
     };
 }

@@ -29,10 +29,7 @@ namespace BluesTrading
     void TestBed::LoadTestStrategy(const std::string& dynamicLib)
     {
         auto funptr = GetSharedLibFun<BluesTrading::StrategyFactoryFun>(dynamicLib.c_str(),"createStrategy");
-        //CDynamicLibrary dll;
-        //dll.Open(argv[1]);
-        //auto funptr = reinterpret_cast<BluesTrading::StrategyFactoryFun*>(dll.GetProc("createStrategy"));
-        BluesTrading::IStrategy* strp =  funptr(NULL,NULL,NULL,NULL,NULL);
+        BluesTrading::IStrategy* strp  = funptr(&logger,NULL,NULL,NULL,NULL);
     }
 
 }
