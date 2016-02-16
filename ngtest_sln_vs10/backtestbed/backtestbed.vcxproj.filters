@@ -27,12 +27,36 @@
     <ClCompile Include="..\..\backtestbed\test\marketdatereplayer_test.cpp">
       <Filter>test</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\backtestbed\faketimerprovider.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\backtestbed\testbed.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\backtestbed\fakeordermanager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\backtestbed\test\faketimerprovider_test.cpp">
+      <Filter>test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\backtestbed\test\fakeordermanager_test.cpp">
+      <Filter>test</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\backtestbed\marketdatareplayer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\backtestbed\marketdatastore.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\backtestbed\fakeordermanager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\backtestbed\faketimerprovider.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\backtestbed\testbed.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -1,3 +1,4 @@
+#pragma once
 #include "MarketData.h"
 
 namespace BluesTrading

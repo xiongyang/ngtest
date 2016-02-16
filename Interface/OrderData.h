@@ -1,8 +1,10 @@
 #pragma once
 
+#include <cstdint>
+#include <string.h>
+
 namespace BluesTrading
 {
-
     enum RequestTypeEnum
     {
         SSESZE_LevelFundCancel,
@@ -45,6 +47,16 @@ namespace BluesTrading
         Parti
     };
 
+    enum ExchangeTypes
+    {
+        CFFEX,
+        DCE,
+        SSE,
+        SZE,
+        SHFE,
+        CZCE
+    };
+
     struct SenderID
     {
         uint16_t senderMachineID;
@@ -55,118 +67,103 @@ namespace BluesTrading
     struct SSE_SecurityCancelRequest
     {
         static const int RequestType = SSE_SecurityCancel;
-        uin blueOrderID;
+        uint64_t blueOrderID;
     };
 
     struct  SSE_SecurityModifyOrderRequest
     {
         static const int RequestType = SSE_SecurityModify;
         uint32_t instrumentID;
+        double price;
         uint8_t orderType;
         uint8_t priceType;
         uint8_t diretion;
-        uint32_t price;
-        uint32_t Orderqty; 
+     
+        uint32_t orderqty; 
     };
 
     struct SSE_SecurityNewOrderRequest
     {
         static const int RequestType = SSE_SecurityNewOrder;
         uint32_t instrumentID;
+        double price;
+        uint32_t orderqty; 
         uint8_t orderType;
         uint8_t priceType;
-        uint8_t direction;
-        uint32_t price;
-        uint32_t Orderqty; 
+        bool isBuy;
     };
 
+    struct SSE_OrderDetail
+    {
+        uint32_t instrumentID;
+        uint32_t orderQty;
+        uint32_t filledQty;
+        bool   isbuy;
+        double orderprice;
+        double tradeprice;
+    };
 
-    //  the stratgy send requestID with  sendID  
+    typedef SSE_OrderDetail SZE_OrderDetail;
+
+
+    struct CFFEX_OrderDetail
+    {
+
+    };
+
+    typedef CFFEX_OrderDetail  DCE_OrderDetail;
+    typedef CFFEX_OrderDetail  SHFE_OrderDetail;
+    typedef CFFEX_OrderDetail  CZCE_OrderDetail;
+
+
+    //  the strategy send requestID with  sendID  
     struct OrderRequest
     {
         union
         {
                 uint64_t requestID;
                 SenderID senderID;
-        }
+        } ;
         uint16_t requestType;
-
-    public:
-
-    private:
 
         union 
         {
             SSE_SecurityCancelRequest       sse_securityCancelRequest;
             SSE_SecurityModifyOrderRequest  sse_securityModifyOrderRequest;
             SSE_SecurityNewOrderRequest     sse_securityNewOrder;
-        }
+        } ;
+
+        void fillDetail(const SSE_SecurityCancelRequest& request) { sse_securityCancelRequest  = request;}
+        void fillDetail(const SSE_SecurityModifyOrderRequest& request) { sse_securityModifyOrderRequest  = request;}
+        void fillDetail(const SSE_SecurityNewOrderRequest& request) { sse_securityNewOrder  = request;}
     };
 
     struct OrderDataDetail
     {
-        uint16_t senderMachineID;
-        uint16_t sendStrategyID;
-        uint32_t requestID;
+        // indicate which request  send this order
+        union
+        {
+            uint64_t requestid;
+            SenderID senderid;
+        };
         // other fields
-        uint32_t instrumentID;
-        int32_t  orderID;
-        uint32_t orderQty;
-        uint32_t filledQty;
-        double orderprice;
-        double tradeprice;
+        // normal it equal to requestID. but sometimes we may meet one request multi orders.
+        uint64_t  orderID;
+        uint16_t  exchangeType;
 
+        union 
+        {
+            SSE_OrderDetail  sse_order;
+            SZE_OrderDetail sze_order;
+            CFFEX_OrderDetail cffex_order;
+            DCE_OrderDetail dce_order;
+            SHFE_OrderDetail shfe_order;
+            CZCE_OrderDetail czce_order;
+        };
 
-
-
-        //int strategyID;
-        //unsigned int instrumentID;
-        //int orderID;//filled by OMS and used internally
-        //char internalRefID; // to distinguish between two SOM's for the same strategy
-        //int unitMultiplier;
-        //FTDCOrderOffsetFlag offsetFlag;
-        //OrderType orderType;
-        //OrderType origOrderType;
-        //OrderPriceType orderPriceType;
-        //int orderQty; //int tradeQty;
-        //double limitPrice;
-        //OrderStatusType orderStatus;
-        //unsigned int submitTick;
-        //unsigned int updateTick;
-
-        //int filledQtyAtCancel;
-        //int filledQty;
-        //int getFreeQty() const {
-        //    return orderQty - filledQty;
-        //}
-        //double costBasis;//for those filled
-        //double avgTradePrice() const {
-        //    return filledQty == 0 ? 0 : costBasis / filledQty / unitMultiplier;
-        //}
-
-        ////COID
-        //int exchangeID;//this is the mapped internal id, only for this session
-        //int exchangeOrderID;//childOrder id at exchange side	
-
-        //double tradePrice;
-        //ChildOrderStatusType childOrderStatus;
-        //DetailOrderStatusType detailStatus;
-
-        //unsigned int oeeSubmitTickInUSec;
-
-        //bool isToBeCancelled;
-        //bool isParked;
-        //double averagePrice() const {
-        //    return filledQty == 0 ? 0 : costBasis / filledQty;
-        //}
-
-        //bool dataValidFlag;
-        //bool isNonIOC;
-
-        //bool isCancelSubmitted:1;
-        //bool isExchangeAckReceived:1;
-
-        //char hedgeFlag;
-        //unsigned short x64pad1;//pad it to 108+4 = 112 %8 == 0 for x64 memcpy efficiency
+        bool operator==(const OrderDataDetail& left)
+        {
+            return memcmp(&left, this, sizeof(OrderDataDetail)) == 0;
+        }
     };
 }

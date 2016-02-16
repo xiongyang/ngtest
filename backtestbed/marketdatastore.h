@@ -1,7 +1,7 @@
 #pragma once
 
 #include <vector>
-
+#include <map>
 #include "MarketData.h"
 
 namespace BluesTrading
@@ -31,6 +31,9 @@ namespace BluesTrading
                 }
         }
 
-
+        void loadDataFromFile(const std::string& fileName);
+        void loadDataFromDB(const std::string& db, const std::string& query);
     };
+
+
 }

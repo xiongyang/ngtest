@@ -86,8 +86,6 @@ void MarketDataReplayer::startReplay(uint32_t startdate, uint32_t enddate)
 
         std::set<ITickDataConsumer*>  allsubscriber = getAllSubscriber();
 
-
-
         if (iter->first < startdate )
         {
             continue;
