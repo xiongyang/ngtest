@@ -2,10 +2,12 @@
 
 #include "IMarketDataProvider.h"
 #include "faketimerprovider.h"
+#include "marketdatastore.h"
 
 #include <map>
 #include <vector>
 #include <set>
+#include <unordered_map> 
 
 namespace BluesTrading
 {
@@ -15,7 +17,7 @@ namespace BluesTrading
     class MarketDataReplayer :public IMarketDataProvider
     {
     public:
-        MarketDataReplayer(std::vector<MarketDataStore*> datestore);
+        MarketDataReplayer(std::vector<MarketDataStore> datestore);
         virtual void subscribeInstrument(uint32_t instrumentID,ITickDataConsumer* handler ) override;
         virtual void unSubscribeInstrument(uint32_t instrumentID, ITickDataConsumer* handler) override;
         virtual void subscribeAllInstrument(ITickDataConsumer* handler) override;
@@ -33,9 +35,8 @@ namespace BluesTrading
          std::set<ITickDataConsumer*> getAllSubscriber();
     private:
         std::set<ITickDataConsumer*>    alldateSubscriber;
-        std::map<uint32_t, std::set<ITickDataConsumer*> > subscribeByInst;
-        std::map<uint32_t, std::vector<MarketDataStore*> > dataByDate;
-        std::map<uint32_t, std::vector<CTickData<1>*> >   dataByDateSorted;
+        std::unordered_map<uint32_t, std::set<ITickDataConsumer*> > subscribeByInst;
+        std::map<uint32_t, std::vector<CTickData> >   dataByDateSorted;
         
         FakeTimerProvider   timerProvider;
     

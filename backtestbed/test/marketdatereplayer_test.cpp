@@ -12,38 +12,29 @@ namespace BluesTrading
     using ::testing::_;
     using ::testing::Field;
     using ::testing::Sequence;
+    using ::testing::Truly;
 
+    auto isDepthsLevel1 = [=](const CTickData& tick) 
+    { 
+        return tick.askLevels == 1;
+    };
+
+    auto isDepthsLevel5 = [=](const CTickData& tick) 
+    { 
+        return tick.askLevels == 5;
+    };
 
 
     class FakeTickDataConsumer :public ITickDataConsumer
     {
     public:
         FakeTickDataConsumer() :current_time(0){}
-        virtual void onMarketData(const TickDataLevel1& tick)
+        virtual void onMarketData(const CTickData& tick)
         {
-            EXPECT_EQ(1,tick.depthsNum);
+            //EXPECT_EQ(1,tick.depthsNum);
             EXPECT_LE(current_time, tick.timeInMS);
             current_time = tick.timeInMS;
         };
-        virtual void onMarketData(const TickDataLevel5& tick)
-        {
-            EXPECT_EQ(5,tick.depthsNum);
-            EXPECT_LE(current_time, tick.timeInMS);
-            current_time = tick.timeInMS;
-        };
-        virtual void onMarketData(const TickDataLevel10& tick)
-        {
-            EXPECT_EQ(10,tick.depthsNum);
-            EXPECT_LE(current_time, tick.timeInMS);
-            current_time = tick.timeInMS;
-        };
-        virtual void onMarketData(const TickDataLevel20& tick)
-        {
-            EXPECT_EQ(20,tick.depthsNum);
-            EXPECT_LE(current_time, tick.timeInMS);
-            current_time = tick.timeInMS;
-        };
-        virtual void onOtherLevelsMarketData(const CTickData<1>& tick) {std::cout << "On Depth " << tick.depthsNum << "\n";};// for any other Levels.
 
         uint32_t current_time;
     };
@@ -51,33 +42,33 @@ namespace BluesTrading
     {
     public:
 
-       template<int N>
-       void registerDelegate()
-       {
-           typedef  void  (FakeTickDataConsumer::* tickFun)(const CTickData<N>&);
-           tickFun tifun =  &FakeTickDataConsumer::onMarketData;
+       //template<int N>
+       //void registerDelegate()
+       //{
+       //    typedef  void  (FakeTickDataConsumer::* tickFun)(const CTickData<N>&);
+       //    tickFun tifun =  &FakeTickDataConsumer::onMarketData;
 
-           ON_CALL(*this,     onMarketData(An<const CTickData<N>&>()))
-               .WillByDefault(Invoke(&fake, tifun));
-       }
+       //    ON_CALL(*this,     onMarketData(An<const CTickData<N>&>()))
+       //        .WillByDefault(Invoke(&fake, tifun));
+       //}
         MockTickDataConsumer()
         {
-            registerDelegate<1>();
-            registerDelegate<5>();
-            registerDelegate<10>();
-            registerDelegate<20>();
-            ON_CALL(*this,     onOtherLevelsMarketData(An<const CTickData<1>&>()))
-                   .WillByDefault(Invoke(&fake, &FakeTickDataConsumer::onOtherLevelsMarketData));
+            //registerDelegate<1>();
+            //registerDelegate<5>();
+            //registerDelegate<10>();
+            //registerDelegate<20>();
+            ON_CALL(*this, onMarketData(_))
+                .WillByDefault(Invoke(&fake, &FakeTickDataConsumer::onMarketData));
 
             ON_CALL(*this, onEndDay(_)).WillByDefault(InvokeWithoutArgs(this, &MockTickDataConsumer::resetFakeTime));
         }
 
 
-         MOCK_METHOD1(onMarketData, void(const TickDataLevel1&));
-         MOCK_METHOD1(onMarketData, void(const TickDataLevel5&));
-         MOCK_METHOD1(onMarketData, void(const TickDataLevel10&));
-         MOCK_METHOD1(onMarketData, void(const TickDataLevel20&));
-         MOCK_METHOD1(onOtherLevelsMarketData, void(const  CTickData<1>&));
+         MOCK_METHOD1(onMarketData, void(const CTickData&));
+         //MOCK_METHOD1(onMarketData, void(const TickDataLevel5&));
+         //MOCK_METHOD1(onMarketData, void(const TickDataLevel10&));
+         //MOCK_METHOD1(onMarketData, void(const TickDataLevel20&));
+         //MOCK_METHOD1(onOtherLevelsMarketData, void(const  CTickData<1>&));
          MOCK_METHOD1(onStartDay, void(uint32_t));
          MOCK_METHOD1(onEndDay, void(uint32_t));
          
@@ -95,29 +86,23 @@ namespace BluesTrading
         virtual void SetUp() 
         {
             replayer = NULL;
-
         }
 
-        template<int N>
-        void generateFakeTick(uint32_t inst, uint32_t date,  uint32_t timeInMS_offset = 0, uint32_t tick_num = 10)
+       
+        void generateFakeTick(uint32_t inst, uint32_t date,  uint32_t timeInMS_offset = 0,uint16_t levels = 1,uint32_t tick_num = 10)
         {
-            MarketDataStore* pNewStore = new MarketDataStore{inst, date};
-           
-     
-            CTickData<N>* pTickArray = new CTickData<N>[tick_num];
-
-            allocateArray.push_back(pTickArray);
-            memset(pTickArray, 0, sizeof(CTickData<N>)* tick_num);
-
+            MarketDataStore newStore{inst, date};
             for (int i = 0 ; i != tick_num; ++i)
             {
-                pTickArray[i].depthsNum = N;
-                pTickArray[i].instIndex = inst;
-                pTickArray[i].timeInMS = i + timeInMS_offset;
-                pNewStore->getStore<N>().push_back(&pTickArray[i]);
+                CTickData tick;
+                tick.askLevels = levels;
+                tick.bidLevels = levels;
+                tick.instIndex = inst;
+                tick.timeInMS = i + timeInMS_offset;
+                newStore.tickDataVec.push_back(std::move(tick));
             }
 
-            fakedata.push_back(pNewStore);
+            fakedata.push_back(std::move(newStore));
         }
 
         void packDatatoReplayer()
@@ -126,55 +111,32 @@ namespace BluesTrading
             replayer = new MarketDataReplayer(fakedata);
         }
 
-
-
         virtual void TearDown() 
         {
-            for (auto each : fakedata)
-            {
-                 //delete [] each->level1Data[0];  TODO delete the array
-                 delete each;
-            }
-          
-
-            for (auto eachArray : allocateArray)
-            {
-                delete [] eachArray;
-            }
-
             if(replayer) delete replayer;
              
         }
 
-        std::vector<MarketDataStore*> fakedata;
+        std::vector<MarketDataStore> fakedata;
         MarketDataReplayer*  replayer;
-        std::vector<void*> allocateArray;
     };
 
 
-    TEST(testTickData, depthnum_init)
+    TEST(testGetDate, getDateTest)
     {
-        TickDataLevel1 d1;
-        TickDataLevel5 d5;
-        TickDataLevel10 d10;
-        TickDataLevel20 d20;
-
-
-        EXPECT_EQ(d1.depthsNum , 1);
-        EXPECT_EQ(d5.depthsNum , 5);
-        EXPECT_EQ(d10.depthsNum , 10);
-        EXPECT_EQ(d20.depthsNum , 20);
-
-        TickDataLevel1* pd5 =  reinterpret_cast<CTickData<1>*>(&d5);
-
-         EXPECT_EQ(pd5->depthsNum, 5);
-
-         EXPECT_EQ(60, sizeof(TickDataLevel1));
+        EXPECT_EQ(20131010, getDate("2013-10-10 09:17:13"));
     }
+
+    TEST(testGetTime, getTimeTest)
+    {
+        uint32_t time = 9 * 3600 * 1000 + 17 * 60 * 1000 + 13 * 1000;
+        EXPECT_EQ(time, getTime("2013-10-10 09:17:13"));
+    }
+
     TEST_F(marketdatareplayerTest, singleTickStore)
     {
         const int tickNum = 20;
-        generateFakeTick<1>(1,20151230, 0 , tickNum);
+        generateFakeTick(1,20151230, 0 , 1,tickNum);
 
         packDatatoReplayer();
 
@@ -185,7 +147,7 @@ namespace BluesTrading
  
         Sequence s1;
         EXPECT_CALL(mockconsumer, onStartDay(20151230)).InSequence(s1);
-        EXPECT_CALL(mockconsumer, onMarketData(An<const TickDataLevel1&>())).Times(tickNum).InSequence(s1);
+        EXPECT_CALL(mockconsumer, onMarketData(An<const CTickData&>())).Times(tickNum).InSequence(s1);
         EXPECT_CALL(mockconsumer, onEndDay(20151230)).InSequence(s1);
 
 
@@ -195,8 +157,8 @@ namespace BluesTrading
     TEST_F(marketdatareplayerTest, singleTickStoreWithSomeDoesNeedTick)
     {
         const int tickNum = 20;
-        generateFakeTick<1>(1,20151230, 0 , tickNum);
-        generateFakeTick<1>(2,20151230, 0 , tickNum);
+        generateFakeTick(1, 20151230, 0 , 1, tickNum);
+        generateFakeTick(2, 20151230, 0 , 1, tickNum);
         packDatatoReplayer();
 
 
@@ -209,7 +171,7 @@ namespace BluesTrading
 
         Sequence s1;
         EXPECT_CALL(mockconsumer, onStartDay(20151230)).InSequence(s1);
-        EXPECT_CALL(mockconsumer, onMarketData(An<const TickDataLevel1&>())).Times(tickNum);
+        EXPECT_CALL(mockconsumer, onMarketData(An<const CTickData&>())).Times(tickNum);
         EXPECT_CALL(mockconsumer, onEndDay(20151230)).InSequence(s1);
 
 
@@ -220,9 +182,9 @@ namespace BluesTrading
     TEST_F(marketdatareplayerTest, multiTickStoreWithSomeDoesNeedTick)
     {
         const int tickNum = 20;
-        generateFakeTick<1>(1,20151230, 0 , tickNum);
-        generateFakeTick<1>(1,20151230, 5 , tickNum);
-        generateFakeTick<1>(2,20151230, 0 , tickNum);
+        generateFakeTick(1,20151230, 0 , 1,tickNum);
+        generateFakeTick(1,20151230, 5 , 5, tickNum);
+        generateFakeTick(2,20151230, 0 , 1, tickNum);
         packDatatoReplayer();
 
 
@@ -231,7 +193,7 @@ namespace BluesTrading
 
         Sequence s1;
         EXPECT_CALL(mockconsumer, onStartDay(20151230)).InSequence(s1);
-        EXPECT_CALL(mockconsumer, onMarketData(An<const TickDataLevel1&>())).Times(tickNum * 2).InSequence(s1);
+        EXPECT_CALL(mockconsumer, onMarketData(_)).Times(tickNum * 2).InSequence(s1);
         EXPECT_CALL(mockconsumer, onEndDay(20151230)).InSequence(s1);
 
 
@@ -243,9 +205,9 @@ namespace BluesTrading
     TEST_F(marketdatareplayerTest, multiTickDifferentDepths)
     {
         const int tickNum = 20;
-        generateFakeTick<1>(1,20151230, 0 , tickNum);
-        generateFakeTick<5>(1,20151230, 5 , tickNum);
-        generateFakeTick<1>(2,20151230, 0 , tickNum);
+        generateFakeTick(1,20151230, 0 , 1,  tickNum);
+        generateFakeTick(1,20151230, 5 , 5,  tickNum);
+        generateFakeTick(2,20151230, 0 , 1,  tickNum);
         packDatatoReplayer();
 
 
@@ -259,8 +221,8 @@ namespace BluesTrading
         Sequence s1;
         EXPECT_CALL(mockconsumer, onStartDay(20151230)).InSequence(s1);
 
-        EXPECT_CALL(mockconsumer, onMarketData(An<const TickDataLevel1&>())).Times(tickNum);
-        EXPECT_CALL(mockconsumer, onMarketData(An<const TickDataLevel5&>())).Times(tickNum);
+        EXPECT_CALL(mockconsumer, onMarketData(Truly(isDepthsLevel1))).Times(tickNum);
+        EXPECT_CALL(mockconsumer, onMarketData(Truly(isDepthsLevel5))).Times(tickNum);
         EXPECT_CALL(mockconsumer, onEndDay(20151230)).InSequence(s1);
         replayer->startReplay(20151230, 20151231);  
     }
@@ -268,9 +230,9 @@ namespace BluesTrading
     TEST_F(marketdatareplayerTest, different_instrument_mixed)
     {
         const int tickNum = 20;
-        generateFakeTick<1>(1,20151230, 0 , tickNum);
-        generateFakeTick<5>(1,20151230, 5 , tickNum);
-        generateFakeTick<1>(2,20151230, 0 , tickNum);
+        generateFakeTick(1,20151230, 0 , 1, tickNum);
+        generateFakeTick(1,20151230, 5 , 5, tickNum);
+        generateFakeTick(2,20151230, 0 , 1, tickNum);
         packDatatoReplayer();
 
 
@@ -283,9 +245,21 @@ namespace BluesTrading
         using ::testing::Field;
 
         Sequence s1;
+
+
+        auto isInstrument1 = [=](const CTickData& tick) 
+        { 
+            return tick.instIndex == 1;
+        };
+
+        auto isInstrument2 = [=](const CTickData& tick) 
+        { 
+            return tick.instIndex == 2;
+        };
+
         EXPECT_CALL(mockconsumer, onStartDay(20151230)).InSequence(s1);
-        EXPECT_CALL(mockconsumer, onMarketData(An<const TickDataLevel1&>())).Times(tickNum * 2);
-        EXPECT_CALL(mockconsumer, onMarketData(An<const TickDataLevel5&>())).Times(tickNum);
+        EXPECT_CALL(mockconsumer, onMarketData(Truly(isInstrument1))).Times(tickNum * 2);
+        EXPECT_CALL(mockconsumer, onMarketData(Truly(isInstrument2))).Times(tickNum);
         EXPECT_CALL(mockconsumer, onEndDay(20151230)).InSequence(s1);
         replayer->startReplay(20151230, 20151231);  
     }
@@ -293,7 +267,7 @@ namespace BluesTrading
     TEST_F(marketdatareplayerTest, unsubscribe_instument)
     {
         const int tickNum = 20;
-        generateFakeTick<1>(1,20151230, 0 , tickNum);
+        generateFakeTick(1,20151230, 0 , 1, tickNum);
         packDatatoReplayer();
 
 
@@ -303,7 +277,7 @@ namespace BluesTrading
       
         Sequence s1;
         EXPECT_CALL(mockconsumer, onStartDay(20151230)).InSequence(s1);
-        EXPECT_CALL(mockconsumer, onMarketData(An<const TickDataLevel1&>())).Times(tickNum );
+        EXPECT_CALL(mockconsumer, onMarketData(Truly(isDepthsLevel1))).Times(tickNum );
         EXPECT_CALL(mockconsumer, onEndDay(20151230)).InSequence(s1);
         
         
@@ -313,7 +287,7 @@ namespace BluesTrading
         Sequence s2;
         EXPECT_CALL(mockconsumer, onStartDay(20151230)).InSequence(s2);
         //ensure the recall startReplay will play the tick  
-        EXPECT_CALL(mockconsumer, onMarketData(An<const TickDataLevel1&>())).Times(tickNum);
+        EXPECT_CALL(mockconsumer, onMarketData(Truly(isDepthsLevel1))).Times(tickNum);
         EXPECT_CALL(mockconsumer, onEndDay(20151230)).InSequence(s2);
         mockconsumer.resetFakeTime();
         replayer->startReplay(20151230, 20151231);  
@@ -323,7 +297,7 @@ namespace BluesTrading
        // Sequence s3;
         // if does not subsribe anything, will not start Day and EndDay
         EXPECT_CALL(mockconsumer, onStartDay(20151230)).Times(0);
-        EXPECT_CALL(mockconsumer, onMarketData(An<const TickDataLevel5&>())).Times(0);
+        EXPECT_CALL(mockconsumer, onMarketData(_)).Times(0);
         EXPECT_CALL(mockconsumer, onEndDay(20151230)).Times(0);
         mockconsumer.resetFakeTime();
         replayer->startReplay(20151230, 20151231);  
@@ -332,11 +306,11 @@ namespace BluesTrading
 
     TEST_F(marketdatareplayerTest, date_range)
     {
-        generateFakeTick<1>(1,20151230, 0 , 10);
-        generateFakeTick<1>(2,20151231, 0 , 100);
-        generateFakeTick<1>(1,20151231, 0 , 100);
-        generateFakeTick<1>(1,20160101, 0 , 1000);
-        generateFakeTick<1>(1,20160102, 0 , 10000);
+        generateFakeTick(1,20151230, 0 , 1, 10);
+        generateFakeTick(2,20151231, 0 , 1, 100);
+        generateFakeTick(1,20151231, 0 , 1, 100);
+        generateFakeTick(1,20160101, 0 , 1, 1000);
+        generateFakeTick(1,20160102, 0 , 1, 10000);
         packDatatoReplayer();
 
 
@@ -347,12 +321,12 @@ namespace BluesTrading
             Sequence s1 ;
 
             EXPECT_CALL(mockconsumer, onStartDay(20151230)).InSequence(s1);
-            EXPECT_CALL(mockconsumer, onMarketData(An<const TickDataLevel1&>())).Times(10).InSequence(s1);
+            EXPECT_CALL(mockconsumer, onMarketData(Truly(isDepthsLevel1))).Times(10).InSequence(s1);
             EXPECT_CALL(mockconsumer, onEndDay(20151230)).InSequence(s1);
 
 
             EXPECT_CALL(mockconsumer, onStartDay(20151231)).InSequence(s1);
-            EXPECT_CALL(mockconsumer, onMarketData(An<const TickDataLevel1&>())).Times(100).InSequence(s1);
+            EXPECT_CALL(mockconsumer, onMarketData(Truly(isDepthsLevel1))).Times(100).InSequence(s1);
             EXPECT_CALL(mockconsumer, onEndDay(20151231)).InSequence(s1);
 
             mockconsumer.resetFakeTime();
@@ -365,7 +339,7 @@ namespace BluesTrading
         {
             Sequence s1 ;
             EXPECT_CALL(mockconsumer, onStartDay(20151230)).InSequence(s1);
-            EXPECT_CALL(mockconsumer, onMarketData(An<const TickDataLevel1&>())).Times(10).InSequence(s1);
+            EXPECT_CALL(mockconsumer, onMarketData(Truly(isDepthsLevel1))).Times(10).InSequence(s1);
             EXPECT_CALL(mockconsumer, onEndDay(20151230)).InSequence(s1);
             mockconsumer.resetFakeTime();
             replayer->startReplay(20151230, 20151231);  
@@ -375,12 +349,12 @@ namespace BluesTrading
         {
             Sequence s1 ;
             EXPECT_CALL(mockconsumer, onStartDay(20151231)).InSequence(s1);
-            EXPECT_CALL(mockconsumer, onMarketData(An<const TickDataLevel1&>())).Times(100).InSequence(s1);
+            EXPECT_CALL(mockconsumer, onMarketData(Truly(isDepthsLevel1))).Times(100).InSequence(s1);
             EXPECT_CALL(mockconsumer, onEndDay(20151231)).InSequence(s1);
 
 
             EXPECT_CALL(mockconsumer, onStartDay(20160101)).InSequence(s1);
-            EXPECT_CALL(mockconsumer, onMarketData(An<const TickDataLevel1&>())).Times(1000).InSequence(s1);
+            EXPECT_CALL(mockconsumer, onMarketData(Truly(isDepthsLevel1))).Times(1000).InSequence(s1);
             EXPECT_CALL(mockconsumer, onEndDay(20160101)).InSequence(s1);
             mockconsumer.resetFakeTime();
             replayer->startReplay(20151231, 20160102); 

@@ -61,7 +61,6 @@ namespace BluesTrading
            consumer_ =  p;
     }
 
-
     void FakeOrderManager::handleSSECancel( OrderRequest&)
     {
        // orders_[requset.requestID]
@@ -115,7 +114,6 @@ namespace BluesTrading
     {
         if (consumer_)
         {
-         
             for (auto each: queued_orderUpdate)
             {
                 consumer_->onUpdateOrder(&each);
@@ -123,7 +121,6 @@ namespace BluesTrading
             }
             queued_orderUpdate.clear();
         }
-
     }
 
     BluesTrading::OrderDataDetail* FakeOrderManager::generateOrder(OrderRequest& request)

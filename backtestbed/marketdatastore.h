@@ -11,29 +11,32 @@ namespace BluesTrading
         uint32_t instIndex;
         uint32_t date;  //YYYYMMDD
 
+        std::vector<CTickData> tickDataVec;
 
-        typedef std::vector<TickDataLevel1*> tickdateVec;       // for poly levels
-        std::map<int, tickdateVec*> levelDatas;
+        //typedef std::vector<CTickData> tickdateVec;       // for poly levels
+        //std::map<int, tickdateVec*> levelDatas;
 
-
-        template<int N>
-        std::vector<CTickData<N>*>& getStore()
-        {
-                auto iter = levelDatas.find(N);
-                if(iter != levelDatas.end())
-                {
-                    return (* (std::vector<CTickData<N>*>*)iter->second);
-                }
-                else
-                {
-                    iter = levelDatas.insert(std::make_pair(N, new tickdateVec)).first;
-                    return (* (std::vector<CTickData<N>*>*)iter->second);
-                }
-        }
+        //template<int N>
+        //std::vector<CTickData<N>*>& getStore()
+        //{
+        //        auto iter = levelDatas.find(N);
+        //        if(iter != levelDatas.end())
+        //        {
+        //            return (* (std::vector<CTickData<N>*>*)iter->second);
+        //        }
+        //        else
+        //        {
+        //            iter = levelDatas.insert(std::make_pair(N, new tickdateVec)).first;
+        //            return (* (std::vector<CTickData<N>*>*)iter->second);
+        //        }
+        //}
 
         void loadDataFromFile(const std::string& fileName);
         void loadDataFromDB(const std::string& db, const std::string& query);
     };
+
+    uint32_t getDate(const std::string& date);
+    uint32_t getTime(const std::string& date_time_str);
 
 
 }

@@ -7,6 +7,7 @@
 #include "IStrategy.h"
 
 #include "nullLogger.h"
+#include "testConfigureManager.h"
 
 #include <memory>
 #include <vector>
@@ -24,12 +25,12 @@ namespace BluesTrading
         void LoadTestStrategy(const std::string& dynamicLib);
 
     private:
-        std::vector<std::shared_ptr<MarketDataStore> > tickDataStore;
+        std::vector<MarketDataStore> tickDataStore;
         std::shared_ptr<FakeOrderManager> orderManager;
         std::shared_ptr<MarketDataReplayer> dataReplayer;
         std::thread orderManagerNotifyThread;
         std::shared_ptr<IStrategy>  testStrategy;
         nullLogger  logger;
-
+        TestConfigureManager configureManager;
     };
 }

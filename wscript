@@ -4,8 +4,9 @@ out = '_build'
 
 packageList = 'interface strategy util backtestbed'
 
-BluesCXXFlag= ['-std=gnu++11' , '-O2', '-ggdb']
-
+BluesCXXFlag= ['-std=gnu++11' , '-O2', '-ggdb' ]
+#,'-I/usr/local/gcc53/include/c++/5.3.0/'
+#BluesCXXFlag= ['-std=c++1y' , '-O2', '-ggdb']
 
 
 
@@ -56,7 +57,12 @@ def configure(conf):
         else:
             conf.define('_BL_LINUX_PLATFROM_', 1)
 
-        conf.load('compiler_cxx')
+       # conf.env['CXX'] = "/usr/bin/x86_64-w64-mingw32-g++.exe"
+       # conf.env['CXX'] = "/cygdrive/c/MinGW/bin/g++.exe"
+       # conf.load('g++')
+        conf.load('compiler_cxx boost')
+        conf.check_boost()
+
         conf.load('waf_unit_test')
 
         conf.env.append_unique('CXXFLAGS', BluesCXXFlag)
@@ -81,6 +87,7 @@ def buildgmock(bld):
         target          = 'gmock',
         includes     =  gmockinclude,
         export_includes = [gtestinc, gmockinc],
+       # cxxflags     = ['-std=gnu++11', '-O2'],
         lib = ['pthread']
         )
 

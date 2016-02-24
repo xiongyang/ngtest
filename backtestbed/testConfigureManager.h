@@ -4,11 +4,10 @@
 
 #include <string>
 #include <vector>
+#include <istream>
 
 namespace BluesTrading
 {
-
-
     class TestConfigureManager:public IConfigureManager
     {
     public:
@@ -18,6 +17,7 @@ namespace BluesTrading
 
     public:
         void readConfigure(const std::string& configureFile);
+        void readConfigure(std::istream& inputstream);
         void configurInstance();
 
         IConfigureable* test_strategy;

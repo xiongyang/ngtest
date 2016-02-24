@@ -24,12 +24,7 @@ namespace BluesTrading
         virtual void onStartDay(uint32_t) override {};
         virtual void onEndDay(uint32_t) override {};
 
-        //virtual void onMarketData(const TickDataLevel1&) override{};
-        virtual void onMarketData(const TickDataLevel5&) override {};
-        //virtual void onMarketData(const TickDataLevel10&) override{};
-        //virtual void onMarketData(const TickDataLevel20&) override{};
-        //virtual void onOtherLevelsMarketData(const CTickData<1>& tick) override{};		// for any other Levels.
-
+        virtual void onMarketData(const CTickData&) override {};
         virtual void onUpdateOrder(OrderDataDetail* orderData) override {};
 
         virtual void onMessage(const std::string& propName) override {};	//Receive ProtoBuf Message From Console

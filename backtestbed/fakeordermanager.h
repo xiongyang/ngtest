@@ -19,6 +19,9 @@ namespace BluesTrading
 
     public:
 
+        //void StartDay(uint32_t dayYYYYMMDD);
+        //void EndDay(uint32_t dayYYYYMMDD);
+
         void MakeOrderTrade(uint64_t orderID);
         void SendNotify();
 
