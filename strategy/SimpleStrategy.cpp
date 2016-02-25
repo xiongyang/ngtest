@@ -15,7 +15,7 @@ namespace BluesTrading
 {
     SimpleStrategy::SimpleStrategy(const std::string& name, ILogger* logger, IConfigureManager* configureManager, IMarketDataProvider* dataProvider, ITimerProvider* timerProvider, IOrderManger* orderManager)
     {
-
+        std::cout <<"create SimpleStrategy" << std::endl;
     }
 
     SimpleStrategy::~SimpleStrategy()
@@ -26,6 +26,11 @@ namespace BluesTrading
     void SimpleStrategy::onTimer(uint32_t eventID, uint32_t currentTime)
     {
 
+    }
+
+    void SimpleStrategy::onMarketData(const CTickData&)
+    {
+        //std::cout << "On Data\n";
     }
 
 }

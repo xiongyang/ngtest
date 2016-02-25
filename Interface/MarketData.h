@@ -2,9 +2,13 @@
 #include <cstdint>
 
 #include <vector>
-//#include <iosforward>
+#include <iostream>
 
-#define CheckArrayIndex
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
+
+#include <boost/serialization/vector.hpp>
+
 
 #pragma pack(push, 4)
 namespace BluesTrading
@@ -16,6 +20,26 @@ namespace BluesTrading
 
     struct CTickData {
 
+       // friend class boost::serialization::access;
+        // When the class Archive corresponds to an output archive, the
+        // & operator is defined similar to <<.  Likewise, when the class Archive
+        // is a type of input archive the & operator is defined similar to >>.
+        template<class Archive>
+        void serialize(Archive & ar, const unsigned int version)
+        {
+            ar & instIndex;
+            ar & timeInMS;
+            ar & tot_vol;		
+            ar & openinterest;
+
+            ar & last_price;
+            ar & turnover;
+            ar & bidLevels;
+            ar & askLevels;
+            ar & depths;
+        }
+
+
         struct Depth
         {
             double price;
@@ -24,8 +48,17 @@ namespace BluesTrading
             //uint32_t asksize;
             //double bidprice;
             //double askprice;
+            template<class Archive>
+            void serialize(Archive & ar,  const unsigned int version)
+            {
+                ar & price;
+                ar & size;
+            }
         };
 
+ 
+
+    public:
         uint32_t	instIndex;
         uint32_t	timeInMS;
         uint32_t	tot_vol;		
@@ -41,7 +74,22 @@ namespace BluesTrading
         //Depth*		depths[MAX_LEVEL];
 
         CTickData():instIndex(-1), bidLevels(0), askLevels(0) {}
-      //  CTickData()   //move constr
+        CTickData(const CTickData&) = default;
+        CTickData& operator=(const CTickData&) = default;
+        CTickData(CTickData&& ref)
+        {
+            instIndex = ref.instIndex;
+            timeInMS = ref.timeInMS;
+            tot_vol = ref.tot_vol;		
+            openinterest = ref.openinterest;
+
+            last_price = ref.last_price;
+            turnover = ref.turnover;
+            bidLevels = ref.bidLevels;
+            askLevels = ref.askLevels;
+            depths.swap(ref.depths);
+        }
+         //move constr
 
         Depth& getBidDepth(int index)  //start base 1
         {
@@ -52,34 +100,51 @@ namespace BluesTrading
         {
             return depths[index - 1 + bidLevels];
         }
-
-        //double& BidPrice(int index)
-        //{
-        //    return depths[index - 1].price;
-        //  //  return getDepth(index).bidprice;
-        //}
-
-        //double& AskPrice(int index)
-        //{
-        //     return depths[bidLevels + index - 1].price;
-        //   // return getDepth(index).askprice;
-        //}
-
-        //uint32_t& BidSize(int index)
-        //{
-        //     return depths[index - 1].size;
-        //  //  return getDepth(index).bidsize;
-        //}
-
-        //uint32_t& AskSize(int index)
-        //{
-        //    return getDepth(index).asksize;
-        //}
     };
-    //typedef CTickData<1> TickDataLevel1;
-    //typedef CTickData<5> TickDataLevel5;
-    //typedef CTickData<10> TickDataLevel10;
-    //typedef CTickData<20> TickDataLevel20;
+
+    //static std::ostream&  operator << (std::ostream& of, const CTickData& tick)
+    //{
+    //    ar & instIndex;
+    //    ar & timeInMS;
+    //    ar & tot_vol;		
+    //    ar & openinterest;
+
+    //    ar & last_price;
+    //    ar & turnover;
+    //    of<<    tick.bidLevels;
+    //    of<<    tick.askLevels;
+
+    //    for(auto& each :tick.depths)
+    //    {
+    //        of << each.price << each.size;
+    //    }
+
+    //    return of;
+    //}
+    //static std::istream& operator >> (std::istream& istream, CTickData& tick)
+    //{
+    //    istream >>	tick.instIndex;
+    //    istream >>	tick.timeInMS;
+    //    istream >>	tick.tot_vol;		
+    //    istream >>	tick.openinterest;
+
+    //    istream >>	tick.last_price;
+    //    istream >>	tick.turnover;
+    //    istream >>  tick.bidLevels;
+    //    istream >>   tick.askLevels;
+
+    //    int depths_size = tick.askLevels + tick.bidLevels;
+    //    for (int i = 0; i != depths_size; ++i)
+    //    {
+    //        double price;
+    //        uint32_t size;
+    //        istream >> price >> size;
+
+    //        tick.depths.push_back(CTickData::Depth{price, size}) ;
+    //    }
+
+    //    return istream;
+    //}
 
 }
 

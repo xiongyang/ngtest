@@ -3,6 +3,9 @@
 #include <vector>
 #include <map>
 #include "MarketData.h"
+#include <iostream>
+
+#include <boost/serialization/vector.hpp>
 
 namespace BluesTrading
 {
@@ -10,33 +13,67 @@ namespace BluesTrading
     {
         uint32_t instIndex;
         uint32_t date;  //YYYYMMDD
-
         std::vector<CTickData> tickDataVec;
 
-        //typedef std::vector<CTickData> tickdateVec;       // for poly levels
-        //std::map<int, tickdateVec*> levelDatas;
+        MarketDataStore() = default;
+        MarketDataStore(uint32_t inst, uint32_t pdate): instIndex(inst), date(pdate) {}
+        explicit MarketDataStore(const std::string& filename)
+        {
+            loadDataFromFile(filename);
+        }
 
-        //template<int N>
-        //std::vector<CTickData<N>*>& getStore()
-        //{
-        //        auto iter = levelDatas.find(N);
-        //        if(iter != levelDatas.end())
-        //        {
-        //            return (* (std::vector<CTickData<N>*>*)iter->second);
-        //        }
-        //        else
-        //        {
-        //            iter = levelDatas.insert(std::make_pair(N, new tickdateVec)).first;
-        //            return (* (std::vector<CTickData<N>*>*)iter->second);
-        //        }
-        //}
+
+       
 
         void loadDataFromFile(const std::string& fileName);
+        void loadFromRawFile(const std::string& fileName);
+        void loadFromBinFile(const std::string& filename);
+        void saveToBinFile(const std::string& filename);
         void loadDataFromDB(const std::string& db, const std::string& query);
+
+
+        template<class Archive>
+        void serialize(Archive & ar, const unsigned int version )
+        {
+            ar & instIndex;
+            ar & date;
+            ar & tickDataVec;
+        }
     };
 
     uint32_t getDate(const std::string& date);
     uint32_t getTime(const std::string& date_time_str);
+
+    //static std::istream& operator>>(std::istream& istream, MarketDataStore& ref)
+    //{
+    //    istream.readref.instIndex;
+    //    istream >>  ref.date;
+    //     int count = 0;
+    //    while(istream)
+    //    {
+    //        count ++;
+    //        CTickData data;
+    //        istream >> data;
+    //        ref.tickDataVec.push_back(std::move(data));
+    //    }
+    //    std::cout << "read " << count << " ticks" << std::endl;
+    //    return istream;
+    //}
+
+    //static std::ostream& operator<<(std::ostream& of, const MarketDataStore& ref )
+    //{
+    //    of <<  ref.instIndex;
+    //    of <<  ref.date;
+    //    int count = 0; 
+    //    for(auto& each :  ref.tickDataVec)
+    //    {
+    //        count ++;
+    //        of << each;
+    //    }
+
+    //     std::cout << "save " << count << " ticks" << std::endl;
+    //    return of;
+    //}
 
 
 }

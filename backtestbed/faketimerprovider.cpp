@@ -85,7 +85,7 @@ namespace BluesTrading
        TimerInfo*  next_timer = getNextTimer();
        
 
-       ScopeGuard  onExit ([&]{current_time = timeInMs;  std::cout << "advanceToTime  " << timeInMs << "\n"; });
+       ScopeGuard  onExit ([&]{current_time = timeInMs;  /*std::cout << "advanceToTime  " << timeInMs << "\n"; */});
 
 
         while (next_timer != NULL && next_timer->nextTriggerTime <= timeInMs)

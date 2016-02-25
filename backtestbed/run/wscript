@@ -1,0 +1,18 @@
+#!/usr/bin/python
+
+
+
+# def post(bld):
+#         print("run test loader")
+#         #print (bld.get_tgen_by_name('simpletestload').bld.retval)
+#         bld.exec_command(['_build/strategy/test/simpletestload.exe',  "_build/strategy/cygsimpleLib.dll"])
+
+def build(bld):
+        bld.program(
+                source          = bld.path.ant_glob('*.cpp'),
+                target          = 'backtestbed_run',
+    
+                use             = ['com_interface', 'backtestbed', 'BOOST']) 
+
+
+       # bld.add_post_fun(post)

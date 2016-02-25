@@ -12,7 +12,7 @@ BluesCXXFlag= ['-std=gnu++11' , '-O2', '-ggdb' ]
 
 import sys
 def options(opt):
-        opt.load('compiler_cxx')
+        opt.load('compiler_cxx boost')
 
         #conf.check(header_name='windows.h', features='c cprogram', define_name='BLUE_WINDOWS', mandatory=False)
         opt.load('waf_unit_test')
@@ -61,7 +61,7 @@ def configure(conf):
        # conf.env['CXX'] = "/cygdrive/c/MinGW/bin/g++.exe"
        # conf.load('g++')
         conf.load('compiler_cxx boost')
-        conf.check_boost()
+        conf.check_boost("filesystem system serialization")
 
         conf.load('waf_unit_test')
 

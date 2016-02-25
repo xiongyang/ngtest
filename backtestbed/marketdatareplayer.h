@@ -17,7 +17,7 @@ namespace BluesTrading
     class MarketDataReplayer :public IMarketDataProvider
     {
     public:
-        MarketDataReplayer(std::vector<MarketDataStore> datestore);
+        explicit MarketDataReplayer(std::vector<MarketDataStore> datestore);
         virtual void subscribeInstrument(uint32_t instrumentID,ITickDataConsumer* handler ) override;
         virtual void unSubscribeInstrument(uint32_t instrumentID, ITickDataConsumer* handler) override;
         virtual void subscribeAllInstrument(ITickDataConsumer* handler) override;

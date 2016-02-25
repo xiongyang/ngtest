@@ -13,5 +13,5 @@ def build(bld):
         bld.stlib(
                 source          = bld.path.ant_glob('*.cpp', excl = 'test'),
                 target          = 'backtestbed',
-                use             =  ['com_interface', 'util']) 
-        bld.recurse('test') 
+                use             =  ['com_interface', 'util', 'BOOST']) 
+        bld.recurse('test run') 

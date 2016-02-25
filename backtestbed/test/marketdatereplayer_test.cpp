@@ -2,6 +2,7 @@
 #include <gmock/gmock.h>
 
 #include <iostream>
+#include <sstream>
 #include "../marketdatareplayer.h"
 #include "../marketdatastore.h"
 namespace BluesTrading
@@ -91,14 +92,18 @@ namespace BluesTrading
        
         void generateFakeTick(uint32_t inst, uint32_t date,  uint32_t timeInMS_offset = 0,uint16_t levels = 1,uint32_t tick_num = 10)
         {
-            MarketDataStore newStore{inst, date};
-            for (int i = 0 ; i != tick_num; ++i)
+            MarketDataStore newStore(inst,date);
+            //newStore.date = date;
+            //newStore.instIndex = inst;
+            for (uint32_t i = 0 ; i != tick_num; ++i)
             {
                 CTickData tick;
                 tick.askLevels = levels;
                 tick.bidLevels = levels;
                 tick.instIndex = inst;
                 tick.timeInMS = i + timeInMS_offset;
+                tick.depths.push_back(CTickData::Depth{0.1, i});
+                tick.depths.push_back(CTickData::Depth{0.1, i});
                 newStore.tickDataVec.push_back(std::move(tick));
             }
 
@@ -131,6 +136,31 @@ namespace BluesTrading
     {
         uint32_t time = 9 * 3600 * 1000 + 17 * 60 * 1000 + 13 * 1000;
         EXPECT_EQ(time, getTime("2013-10-10 09:17:13"));
+    }
+
+    TEST_F(marketdatareplayerTest, marketstore_save_load_test)
+    {
+        const int tickNum = 20;
+        generateFakeTick(1,20151230, 0 , 1,tickNum);
+
+        std::stringstream ss;
+        boost::archive::text_oarchive oa(ss);
+        oa << fakedata[0];
+
+ 
+        MarketDataStore inst;
+        boost::archive::text_iarchive ia(ss);
+
+        ia >> inst;
+
+        EXPECT_EQ(inst.date, 20151230);
+        EXPECT_EQ(inst.instIndex, 1);
+        EXPECT_EQ(inst.tickDataVec.size() , tickNum);
+
+        for(int i = 0; i != tickNum ; ++i)
+        {
+            EXPECT_EQ(inst.tickDataVec[i].timeInMS , fakedata[0].tickDataVec[i].timeInMS);
+        }
     }
 
     TEST_F(marketdatareplayerTest, singleTickStore)

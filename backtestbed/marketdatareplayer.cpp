@@ -21,11 +21,13 @@ namespace BluesTrading
 
 MarketDataReplayer::MarketDataReplayer(std::vector<MarketDataStore> datestore)
 {
+    std::cout << "create MarketDataReplayer store size:" <<  datestore.size() << std::endl;
     for (std::vector<MarketDataStore>::iterator iter = datestore.begin(); iter != datestore.end(); ++iter)
     {
         uint32_t date = iter->date;
         std::vector<CTickData>& targetDate = dataByDateSorted[date];
         targetDate.insert(targetDate.end(), iter->tickDataVec.begin(),  iter->tickDataVec.end());
+
         //insertTicks(dataByDateSorted[date], (*iter)->getStore<1>());
         //insertTicks(dataByDateSorted[date], (*iter)->getStore<5>());
         //insertTicks(dataByDateSorted[date], (*iter)->getStore<10>());
@@ -42,6 +44,7 @@ MarketDataReplayer::MarketDataReplayer(std::vector<MarketDataStore> datestore)
     {
         std::vector<CTickData>& vec = iter->second;
         std::sort(vec.begin(), vec.end(), sortfunForTick);
+       // std::cout << "date:"<< iter->first << " tickcount:" << vec.size();
     }
 }
 
@@ -68,11 +71,10 @@ void MarketDataReplayer::unSubscribeAllInstrument(ITickDataConsumer* handler)
 
 void MarketDataReplayer::startReplay(uint32_t startdate, uint32_t enddate)
 {
+     std::set<ITickDataConsumer*>  allsubscriber = getAllSubscriber();
+
     for(auto iter = dataByDateSorted.begin(); iter != dataByDateSorted.end(); ++iter)
     {
-
-        std::set<ITickDataConsumer*>  allsubscriber = getAllSubscriber();
-
         if (iter->first < startdate )
         {
             continue;

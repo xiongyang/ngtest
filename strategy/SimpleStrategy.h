@@ -21,10 +21,10 @@ namespace BluesTrading
         virtual ~SimpleStrategy();
 
         virtual void onTimer(uint32_t eventID, uint32_t currentTime) override;
-        virtual void onStartDay(uint32_t) override {};
-        virtual void onEndDay(uint32_t) override {};
+        virtual void onStartDay(uint32_t date) override {std::cout << "start day " << date << "\n";};
+        virtual void onEndDay(uint32_t date) override {std::cout << "end day " << date << "\n";};
 
-        virtual void onMarketData(const CTickData&) override {};
+        virtual void onMarketData(const CTickData&) override;
         virtual void onUpdateOrder(OrderDataDetail* orderData) override {};
 
         virtual void onMessage(const std::string& propName) override {};	//Receive ProtoBuf Message From Console
