@@ -58,14 +58,13 @@ namespace BluesTrading
     {
         auto funptr = GetSharedLibFun<BluesTrading::StrategyFactoryFun>(dynamicLib.c_str(),"createStrategy");
         BluesTrading::IStrategy* strp  = funptr(&logger, &configureManager, dataReplayer.get(), dataReplayer->getTimerProvider(), orderManager.get());
-        testStrategy.reset(strp);
+        testStrategy.reset(strp);  // TODO we should  delelte it from dll so
     }
 
-    void TestBed::run()
+    void TestBed::run(uint32_t startday , uint32_t end_day)
     {
-        dataReplayer->subscribeInstrument(1, testStrategy.get());
-        dataReplayer->startReplay(20131010,20131011);
-     
+     //   dataReplayer->subscribeInstrument(1, testStrategy.get());
+        dataReplayer->startReplay(startday,end_day);
         isStop = true;
         std::cout << "wait NotifyThread Join "  << std::endl;
         orderManagerNotifyThread.join();

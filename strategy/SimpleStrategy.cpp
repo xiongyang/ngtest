@@ -14,8 +14,16 @@ extern "C"
 namespace BluesTrading
 {
     SimpleStrategy::SimpleStrategy(const std::string& name, ILogger* logger, IConfigureManager* configureManager, IMarketDataProvider* dataProvider, ITimerProvider* timerProvider, IOrderManger* orderManager)
+     :logger_(logger),
+    configManager_(configureManager),
+    dataprovider_(dataProvider),
+    timerprovider_(timerProvider),
+    orderManager_(orderManager)
     {
-        std::cout <<"create SimpleStrategy" << std::endl;
+        std::cout << "xxxx handler:"<< this << " subscribe inst:" << 2  <<  " onDataSrc:"<< dataprovider_ << std::endl;
+        //dataprovider_->subscribeInstrument(1, this);
+        dataprovider_->subscribeInstrument(2, this);
+        //timerProvider_->setTimer(1, )
     }
 
     SimpleStrategy::~SimpleStrategy()
@@ -30,7 +38,18 @@ namespace BluesTrading
 
     void SimpleStrategy::onMarketData(const CTickData&)
     {
-        //std::cout << "On Data\n";
+        static int count = 0;
+        count ++ ;
+         std::cout << "On Data " << count << "\n";
+        if (count % 100 == 0)
+        {
+            std::cout << "On Data " << count << "\n";
+        }
+    }
+
+    void SimpleStrategy::onUpdateOrder(OrderDataDetail* orderData)
+    {
+
     }
 
 }

@@ -69,16 +69,23 @@
     <ClCompile Include="..\..\backtestbed\marketdatareplayer.cpp" />
     <ClCompile Include="..\..\backtestbed\marketdatastore.cpp" />
     <ClCompile Include="..\..\backtestbed\testbed.cpp" />
+    <ClCompile Include="..\..\backtestbed\testConfigureManager.h.cpp" />
     <ClCompile Include="..\..\backtestbed\test\fakeordermanager_test.cpp" />
     <ClCompile Include="..\..\backtestbed\test\faketimerprovider_test.cpp" />
     <ClCompile Include="..\..\backtestbed\test\marketdatereplayer_test.cpp" />
+    <ClCompile Include="..\..\backtestbed\test\testconfiguremanager_test.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\backtestbed\fakeordermanager.h" />
     <ClInclude Include="..\..\backtestbed\faketimerprovider.h" />
     <ClInclude Include="..\..\backtestbed\marketdatareplayer.h" />
     <ClInclude Include="..\..\backtestbed\marketdatastore.h" />
+    <ClInclude Include="..\..\backtestbed\nullLogger.h" />
     <ClInclude Include="..\..\backtestbed\testbed.h" />
+    <ClInclude Include="..\..\backtestbed\testConfigureManager.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\backtestbed\wscript" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

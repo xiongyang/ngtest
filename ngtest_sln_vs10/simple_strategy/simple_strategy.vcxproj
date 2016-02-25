@@ -70,6 +70,9 @@
   <ItemGroup>
     <ClInclude Include="..\..\strategy\SimpleStrategy.h" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\strategy\test\wscript" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

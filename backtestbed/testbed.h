@@ -25,7 +25,7 @@ namespace BluesTrading
         // dir or file
         void LoadData(const std::string& dir_or_file_Name);
         void LoadTestStrategy(const std::string& dynamicLib);
-        void run();
+        void run(uint32_t startday , uint32_t end_day);
 
     private:
         bool    isStop;

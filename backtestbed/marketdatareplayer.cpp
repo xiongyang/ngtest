@@ -50,6 +50,7 @@ MarketDataReplayer::MarketDataReplayer(std::vector<MarketDataStore> datestore)
 
 void MarketDataReplayer::subscribeInstrument(uint32_t instrumentID,ITickDataConsumer* handler)
 {
+    std::cout << "handler:"<< handler << " subscribe inst:" << instrumentID <<  " onDataSrc:"<< this << std::endl;
     subscribeByInst[instrumentID].insert(handler);
 }
 

@@ -36,12 +36,12 @@ void cookData(const std::string& dirName)
     }
 }
 
-void testBedRun(const std::string& dir, const std::string& strategy)
+void testBedRun(const std::string& dir, const std::string& strategy, const std::string& startday, const std::string& endDay)
 {
 
     TestBed inst;
     inst.Init(dir, strategy);
-    inst.run();
+    inst.run(atoi(startday.c_str()), atoi(endDay.c_str()));
     return ;
 }
 
@@ -57,7 +57,7 @@ int main(int argc, char** argv)
     }
     else if(cmd == "tb")
     {
-        testBedRun(dirName,argv[3]);
+        testBedRun(dirName,argv[3], argv[4] , argv[5]);
     }
 
     return 0;

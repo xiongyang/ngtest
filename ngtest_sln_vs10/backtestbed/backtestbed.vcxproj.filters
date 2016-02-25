@@ -21,9 +21,6 @@
     <ClCompile Include="..\..\backtestbed\marketdatareplayer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\backtestbed\marketdatastore.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\backtestbed\test\marketdatereplayer_test.cpp">
       <Filter>test</Filter>
     </ClCompile>
@@ -40,6 +37,15 @@
       <Filter>test</Filter>
     </ClCompile>
     <ClCompile Include="..\..\backtestbed\test\fakeordermanager_test.cpp">
+      <Filter>test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\backtestbed\marketdatastore.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\backtestbed\testConfigureManager.h.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\backtestbed\test\testconfiguremanager_test.cpp">
       <Filter>test</Filter>
     </ClCompile>
   </ItemGroup>
@@ -59,5 +65,14 @@
     <ClInclude Include="..\..\backtestbed\testbed.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\backtestbed\nullLogger.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\backtestbed\testConfigureManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\backtestbed\wscript" />
   </ItemGroup>
 </Project>
