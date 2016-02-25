@@ -4,3 +4,6 @@
 [submodule "googletest"]
 	path = googletest
 	url = https://github.com/google/googletest
+[submodule "waf"]
+	path = waf
+	url = https://github.com/waf-project/waf.git
