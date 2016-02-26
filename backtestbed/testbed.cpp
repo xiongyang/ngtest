@@ -22,8 +22,17 @@ namespace BluesTrading
          {
              while(!isStop)
              {
-                std::this_thread::sleep_for(std::chrono::milliseconds(100));
-                orderManager->SendNotify();
+                  std::cout << "Notify Thread" << std::endl;
+                  orderManager->SendNotify();
+                auto allorders = orderManager->getAllOrders();
+               
+                for (OrderDataDetail* each : allorders)
+                {
+                    if(each->sse_order.orderStatus != SSE_OrderDetail::SSE_OrderTraded)
+                    {
+                        orderManager->MakeOrderTrade(each->orderID);
+                    }
+                } 
              }
          };
         orderManagerNotifyThread = std::thread(notifyOrder);
@@ -68,9 +77,6 @@ namespace BluesTrading
 
     void TestBed::run(uint32_t startday , uint32_t end_day)
     {
-     //   dataReplayer->subscribeInstrument(1, testStrategy.get());
-      
-       // testp->subscribeInstrument(2, testStrategy.get());
         dataReplayer->startReplay(startday,end_day);
         isStop = true;
         std::cout << "wait NotifyThread Join "  << std::endl;

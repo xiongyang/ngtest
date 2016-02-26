@@ -13,17 +13,8 @@
 #pragma pack(push, 4)
 namespace BluesTrading
 {
-
-#ifdef CheckArrayIndex
-    struct TickDataInvalidIndex{};
-#endif
-
     struct CTickData {
 
-       // friend class boost::serialization::access;
-        // When the class Archive corresponds to an output archive, the
-        // & operator is defined similar to <<.  Likewise, when the class Archive
-        // is a type of input archive the & operator is defined similar to >>.
         template<class Archive>
         void serialize(Archive & ar, const unsigned int version)
         {
@@ -44,10 +35,6 @@ namespace BluesTrading
         {
             double price;
             uint32_t size;
-            //uint32_t bidsize;
-            //uint32_t asksize;
-            //double bidprice;
-            //double askprice;
             template<class Archive>
             void serialize(Archive & ar,  const unsigned int version)
             {
@@ -55,6 +42,8 @@ namespace BluesTrading
                 ar & size;
             }
         };
+
+        static constexpr Depth emptyDepth{0.0 , 0};
 
  
 
@@ -90,62 +79,30 @@ namespace BluesTrading
             depths.swap(ref.depths);
         }
          //move constr
-
-        Depth& getBidDepth(int index)  //start base 1
+        const Depth& getBidDepth(int index)  const//start base 1
         {
-            return depths[index - 1];
+            if (index <= bidLevels )
+            {
+                 return depths[index - 1];
+            }
+            else
+            {
+                return emptyDepth;
+            }
         }
 
-        Depth& getAskDepth(int index)
+        const Depth& getAskDepth(int index) const
         {
-            return depths[index - 1 + bidLevels];
+            if (index <= askLevels)
+            {
+                return depths[index - 1 + bidLevels];
+            }
+            else
+            {
+                 return emptyDepth;
+            }
         }
     };
-
-    //static std::ostream&  operator << (std::ostream& of, const CTickData& tick)
-    //{
-    //    ar & instIndex;
-    //    ar & timeInMS;
-    //    ar & tot_vol;		
-    //    ar & openinterest;
-
-    //    ar & last_price;
-    //    ar & turnover;
-    //    of<<    tick.bidLevels;
-    //    of<<    tick.askLevels;
-
-    //    for(auto& each :tick.depths)
-    //    {
-    //        of << each.price << each.size;
-    //    }
-
-    //    return of;
-    //}
-    //static std::istream& operator >> (std::istream& istream, CTickData& tick)
-    //{
-    //    istream >>	tick.instIndex;
-    //    istream >>	tick.timeInMS;
-    //    istream >>	tick.tot_vol;		
-    //    istream >>	tick.openinterest;
-
-    //    istream >>	tick.last_price;
-    //    istream >>	tick.turnover;
-    //    istream >>  tick.bidLevels;
-    //    istream >>   tick.askLevels;
-
-    //    int depths_size = tick.askLevels + tick.bidLevels;
-    //    for (int i = 0; i != depths_size; ++i)
-    //    {
-    //        double price;
-    //        uint32_t size;
-    //        istream >> price >> size;
-
-    //        tick.depths.push_back(CTickData::Depth{price, size}) ;
-    //    }
-
-    //    return istream;
-    //}
-
 }
 
 #pragma pack(pop)

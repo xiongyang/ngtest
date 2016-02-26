@@ -23,8 +23,8 @@ namespace BluesTrading
 
         // retrieve orders relate to the request (some request may produce many orders)
         virtual std::vector<OrderDataDetail*> getOrderDetailByRequestID(uint64_t requestID) = 0;			
-
         virtual OrderDataDetail* getOrderDetailByOrderID(uint64_t orderID) = 0;
+        virtual std::vector<OrderDataDetail*>   getAllOrders() = 0;
         virtual void regsiterOrderDataConsumer(IOrderDataConsumer* ) = 0;
     };
 

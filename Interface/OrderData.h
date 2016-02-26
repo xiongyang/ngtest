@@ -40,12 +40,12 @@ namespace BluesTrading
         // more exchange more instrument types
     };
 
-    enum OrderStatus
-    {
-        PendingNew,
-        New,
-        Parti
-    };
+    //enum OrderStatus
+    //{
+    //    PendingNew,
+    //    New,
+    //    Parti
+    //};
 
     enum ExchangeTypes
     {
@@ -95,12 +95,21 @@ namespace BluesTrading
 
     struct SSE_OrderDetail
     {
+        enum 
+        {
+            SSE_OrderPendingNew = 0,
+            SSE_OrderNew,
+            SSE_OrderRejected,
+            SSE_OrderCanceled,
+            SSE_OrderTraded,
+        };
         uint32_t instrumentID;
         uint32_t orderQty;
         uint32_t filledQty;
-        bool   isbuy;
         double orderprice;
         double tradeprice;
+        bool   isbuy;
+        uint8_t  orderStatus;
     };
 
     typedef SSE_OrderDetail SZE_OrderDetail;

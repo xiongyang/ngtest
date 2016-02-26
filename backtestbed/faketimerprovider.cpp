@@ -103,7 +103,7 @@ namespace BluesTrading
        static int count = 0;
        TimerInfo*  next_timer = getNextTimer();
        
-       std::cout << "will advanceToTime  " << timeInMs << "\n";
+      // std::cout << "will advanceToTime  " << timeInMs << "\n";
        ScopeGuard  onExit ([&]{current_time = timeInMs;  });
 
 

@@ -56,6 +56,16 @@ namespace BluesTrading
         return nullptr;
     }
 
+    std::vector<OrderDataDetail*> FakeOrderManager::getAllOrders()
+    {
+         std::vector<OrderDataDetail*> ret;
+         for (auto each : orders_)
+         {
+               ret.push_back(each.second);
+         }
+         return ret;
+    }
+
     void FakeOrderManager::regsiterOrderDataConsumer(IOrderDataConsumer* p)
     {
            consumer_ =  p;
@@ -73,9 +83,9 @@ namespace BluesTrading
 
     void FakeOrderManager::handleSSENew(OrderRequest& requset)
     {
+        std::cout << "handleSSE New \n" ;
         orders_[requset.requestID] =  generateOrder(requset);
         NotifyNewOrder(orders_[requset.requestID]);
-        //std::async(&FakeOrderManager::NotifyNewOrder, this, orders_[requset.requestID]);
     }
 
 
@@ -84,29 +94,27 @@ namespace BluesTrading
         SSE_OrderDetail& updateorder = order->sse_order;
         updateorder.filledQty = updateorder.orderQty;
         updateorder.tradeprice = updateorder.orderprice;
+        updateorder.orderStatus = SSE_OrderDetail::SSE_OrderTraded;
     }
 
     void FakeOrderManager::NotifyNewOrder(OrderDataDetail* order)
     {
-      queued_orderUpdate.push_back(*order);
-      //  std::this_thread::sleep_for(std::chrono::seconds(1));
-      //if(consumer_)  consumer_->onUpdateOrder(order);
-
-        //std::this_thread::sleep_for(std::chrono::seconds(1));
-
-        //fakeTradeOrder(order);
-        //if (consumer_) consumer_->onUpdateOrder(order);
+        std::lock_guard<std::mutex> guard(updateMutex_);
+        queued_orderUpdate.push_back(*order);
     }
 
     void FakeOrderManager::MakeOrderTrade(uint64_t orderID)
     {
         OrderDataDetail* porder = getOrderDetailByOrderID(orderID);
-
-        //std::this_thread::sleep_for(std::chrono::seconds(1));
-
-        fakeTradeOrder(porder);
-        queued_orderUpdate.push_back(*porder);
-        //if (consumer_) consumer_->onUpdateOrder(porder);
+        if(porder->sse_order.orderStatus != SSE_OrderDetail::SSE_OrderTraded)
+        {
+            fakeTradeOrder(porder);
+            {
+                std::lock_guard<std::mutex> guard(updateMutex_);
+                queued_orderUpdate.push_back(*porder);
+            }
+        }
+   
     }
 
 
@@ -114,12 +122,18 @@ namespace BluesTrading
     {
         if (consumer_)
         {
-            for (auto each: queued_orderUpdate)
+           std::vector<OrderDataDetail> nofiyorders;
+
+           {
+                  std::lock_guard<std::mutex> guard(updateMutex_);
+                  nofiyorders.swap(queued_orderUpdate);
+           }
+        
+
+            for (auto each: nofiyorders)
             {
                 consumer_->onUpdateOrder(&each);
-           
             }
-            queued_orderUpdate.clear();
         }
     }
 
@@ -135,6 +149,8 @@ namespace BluesTrading
         ret->sse_order.isbuy = newOrderRequest.isBuy;
         ret->sse_order.orderQty = newOrderRequest.orderqty;
         ret->sse_order.tradeprice = 0;
+        ret->exchangeType = SSE;
+        ret->sse_order.orderStatus = SSE_OrderDetail::SSE_OrderNew;
         return ret;
     }
 

@@ -2,6 +2,7 @@
 #include "IOrderManager.h"
 #include<map>
 #include<vector>
+#include <mutex>
 
 namespace BluesTrading
 {
@@ -15,6 +16,7 @@ namespace BluesTrading
         virtual uint64_t submitRequest(OrderRequest& request) override;		
         virtual std::vector<OrderDataDetail*> getOrderDetailByRequestID(uint64_t requestID) override;
         virtual OrderDataDetail* getOrderDetailByOrderID(uint64_t orderID) override;
+        virtual std::vector<OrderDataDetail*>   getAllOrders() override;
         virtual void regsiterOrderDataConsumer(IOrderDataConsumer* consumer) override;
 
     public:
@@ -52,6 +54,7 @@ namespace BluesTrading
          uint32_t requestID_;
          IOrderDataConsumer*  consumer_;
          std::vector<OrderDataDetail>    queued_orderUpdate;
+         std::mutex updateMutex_;
 
     };
 

@@ -1,4 +1,6 @@
 #include "SimpleStrategy.h"
+#include "util.h"
+
 using namespace BluesTrading;
 extern "C"
 {
@@ -19,6 +21,7 @@ namespace BluesTrading
     timerprovider_(timerProvider),
     orderManager_(orderManager)
     {
+        timerProvider->registerTimerConsumer(this);
     }
 
     SimpleStrategy::~SimpleStrategy()
@@ -31,37 +34,47 @@ namespace BluesTrading
         std::cout << "EventID:" << eventID << " Time:" << currentTime << std::endl;
         if(eventID == 1)
         {
-             timerprovider_->setTimer(this, 3, 60000, true); // target time 
+           //  timerprovider_->setTimer(this, 3, 60000, true); // target time 
         }
     }
 
     void SimpleStrategy::onStartDay(uint32_t date)
     {
         std::cout << "start day " << date << "\n";
-
+        orderManager_->regsiterOrderDataConsumer(this);
 
         dataprovider_->subscribeInstrument(1, this);
         dataprovider_->subscribeInstrument(2, this);
         uint32_t now = timerprovider_->getCurrentTimeMsInDay();
         uint32_t targetTime = 9 * 3600 * 1000 + 50 * 60 * 1000;     // 09:50:00
 
-        timerprovider_->setTimer(this, 1, targetTime - now, false); // target time 
-        timerprovider_->setTimer(this, 2, 60000, true);
+       // timerprovider_->setTimer(this, 1, targetTime - now, false); // target time 
+      //  timerprovider_->setTimer(this, 2, 60000, true);
+        
     }
 
     void SimpleStrategy::onMarketData(const CTickData& data)
     {
         static int count = 0;
         count ++ ;
+      //   std::cout << "onMarketData\n";
         if (count % 100 == 0)
         {
-            std::cout << "On Data " << count << "\n";
+            SSE_SecurityNewOrderRequest request;
+            request.instrumentID = data.instIndex;
+            request.isBuy = true;
+            request.orderqty = 100;
+            request.orderType = 0; //only limit order
+            request.price = data.last_price;
+            request.priceType = 0; // only limit order
+            std::cout << "send order " << data.last_price << "\n";
+           submitRequest(request, orderManager_);
         }
     }
 
     void SimpleStrategy::onUpdateOrder(OrderDataDetail* orderData)
     {
-
+        printOrder(std::cout, *orderData);
     }
 
 }
