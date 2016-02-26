@@ -4,7 +4,7 @@
 extern "C"
 {
     using namespace BluesTrading;
-    IStrategy* createStrategy(const std::string& name, ILogger* logger, 
+    IStrategy* createStrategy(const char* name, ILogger* logger, 
         IConfigureManager* configureManager, IMarketDataProvider* dataProvider, ITimerProvider* timerProvider, IOrderManger* orderManager);
 };
 
@@ -15,7 +15,7 @@ namespace BluesTrading
     class SimpleStrategy : public IStrategy
     {
     public:
-        SimpleStrategy(const std::string& name,  ILogger* logger, IConfigureManager* configureManager,
+        SimpleStrategy(const char* name,  ILogger* logger, IConfigureManager* configureManager,
             IMarketDataProvider* dataProvider, ITimerProvider* timerProvider, IOrderManger* orderManager);
 
         virtual ~SimpleStrategy();

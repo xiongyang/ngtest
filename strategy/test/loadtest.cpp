@@ -18,7 +18,7 @@ int main(int argc, char** argv)
     //CDynamicLibrary dll;
     //dll.Open(argv[1]);
     //auto funptr = reinterpret_cast<BluesTrading::StrategyFactoryFun*>(dll.GetProc("createStrategy"));
-    BluesTrading::IStrategy* strp =  funptr(NULL,NULL,NULL,NULL,NULL);
+    BluesTrading::IStrategy* strp =  funptr(NULL,NULL,NULL,NULL,NULL,NULL);
     if (strp != NULL)
     {
         std::cout << "[       OK ] LoadDllTest\n\n"; 

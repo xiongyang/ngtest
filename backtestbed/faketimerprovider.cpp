@@ -92,7 +92,7 @@ namespace BluesTrading
         {
             current_time = next_timer->nextTriggerTime ;
           
-            printTimer(next_timer);
+           // printTimer(next_timer);
             next_timer->consumer->onTimer(next_timer->eventid, current_time);
             if (next_timer->isRepeat)
             {
