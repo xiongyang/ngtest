@@ -19,13 +19,6 @@ namespace BluesTrading
     timerprovider_(timerProvider),
     orderManager_(orderManager)
     {
-        dataprovider_->subscribeInstrument(1, this);
-        dataprovider_->subscribeInstrument(2, this);
-        uint32_t now = timerprovider_->getCurrentTimeMsInDay();
-        uint32_t targetTime = 9 * 3600 * 1000 + 50 * 60 * 1000;     // 09:50:00
-
-        timerprovider_->setTimer(this, 1, targetTime - now, false); // target time 
-        timerprovider_->setTimer(this, 2, 30000, true);
     }
 
     SimpleStrategy::~SimpleStrategy()
@@ -40,6 +33,20 @@ namespace BluesTrading
         {
              timerprovider_->setTimer(this, 3, 60000, true); // target time 
         }
+    }
+
+    void SimpleStrategy::onStartDay(uint32_t date)
+    {
+        std::cout << "start day " << date << "\n";
+
+
+        dataprovider_->subscribeInstrument(1, this);
+        dataprovider_->subscribeInstrument(2, this);
+        uint32_t now = timerprovider_->getCurrentTimeMsInDay();
+        uint32_t targetTime = 9 * 3600 * 1000 + 50 * 60 * 1000;     // 09:50:00
+
+        timerprovider_->setTimer(this, 1, targetTime - now, false); // target time 
+        timerprovider_->setTimer(this, 2, 60000, true);
     }
 
     void SimpleStrategy::onMarketData(const CTickData& data)

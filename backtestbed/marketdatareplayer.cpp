@@ -72,8 +72,6 @@ void MarketDataReplayer::unSubscribeAllInstrument(ITickDataConsumer* handler)
 
 void MarketDataReplayer::startReplay(uint32_t startdate, uint32_t enddate)
 {
-     std::set<ITickDataConsumer*>  allsubscriber = getAllSubscriber();
-
     for(auto iter = dataByDateSorted.begin(); iter != dataByDateSorted.end(); ++iter)
     {
         if (iter->first < startdate )
@@ -85,14 +83,7 @@ void MarketDataReplayer::startReplay(uint32_t startdate, uint32_t enddate)
             break;
         }
 
-        for (auto each : allsubscriber)
-        {
-            each->onStartDay(iter->first);
-        }
-
-        timerProvider.setDate(iter->first);
-
-      //  std::cout << "Start Tick Data Replay date " << iter->first << std::endl;
+        timerProvider.startDate(iter->first);
 
         std::vector<CTickData>& tickForDay = iter->second;
 
@@ -106,10 +97,7 @@ void MarketDataReplayer::startReplay(uint32_t startdate, uint32_t enddate)
             }   
         }
 
-        for (auto each : allsubscriber)
-        {
-            each->onEndDay(iter->first);
-        }
+        timerProvider.endDate(iter->first);
     }
 }
 

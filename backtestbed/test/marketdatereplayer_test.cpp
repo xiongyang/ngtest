@@ -39,7 +39,7 @@ namespace BluesTrading
 
         uint32_t current_time;
     };
-    class MockTickDataConsumer : public ITickDataConsumer
+    class MockTickDataConsumer : public ITickDataConsumer , public ITimerConsumer
     {
     public:
 
@@ -72,6 +72,7 @@ namespace BluesTrading
          //MOCK_METHOD1(onOtherLevelsMarketData, void(const  CTickData<1>&));
          MOCK_METHOD1(onStartDay, void(uint32_t));
          MOCK_METHOD1(onEndDay, void(uint32_t));
+         void onTimer(uint32_t eventID, uint32_t currentTime){}
          
          void resetFakeTime()
          {
@@ -173,7 +174,7 @@ namespace BluesTrading
 
         MockTickDataConsumer mockconsumer;
         replayer->subscribeInstrument(1, &mockconsumer);
-
+        replayer->getTimerProvider()->registerTimerConsumer(&mockconsumer);
  
         Sequence s1;
         EXPECT_CALL(mockconsumer, onStartDay(20151230)).InSequence(s1);
@@ -195,10 +196,13 @@ namespace BluesTrading
         MockTickDataConsumer mockconsumer;
         replayer->subscribeInstrument(1, &mockconsumer);
 
+        replayer->getTimerProvider()->registerTimerConsumer(&mockconsumer);
+
         using ::testing::_;
         using ::testing::An;
         using ::testing::Field;
 
+      
         Sequence s1;
         EXPECT_CALL(mockconsumer, onStartDay(20151230)).InSequence(s1);
         EXPECT_CALL(mockconsumer, onMarketData(An<const CTickData&>())).Times(tickNum);
@@ -220,6 +224,7 @@ namespace BluesTrading
 
         MockTickDataConsumer mockconsumer;
         replayer->subscribeInstrument(1, &mockconsumer);
+        replayer->getTimerProvider()->registerTimerConsumer(&mockconsumer);
 
         Sequence s1;
         EXPECT_CALL(mockconsumer, onStartDay(20151230)).InSequence(s1);
@@ -243,6 +248,7 @@ namespace BluesTrading
 
         MockTickDataConsumer mockconsumer;
         replayer->subscribeInstrument(1, &mockconsumer);
+        replayer->getTimerProvider()->registerTimerConsumer(&mockconsumer);
 
         using ::testing::_;
         using ::testing::An;
@@ -269,6 +275,7 @@ namespace BluesTrading
         MockTickDataConsumer mockconsumer;
         replayer->subscribeInstrument(1, &mockconsumer);
         replayer->subscribeInstrument(2, &mockconsumer);
+        replayer->getTimerProvider()->registerTimerConsumer(&mockconsumer);
 
         using ::testing::_;
         using ::testing::An;
@@ -303,7 +310,7 @@ namespace BluesTrading
 
         MockTickDataConsumer mockconsumer;
         replayer->subscribeInstrument(1, &mockconsumer);
-
+        replayer->getTimerProvider()->registerTimerConsumer(&mockconsumer);
       
         Sequence s1;
         EXPECT_CALL(mockconsumer, onStartDay(20151230)).InSequence(s1);
@@ -321,16 +328,6 @@ namespace BluesTrading
         EXPECT_CALL(mockconsumer, onEndDay(20151230)).InSequence(s2);
         mockconsumer.resetFakeTime();
         replayer->startReplay(20151230, 20151231);  
-
-        replayer->unSubscribeInstrument(1, &mockconsumer);
-
-       // Sequence s3;
-        // if does not subsribe anything, will not start Day and EndDay
-        EXPECT_CALL(mockconsumer, onStartDay(20151230)).Times(0);
-        EXPECT_CALL(mockconsumer, onMarketData(_)).Times(0);
-        EXPECT_CALL(mockconsumer, onEndDay(20151230)).Times(0);
-        mockconsumer.resetFakeTime();
-        replayer->startReplay(20151230, 20151231);  
     }
 
 
@@ -342,11 +339,11 @@ namespace BluesTrading
         generateFakeTick(1,20160101, 0 , 1, 1000);
         generateFakeTick(1,20160102, 0 , 1, 10000);
         packDatatoReplayer();
-
+       
 
         MockTickDataConsumer mockconsumer;
         replayer->subscribeInstrument(1, &mockconsumer);
-
+        replayer->getTimerProvider()->registerTimerConsumer(&mockconsumer);
         {
             Sequence s1 ;
 

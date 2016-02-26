@@ -18,6 +18,11 @@ namespace BluesTrading
     }
 
 
+    void FakeTimerProvider::registerTimerConsumer(ITimerConsumer* consumer)
+    {
+        allTimers[consumer].clear();
+    }
+
     bool FakeTimerProvider::setTimer(ITimerConsumer* consumer, uint32_t eventID, uint32_t timeInMSFromNow, bool repeat)
     {
         uint32_t triggerTime = timeInMSFromNow + current_time;
@@ -58,23 +63,37 @@ namespace BluesTrading
 
 
 
-    void FakeTimerProvider::setDate(uint32_t a_date)
+   // struct ErrorDateForTimerProvider{};
+    void FakeTimerProvider::startDate(uint32_t a_date)
     {
-        if (a_date != current_date)
+
+        //if (a_date <= current_date)
+        //{
+        //    throw ErrorDateForTimerProvider();
+        //   // assert(false);
+        //}
+        // start the next day
+        current_date = a_date;
+        current_time = 0;
+        nexttick_time = 0;        
+        for (auto& each : allTimers)
         {
-            invokeAllTimerOnce();
-            current_date = a_date;
+            each.first->onStartDay(a_date);
         }
     }
 
-    void FakeTimerProvider::invokeAllTimerOnce()
-    {
 
-        for(auto eachConsumerMap : allTimers)
+    void FakeTimerProvider::endDate(uint32_t date)
+    {
+        if (date == current_date && date != 0)
         {
-            for(auto eachTimer : eachConsumerMap.second)
+            const uint32_t lastMs = 23 * 3600 * 1000 + 59 * 60 * 1000 + 59000;
+            advanceToTime(lastMs);
+
+            for (auto& each : allTimers)
             {
-                eachTimer.second->consumer->onTimer(eachTimer.second->eventid,eachTimer.second->nextTriggerTime);
+                each.second.clear();
+                each.first->onEndDay(current_date);
             }
         }
     }
@@ -84,8 +103,8 @@ namespace BluesTrading
        static int count = 0;
        TimerInfo*  next_timer = getNextTimer();
        
-
-       ScopeGuard  onExit ([&]{current_time = timeInMs;  /*std::cout << "advanceToTime  " << timeInMs << "\n"; */});
+       std::cout << "will advanceToTime  " << timeInMs << "\n";
+       ScopeGuard  onExit ([&]{current_time = timeInMs;  });
 
 
         while (next_timer != NULL && next_timer->nextTriggerTime <= timeInMs)

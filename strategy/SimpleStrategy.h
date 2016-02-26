@@ -21,7 +21,7 @@ namespace BluesTrading
         virtual ~SimpleStrategy();
 
         virtual void onTimer(uint32_t eventID, uint32_t currentTime) override;
-        virtual void onStartDay(uint32_t date) override {std::cout << "start day " << date << "\n";};
+        virtual void onStartDay(uint32_t date) override;
         virtual void onEndDay(uint32_t date) override {std::cout << "end day " << date << "\n";};
 
         virtual void onMarketData(const CTickData&) override;

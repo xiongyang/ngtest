@@ -8,10 +8,6 @@ namespace BluesTrading
     {
     public:
         virtual ~ITickDataConsumer() {};
-
-        virtual void onStartDay(uint32_t date) {};
-        virtual void onEndDay(uint32_t date) {};
-
         virtual void onMarketData(const CTickData& tick) {} ;       
     };
 

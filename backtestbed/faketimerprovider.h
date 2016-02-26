@@ -8,7 +8,10 @@ namespace BluesTrading
     class FakeTimerProvider :public ITimerProvider
     {
     public:
-
+        FakeTimerProvider()
+           : current_date(0), current_time(0) , nexttick_time(0)
+        {
+        }
         struct TimerInfo
         {
             ITimerConsumer* consumer;
@@ -19,6 +22,7 @@ namespace BluesTrading
         };
 
     public:
+        virtual void registerTimerConsumer(ITimerConsumer* consumer) override;
         virtual bool setTimer(ITimerConsumer* consumer, uint32_t eventID, uint32_t timeInMSFromNow, bool repeat) override;
         virtual bool cancelTimer(ITimerConsumer* consumer, uint32_t eventID) override;
       
@@ -28,10 +32,11 @@ namespace BluesTrading
          // onTimer may call from this thread
         void setNextTickTime(uint32_t timeInMs);  
 
-         // onTimer may call from this thread
-        void setDate(uint32_t a_date);
 
-        void invokeAllTimerOnce();
+        void startDate(uint32_t a_date);
+        void endDate(uint32_t date);
+
+        /*void invokeAllTimerOnce();*/
         void advanceToTime(uint32_t timeInMs);
 
        
