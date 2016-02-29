@@ -28,7 +28,7 @@ namespace BluesTrading
         void run(uint32_t startday , uint32_t end_day);
 
     private:
-        bool    isStop;
+      //  bool    isStop;
         std::vector<MarketDataStore> tickDataStore;
         std::shared_ptr<FakeOrderManager> orderManager;
         std::shared_ptr<MarketDataReplayer> dataReplayer;

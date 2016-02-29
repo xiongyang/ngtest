@@ -11,31 +11,30 @@ namespace BluesTrading
 
     void TestBed::Init(const std::string& data , const std::string& strategy)
     {
-        isStop = false;
+     //   isStop = false;
         LoadData(data);
-        std::cout << "xxx tickDataStore size " << tickDataStore.size() << std::endl;
         dataReplayer.reset(new MarketDataReplayer(tickDataStore));
         orderManager.reset(new FakeOrderManager);
         LoadTestStrategy(strategy);
 
-         auto notifyOrder = [&]()
-         {
-             while(!isStop)
-             {
-                  std::cout << "Notify Thread" << std::endl;
-                  orderManager->SendNotify();
-                auto allorders = orderManager->getAllOrders();
-               
-                for (OrderDataDetail* each : allorders)
-                {
-                    if(each->sse_order.orderStatus != SSE_OrderDetail::SSE_OrderTraded)
-                    {
-                        orderManager->MakeOrderTrade(each->orderID);
-                    }
-                } 
-             }
-         };
-        orderManagerNotifyThread = std::thread(notifyOrder);
+        // auto notifyOrder = [&]()
+        // {
+        //     while(!isStop)
+        //     {
+        //       
+        //          orderManager->SendNotify();
+        //        auto allorders = orderManager->getAllOrders();
+        //       
+        //        for (OrderDataDetail* each : allorders)
+        //        {
+        //            if(each->sse_order.orderStatus != SSE_OrderDetail::SSE_OrderTraded)
+        //            {
+        //                orderManager->MakeOrderTrade(each->orderID);
+        //            }
+        //        } 
+        //     }
+        // };
+        //orderManagerNotifyThread = std::thread(notifyOrder);
 
     }
 
@@ -78,10 +77,10 @@ namespace BluesTrading
     void TestBed::run(uint32_t startday , uint32_t end_day)
     {
         dataReplayer->startReplay(startday,end_day);
-        isStop = true;
-        std::cout << "wait NotifyThread Join "  << std::endl;
-        orderManagerNotifyThread.join();
-        std::cout << "wait NotifyThread Joined "  << std::endl;
+        //isStop = true;
+        //std::cout << "wait NotifyThread Join "  << std::endl;
+        //orderManagerNotifyThread.join();
+        //std::cout << "wait NotifyThread Joined "  << std::endl;
     }
 
 }
