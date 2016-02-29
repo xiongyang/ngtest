@@ -81,13 +81,6 @@ namespace BluesTrading
 
     }
 
-    void FakeOrderManager::handleSSENew(OrderRequest& requset)
-    {
-        std::cout << "handleSSE New \n" ;
-        orders_[requset.requestID] =  generateOrder(requset);
-        NotifyNewOrder(orders_[requset.requestID]);
-    }
-
 
     void fakeTradeOrder(OrderDataDetail* order)
     {
@@ -96,6 +89,20 @@ namespace BluesTrading
         updateorder.tradeprice = updateorder.orderprice;
         updateorder.orderStatus = SSE_OrderDetail::SSE_OrderTraded;
     }
+
+    void FakeOrderManager::handleSSENew(OrderRequest& requset)
+    {
+        std::cout << "handleSSE New \n" ;
+        orders_[requset.requestID] =  generateOrder(requset);
+        //NotifyNewOrder(orders_[requset.requestID]);
+        //we can not update order on another thread. because the process tick is too fast
+
+        consumer_->onUpdateOrder(orders_[requset.requestID]);
+        fakeTradeOrder(orders_[requset.requestID]);
+        consumer_->onUpdateOrder(orders_[requset.requestID]);
+    }
+
+
 
     void FakeOrderManager::NotifyNewOrder(OrderDataDetail* order)
     {
@@ -109,12 +116,11 @@ namespace BluesTrading
         if(porder->sse_order.orderStatus != SSE_OrderDetail::SSE_OrderTraded)
         {
             fakeTradeOrder(porder);
-            {
-                std::lock_guard<std::mutex> guard(updateMutex_);
-                queued_orderUpdate.push_back(*porder);
-            }
+            //{
+            //    std::lock_guard<std::mutex> guard(updateMutex_);
+            //    queued_orderUpdate.push_back(*porder);
+            //}
         }
-   
     }
 
 
