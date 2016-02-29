@@ -38,6 +38,6 @@ namespace BluesTrading
         IMarketDataProvider* dataprovider_;
         ITimerProvider* timerprovider_;
         IOrderManger* orderManager_;
-
+        double lastprice_;
     };
 }

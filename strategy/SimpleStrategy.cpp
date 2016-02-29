@@ -34,6 +34,15 @@ namespace BluesTrading
         std::cout << "EventID:" << eventID << " Time:" << currentTime << std::endl;
         if(eventID == 1)
         {
+            SSE_SecurityNewOrderRequest request;
+            request.instrumentID = 1;
+            request.isBuy = true;
+            request.orderqty = 100;
+            request.orderType = 0; //only limit order
+            request.price = lastprice_;
+            request.priceType = 0; // only limit order
+            std::cout << "send order at time " <<lastprice_ << " currentTime:"  << currentTime << "\n";
+            submitRequest(request, orderManager_);
            //  timerprovider_->setTimer(this, 3, 60000, true); // target time 
         }
     }
@@ -48,7 +57,7 @@ namespace BluesTrading
         uint32_t now = timerprovider_->getCurrentTimeMsInDay();
         uint32_t targetTime = 9 * 3600 * 1000 + 50 * 60 * 1000;     // 09:50:00
 
-       // timerprovider_->setTimer(this, 1, targetTime - now, false); // target time 
+        timerprovider_->setTimer(this, 1, targetTime - now, false); // target time 
       //  timerprovider_->setTimer(this, 2, 60000, true);
         
     }
@@ -58,6 +67,11 @@ namespace BluesTrading
         static int count = 0;
         count ++ ;
       //   std::cout << "onMarketData\n";
+        if(data.instIndex == 1)
+        {
+              lastprice_  = data.last_price;
+        }
+      
         if (count % 100 == 0)
         {
             SSE_SecurityNewOrderRequest request;
