@@ -5,6 +5,7 @@
 #include "testbed.h"
 #include "dynamicloader.h"
 #include <chrono>
+#include "util.h"
 
 namespace BluesTrading
 {
@@ -39,27 +40,32 @@ namespace BluesTrading
     }
 
     void TestBed::LoadData(const std::string& dirName)
-    {  
-          if (!boost::filesystem::exists(dirName))
-          {
-              std::cout << "dir not exists" << dirName;
-              return;
-          }
+    { 
+        auto insertToTickDataStore = [&](const std::string& fileName)
+        {
+              tickDataStore.push_back(MarketDataStore(fileName));
+        };
+        traverseDir(dirName, insertToTickDataStore);
+          //if (!boost::filesystem::exists(dirName))
+          //{
+          //    std::cout << "dir not exists" << dirName;
+          //    return;
+          //}
 
-          if (boost::filesystem::is_directory(dirName))
-          {
-               for (boost::filesystem::directory_entry& x : boost::filesystem::directory_iterator(dirName))
-               {
-                   if (boost::filesystem::is_regular_file(x))
-                   {
-                        tickDataStore.push_back(MarketDataStore(x.path().string()));
-                   }
-               }
-          }
-          else
-          {
-              tickDataStore.push_back(MarketDataStore(dirName));
-          }
+          //if (boost::filesystem::is_directory(dirName))
+          //{
+          //     for (boost::filesystem::directory_entry& x : boost::filesystem::directory_iterator(dirName))
+          //     {
+          //         if (boost::filesystem::is_regular_file(x))
+          //         {
+          //              tickDataStore.push_back(MarketDataStore(x.path().string()));
+          //         }
+          //     }
+          //}
+          //else
+          //{
+          //    tickDataStore.push_back(MarketDataStore(dirName));
+          //}
     }
 
     void TestBed::LoadTestStrategy(const std::string& dynamicLib)

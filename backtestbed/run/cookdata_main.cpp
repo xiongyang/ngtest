@@ -1,39 +1,53 @@
 
 #include "../testbed.h"
-#include <iostream>
-#include "boost/filesystem.hpp"
 #include "../marketdatastore.h"
+#include "util.h"
+
+#include <iostream>
 #include <string>
+
+
 using namespace BluesTrading;
 
 
 void cookData(const std::string& dirName)
 {
-    if (!boost::filesystem::exists(dirName))
-    {
-        std::cout << "dir not exists" << dirName;
-    }
 
-    if (boost::filesystem::is_directory(dirName))
+    auto cookDataOne = [](const std::string& filename)
     {
-        for (boost::filesystem::directory_entry& x : boost::filesystem::directory_iterator(dirName))
+        if(".csv" ==  filename.substr(filename.size()-3 , 4))
         {
-            if (boost::filesystem::is_regular_file(x))
-            {
-                if(".csv" ==  x.path().extension().string())
-                {
-                    MarketDataStore inst( x.path().string());
-                    boost::filesystem::path newpath = x.path();
-                    inst.saveToBinFile( newpath.replace_extension(".bin").string());
-                }
-            }
+            MarketDataStore inst(filename);
+            boost::filesystem::path newpath(filename);
+            inst.saveToBinFile( newpath.replace_extension(".bin").string());
         }
-    }
-    else
-    {    
-        MarketDataStore inst(dirName);
-        inst.saveToBinFile(dirName + ".bin");
-    }
+    };
+    traverseDir(dirName, cookDataOne);
+    //if (!boost::filesystem::exists(dirName))
+    //{
+    //    std::cout << "dir not exists" << dirName;
+    //}
+
+    //if (boost::filesystem::is_directory(dirName))
+    //{
+    //    for (boost::filesystem::directory_entry& x : boost::filesystem::directory_iterator(dirName))
+    //    {
+    //        if (boost::filesystem::is_regular_file(x))
+    //        {
+    //            if(".csv" ==  x.path().extension().string())
+    //            {
+    //                MarketDataStore inst( x.path().string());
+    //                boost::filesystem::path newpath = x.path();
+    //                inst.saveToBinFile( newpath.replace_extension(".bin").string());
+    //            }
+    //        }
+    //    }
+    //}
+    //else
+    //{    
+    //    MarketDataStore inst(dirName);
+    //    inst.saveToBinFile(dirName + ".bin");
+    //}
 }
 
 void testBedRun(const std::string& dir, const std::string& strategy, const std::string& startday, const std::string& endDay)
