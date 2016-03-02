@@ -13,6 +13,7 @@
 #include <vector>
 #include <thread>
 #include "marketdatastore.h"
+#include "testpositionmanager.h"
 
 namespace BluesTrading
 {
@@ -36,5 +37,6 @@ namespace BluesTrading
         std::shared_ptr<IStrategy>  testStrategy;
         nullLogger  logger;
         TestConfigureManager configureManager;
+        testPositionManger  posManager;
     };
 }

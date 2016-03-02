@@ -4,7 +4,7 @@ out = '_build'
 
 packageList = 'interface strategy util backtestbed'
 
-BluesCXXFlag= ['-std=gnu++11' , '-O2', '-ggdb' ]
+BluesCXXFlag= ['-std=gnu++14' , '-O2', '-ggdb' ]
 #,'-I/usr/local/gcc53/include/c++/5.3.0/'
 #BluesCXXFlag= ['-std=c++1y' , '-O2', '-ggdb']
 

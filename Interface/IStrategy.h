@@ -9,7 +9,7 @@
 #include "ILogger.h"
 #include "IConfigureManager.h"
 #include "IMarketDataProvider.h"
-
+#include "IPositionManager.h"
 namespace BluesTrading
 {
     class IStrategy :
@@ -18,7 +18,8 @@ namespace BluesTrading
     public:
     };
 
-    typedef  IStrategy* StrategyFactoryFun(const char* name, ILogger* , IConfigureManager*, IMarketDataProvider* , ITimerProvider*, IOrderManger*);
+    typedef  IStrategy* StrategyFactoryFun(const char* name, 
+        ILogger* , IConfigureManager*, IMarketDataProvider* , ITimerProvider*, IOrderManger*, IPositionManager*);
 
 }
 

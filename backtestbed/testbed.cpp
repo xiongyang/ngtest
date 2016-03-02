@@ -71,12 +71,14 @@ namespace BluesTrading
     void TestBed::LoadTestStrategy(const std::string& dynamicLib)
     {
         auto funptr = GetSharedLibFun<BluesTrading::StrategyFactoryFun>(dynamicLib.c_str(),"createStrategy");
-        std::cout << "yyyy arguments logger:" << &logger 
-            << "  configure:" <<  &configureManager 
-            << "  data:"<< dataReplayer.get()
-            << " Timer:" << dataReplayer->getTimerProvider() 
-            << " Order " <<  orderManager.get() << std::endl;
-        BluesTrading::IStrategy* strp  = funptr("teststr", &logger, &configureManager,  dataReplayer.get(), dataReplayer->getTimerProvider(), orderManager.get());
+        //std::cout << "yyyy arguments logger:" << &logger 
+        //    << "  configure:" <<  &configureManager 
+        //    << "  data:"<< dataReplayer.get()
+        //    << " Timer:" << dataReplayer->getTimerProvider() 
+        //    << " Order " <<  orderManager.get() << std::endl;
+        BluesTrading::IStrategy* strp  = funptr("teststr", 
+            &logger, &configureManager,  dataReplayer.get(), dataReplayer->getTimerProvider(), orderManager.get(),
+            &posManager);
         testStrategy.reset(strp);  // TODO we should  delelte it from dll so
     }
 

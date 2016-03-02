@@ -4,9 +4,10 @@
 using namespace BluesTrading;
 extern "C"
 {
-    BluesTrading::IStrategy* createStrategy(const char* name, ILogger* logger, IConfigureManager* configureManager, IMarketDataProvider* dataProvider, ITimerProvider* timerProvider, IOrderManger* orderManager)
+    BluesTrading::IStrategy* createStrategy(const char* name, ILogger* logger, IConfigureManager* configureManager,
+        IMarketDataProvider* dataProvider, ITimerProvider* timerProvider, IOrderManger* orderManager, IPositionManager* posMgr)
     {
-        return new BluesTrading::SimpleStrategy(name, logger, configureManager, dataProvider, timerProvider, orderManager);
+        return new BluesTrading::SimpleStrategy(name, logger, configureManager, dataProvider, timerProvider, orderManager, posMgr);
     }
 };
 
@@ -14,12 +15,14 @@ extern "C"
 
 namespace BluesTrading
 {
-    SimpleStrategy::SimpleStrategy(const char* name, ILogger* logger, IConfigureManager* configureManager, IMarketDataProvider* dataProvider, ITimerProvider* timerProvider, IOrderManger* orderManager)
+    SimpleStrategy::SimpleStrategy(const char* name, ILogger* logger, IConfigureManager* configureManager, 
+        IMarketDataProvider* dataProvider, ITimerProvider* timerProvider, IOrderManger* orderManager, IPositionManager* posmgr)
      :logger_(logger),
     configManager_(configureManager),
     dataprovider_(dataProvider),
     timerprovider_(timerProvider),
-    orderManager_(orderManager)
+    orderManager_(orderManager),
+    positionManager_(posmgr)
     {
         timerProvider->registerTimerConsumer(this);
     }

@@ -17,7 +17,6 @@ namespace BluesTrading
     class IOrderManger
     {
     public:
-
         // return value is requestID equal to  request.Sender
         virtual uint64_t submitRequest(OrderRequest& request)  = 0;	
 

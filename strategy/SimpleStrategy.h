@@ -5,7 +5,8 @@ extern "C"
 {
     using namespace BluesTrading;
     IStrategy* createStrategy(const char* name, ILogger* logger, 
-        IConfigureManager* configureManager, IMarketDataProvider* dataProvider, ITimerProvider* timerProvider, IOrderManger* orderManager);
+        IConfigureManager* configureManager, IMarketDataProvider* dataProvider, ITimerProvider* timerProvider, IOrderManger* orderManager,
+        IPositionManager* posMgr);
 };
 
 
@@ -16,7 +17,7 @@ namespace BluesTrading
     {
     public:
         SimpleStrategy(const char* name,  ILogger* logger, IConfigureManager* configureManager,
-            IMarketDataProvider* dataProvider, ITimerProvider* timerProvider, IOrderManger* orderManager);
+            IMarketDataProvider* dataProvider, ITimerProvider* timerProvider, IOrderManger* orderManager, IPositionManager* position);
 
         virtual ~SimpleStrategy();
 
@@ -38,6 +39,7 @@ namespace BluesTrading
         IMarketDataProvider* dataprovider_;
         ITimerProvider* timerprovider_;
         IOrderManger* orderManager_;
+        IPositionManager* positionManager_;
         double lastprice_;
     };
 }

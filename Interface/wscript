@@ -9,4 +9,6 @@ def configure(conf):
         pass
 
 def build(bld):
-        bld(export_includes = '.', name = 'com_interface')
+        bld(export_includes = '.',
+     #    source          = bld.path.ant_glob('*.cpp', excl = 'test'),
+         name = 'com_interface')
