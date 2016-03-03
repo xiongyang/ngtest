@@ -23,6 +23,7 @@ namespace BluesTrading
         void updatePrice(const CTickData& data);
 
         void printPnl(uint32_t date);
+        void setInitCash(double cash) {accountInfo.cash = cash;}
 
     public:
         virtual void onMarketData(const CTickData& tick) override;

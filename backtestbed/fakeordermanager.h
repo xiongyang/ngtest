@@ -38,6 +38,8 @@ namespace BluesTrading
          void handleSSEModify(OrderRequest&);
          void handleSSENew(OrderRequest&);
 
+         uint8_t checkSSERequestValid(const SSE_SecurityNewOrderRequest &);
+
          void NotifyNewOrder(OrderDataDetail*);  //notify from another thread.
 
          SenderID generateRequest()

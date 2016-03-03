@@ -3,6 +3,7 @@
 
 #include "../fakeordermanager.h"
 #include "../faketimerprovider.h"
+#include "util.h"
 
 namespace BluesTrading
 {
@@ -75,28 +76,30 @@ namespace BluesTrading
 
         auto isfirstOrder = [=](OrderDataDetail* porder) 
         { 
-                SSE_OrderDetail& sse_order =  porder->sse_order;
-                EXPECT_EQ(sse_order.instrumentID , 1);
-                EXPECT_EQ(sse_order.isbuy , true);
-                EXPECT_EQ(sse_order.orderQty , 100);
+            printOrder(std::cout , *porder);
+            SSE_OrderDetail& sse_order =  porder->sse_order;
+            EXPECT_EQ(sse_order.instrumentID , 1);
+            EXPECT_EQ(sse_order.isbuy , true);
+            EXPECT_EQ(sse_order.orderQty , 100);
 
-                EXPECT_DOUBLE_EQ(10.1,sse_order.orderprice);
+            EXPECT_DOUBLE_EQ(10.1,sse_order.orderprice);
 
-                if(sse_order.filledQty == 0)
-                {
-                    EXPECT_DOUBLE_EQ(0 , sse_order.tradeprice);
-                    return true;
-                }
-                else
-                {
-                    return false;
-                }
+            if(sse_order.filledQty == 0)
+            {
+                EXPECT_DOUBLE_EQ(0 , sse_order.tradeprice);
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         };
 
         EXPECT_CALL(consumer, onUpdateOrder(Truly(isfirstOrder))).Times(1);
 
         auto istradeOrder = [=](OrderDataDetail* porder) 
         {
+            printOrder(std::cout , *porder);
             SSE_OrderDetail& sse_order =  porder->sse_order;
             EXPECT_EQ(sse_order.instrumentID , 1);
             EXPECT_EQ(sse_order.isbuy , true);
@@ -105,7 +108,6 @@ namespace BluesTrading
 
             if(sse_order.filledQty == 0)
             {
-              
                 return false;
             }
             else

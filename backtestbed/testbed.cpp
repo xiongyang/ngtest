@@ -83,6 +83,8 @@ namespace BluesTrading
         orderManager->setPosMgr(&posManager);
         dataReplayer->getTimerProvider()->registerTimerConsumer(&posManager);
         dataReplayer->subscribeAllInstrument(&posManager);
+
+       posManager.setInitCash(10000000.0);
     }
 
     void TestBed::run(uint32_t startday , uint32_t end_day)

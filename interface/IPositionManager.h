@@ -50,6 +50,9 @@ namespace BluesTrading
 
         void setUintMultiplier(uint32_t multiplier) {unitMultiplier_ = multiplier;}
 
+  
+
+
         //=======================   impl for CPosition fun =================
         void addPosition(PositionItem& positionItem)
         {
@@ -151,14 +154,15 @@ namespace BluesTrading
                 {
                     if (each.is_long)
                     {
-                        positionPnl +=  (each.price - price) * each.qty * unitMultiplier_;
+                        positionPnl +=  (price - each.price) * each.qty * unitMultiplier_;
                     }
                     else
                     {
-                        positionPnl +=  (price - each.price) * each.qty * unitMultiplier_;
+                        positionPnl +=  (each.price - price) * each.qty * unitMultiplier_;
                     }
-                }
+                }      
             };
+
 
             acculumate(shortPosition_);
             acculumate(shortPositionYst_);
@@ -181,6 +185,24 @@ namespace BluesTrading
             case ShortYst:
                 return shortPositionYst_;
             }
+        }
+
+        struct QryAmmount
+        {
+            uint32_t qty;
+            double totalAmmount;
+        };
+        QryAmmount getTotalQtyAmmount(PositionType type)
+        {
+            QryAmmount sum {0, 0.0};
+            auto& targetPos = getPositions(type);
+            for (auto each: targetPos)
+            {
+                sum.qty += each.qty;
+                sum.totalAmmount += each.price * sum.qty;
+            }  
+
+            return sum;
         }
 
     private:

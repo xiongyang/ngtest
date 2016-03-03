@@ -92,21 +92,53 @@ namespace BluesTrading
 
     void FakeOrderManager::handleSSENew(OrderRequest& requset)
     {
-        // std::cout << "handleSSE New \n" ;
         orders_[requset.requestID] =  generateOrder(requset);
-        //NotifyNewOrder(orders_[requset.requestID]);
-        //we can not update order on another thread. because the process tick is too fast
-        
-        
-        consumer_->onUpdateOrder(orders_[requset.requestID]);
-        if(posMgr_)   posMgr_->updateOrder(orders_[requset.requestID]);
-        fakeTradeOrder(orders_[requset.requestID]);
-        if(posMgr_)   posMgr_->updateOrder(orders_[requset.requestID]);
-        consumer_->onUpdateOrder(orders_[requset.requestID]);
-        
+        OrderDataDetail* targetOrder =  orders_[requset.requestID];
+
+        consumer_->onUpdateOrder(targetOrder);
+        if (targetOrder->sse_order.orderStatus != SSE_OrderDetail::SSE_OrderRejected)
+        { 
+            if(posMgr_)   posMgr_->updateOrder(orders_[requset.requestID]);
+            fakeTradeOrder(orders_[requset.requestID]);
+            if(posMgr_)   posMgr_->updateOrder(orders_[requset.requestID]);
+            consumer_->onUpdateOrder(orders_[requset.requestID]);
+        }
+        else
+        {
+            std::cout << "OrderReject"<< std::endl;
+        }
     }
 
 
+
+    std::uint8_t FakeOrderManager::checkSSERequestValid(const SSE_SecurityNewOrderRequest & request)
+    {
+        if (!posMgr_)
+        {
+            return SSE_OrderDetail::SSE_NoError;
+        }
+
+        if(request.isBuy)
+        {
+            double need_cash = request.orderqty * request.price;
+          //  std::cout << "current cash " << posMgr_->getAccountInfo().cash << " needed cash " <<need_cash << std::endl;
+            if(posMgr_->getAccountInfo().cash  < need_cash)
+            {
+                return SSE_OrderDetail::SSE_OrderReject_NotEnoughCash;
+            }
+            
+        }
+        else if(!request.isBuy)
+        {
+             CPosition::QryAmmount  qtyAmmount = posMgr_->getPosition(request.instrumentID).getTotalQtyAmmount(CPosition::LongYst);
+             if(request.orderqty > qtyAmmount.qty)
+             {
+                  return SSE_OrderDetail::SSE_OrderReject_NotEnoughInventory;
+             }
+        }
+
+        return SSE_OrderDetail::SSE_NoError;
+    }
 
     void FakeOrderManager::NotifyNewOrder(OrderDataDetail* order)
     {
@@ -151,17 +183,40 @@ namespace BluesTrading
     {
         OrderDataDetail* ret = new OrderDataDetail;
         const SSE_SecurityNewOrderRequest & newOrderRequest = request.sse_securityNewOrder;
-        ret->requestid = request.requestID;
-        ret->orderID = request.requestID;
-        ret->sse_order.filledQty = 0;
-        ret->sse_order.instrumentID = newOrderRequest.instrumentID;
-        ret->sse_order.orderprice = newOrderRequest.price;
-        ret->sse_order.isbuy = newOrderRequest.isBuy;
-        ret->sse_order.orderQty = newOrderRequest.orderqty;
-        ret->sse_order.tradeprice = 0;
-        ret->exchangeType = SSE;
-        ret->sse_order.orderStatus = SSE_OrderDetail::SSE_OrderNew;
-        return ret;
+
+        uint8_t valid_code = checkSSERequestValid(newOrderRequest);
+
+        if(valid_code == SSE_OrderDetail::SSE_NoError)
+        {
+            ret->requestid = request.requestID;
+            ret->orderID = request.requestID;
+            ret->sse_order.filledQty = 0;
+            ret->sse_order.instrumentID = newOrderRequest.instrumentID;
+            ret->sse_order.orderprice = newOrderRequest.price;
+            ret->sse_order.isbuy = newOrderRequest.isBuy;
+            ret->sse_order.orderQty = newOrderRequest.orderqty;
+            ret->sse_order.tradeprice = 0;
+            ret->exchangeType = SSE;
+            ret->sse_order.orderStatus = SSE_OrderDetail::SSE_OrderNew;
+            ret->sse_order.orderErrorCode  = valid_code;
+            return ret;
+        }
+        else
+        {
+            ret->requestid = request.requestID;
+            ret->orderID = request.requestID;
+            ret->sse_order.filledQty = 0;
+            ret->sse_order.instrumentID = newOrderRequest.instrumentID;
+            ret->sse_order.orderprice = newOrderRequest.price;
+            ret->sse_order.isbuy = newOrderRequest.isBuy;
+            ret->sse_order.orderQty = newOrderRequest.orderqty;
+            ret->sse_order.tradeprice = 0;
+            ret->exchangeType = SSE;
+            ret->sse_order.orderStatus = SSE_OrderDetail::SSE_OrderRejected;
+            ret->sse_order.orderErrorCode  = valid_code;
+            return ret;
+        }
+
     }
 
 }

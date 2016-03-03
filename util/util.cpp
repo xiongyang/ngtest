@@ -6,9 +6,9 @@ namespace BluesTrading
 
      void printSSEOrder(std::ostream& of, const OrderDataDetail& order)
      {
-         of << boost::format("[SSEOrder OID:%1% Inst:%2% Price:%3% Qty:%4% Traded:%5% LastTradePrice:%6% Status:%7$d]\n") 
+         of << boost::format("[SSEOrder OID:%1% Inst:%2% Price:%3% Qty:%4% Traded:%5% LastTradePrice:%6% Status:%7$d ErrorCode:%8%]\n") 
              % order.orderID   % order.sse_order.instrumentID % order.sse_order.orderprice % order.sse_order.orderQty % order.sse_order.filledQty
-             % order.sse_order.tradeprice % int(order.sse_order.orderStatus);
+             % order.sse_order.tradeprice % int(order.sse_order.orderStatus) % int(order.sse_order.orderErrorCode);
      }
 
      std::string getTimeInMSStr(uint32_t timeInMS)

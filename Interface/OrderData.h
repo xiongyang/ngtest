@@ -103,6 +103,14 @@ namespace BluesTrading
             SSE_OrderCanceled,
             SSE_OrderTraded,
         };
+
+        enum
+        {
+            SSE_NoError,
+            SSE_OrderReject_NotEnoughCash,
+            SSE_OrderReject_NotEnoughInventory
+        };
+
         uint32_t instrumentID;
         uint32_t orderQty;
         uint32_t filledQty;
@@ -110,6 +118,7 @@ namespace BluesTrading
         double tradeprice;
         bool   isbuy;
         uint8_t  orderStatus;
+        uint8_t  orderErrorCode;
     };
 
     typedef SSE_OrderDetail SZE_OrderDetail;
