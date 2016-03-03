@@ -66,11 +66,14 @@
     <ClInclude Include="..\..\interface\ILogger.h" />
     <ClInclude Include="..\..\interface\IMarketDataProvider.h" />
     <ClInclude Include="..\..\interface\IOrderManager.h" />
+    <ClInclude Include="..\..\interface\IPositionManager.h" />
     <ClInclude Include="..\..\interface\IStrategy.h" />
     <ClInclude Include="..\..\interface\ITimer.h" />
     <ClInclude Include="..\..\interface\MarketData.h" />
     <ClInclude Include="..\..\interface\OrderData.h" />
-    <ClInclude Include="..\..\interface\util.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\interface\wscript" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -23,8 +23,6 @@ namespace BluesTrading
         }
 
 
-       
-
         void loadDataFromFile(const std::string& fileName);
         void loadFromRawFile(const std::string& fileName);
         void loadFromBinFile(const std::string& filename);

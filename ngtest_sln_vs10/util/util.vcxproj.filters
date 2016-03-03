@@ -18,9 +18,15 @@
     <ClInclude Include="..\..\util\dynamicloader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\util\util.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\util\dynamicloader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\util\util.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

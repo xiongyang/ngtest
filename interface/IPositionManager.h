@@ -2,6 +2,8 @@
 
 #include <cstdint>
 #include <deque>
+#include <map>
+#include <iostream>
 #include "boost/format.hpp"
 
 namespace BluesTrading
@@ -28,8 +30,8 @@ namespace BluesTrading
     class CPosition
     {
     public:
-
-
+        CPosition() : instrumentID_(0), lastPrice_(0), updateTick_(0), unitMultiplier_(1),realizedPnL_(0) {};
+        
         enum PositionType{
             LongToday,
             LongYst,
@@ -37,7 +39,7 @@ namespace BluesTrading
             ShortYst
         };
 
-        typedef std::deque<PositionItem> PositionContainer;
+        typedef std::deque<PositionItem> PositionItemContainer;
 
 
         void updatePrice(double price) {lastPrice_ = price;}
@@ -45,6 +47,8 @@ namespace BluesTrading
         double getPositionPnl() const {return  getPositionPnl(lastPrice_);}
        
         double getRealizedPnL() const {return realizedPnL_;}
+
+        void setUintMultiplier(uint32_t multiplier) {unitMultiplier_ = multiplier;}
 
         //=======================   impl for CPosition fun =================
         void addPosition(PositionItem& positionItem)
@@ -87,7 +91,7 @@ namespace BluesTrading
                 auto shortCalcPrice = [](double tradePrice, double posPrice) {return posPrice - tradePrice;};
                 auto longCalcPrice = [] (double tradePrice, double posPrice){return tradePrice - posPrice;};
 
-                auto tradeMatchPos = [&] (TradeInfo trade, PositionContainer& posQueue, auto calc_diff)
+                auto tradeMatchPos = [&] (TradeInfo trade, PositionItemContainer& posQueue, auto calc_diff)
                 {
                     while (trade.qty > 0 && !posQueue.empty())
                     {
@@ -141,7 +145,7 @@ namespace BluesTrading
         {
             double positionPnl = 0;
 
-            auto acculumate = [&](const PositionContainer& positionQueue)
+            auto acculumate = [&](const PositionItemContainer& positionQueue)
             {
                 for (auto each: positionQueue)
                 {
@@ -164,7 +168,7 @@ namespace BluesTrading
             return realizedPnL_ + positionPnl;
         }
 
-        const CPosition::PositionContainer&  getPositions(PositionType postype) const
+        CPosition::PositionItemContainer&  getPositions(PositionType postype) 
         {
             switch(postype)
             {
@@ -187,13 +191,12 @@ namespace BluesTrading
         double realizedPnL_;
 
 
-        PositionContainer longPosition_;
-        PositionContainer longPositionYst_;
-        PositionContainer shortPosition_;
-        PositionContainer shortPositionYst_;
+        PositionItemContainer longPosition_;
+        PositionItemContainer longPositionYst_;
+        PositionItemContainer shortPosition_;
+        PositionItemContainer shortPositionYst_;
 
     };
-
 
     struct AccountInfo
     {
@@ -206,17 +209,10 @@ namespace BluesTrading
     class IPositionManager
     {
     public:
-
+        typedef std::map<uint32_t, CPosition> PositionContainer;
 
         virtual CPosition& getPosition(uint32_t inst) = 0;
-        //{
-        //    return allPositions_[inst];
-        //}
-
         virtual AccountInfo& getAccountInfo() = 0;
-
-
-        //private:
-        //    std::map<uint32_t, CPosition> allPositions_;
+        virtual PositionContainer& getAllPosition() = 0;
     };
 }

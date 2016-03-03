@@ -16,6 +16,9 @@
     <Filter Include="test">
       <UniqueIdentifier>{e4ff750f-52a6-47a6-9d1a-432bd19cc3e9}</UniqueIdentifier>
     </Filter>
+    <Filter Include="run">
+      <UniqueIdentifier>{b91bc947-0f2d-44f0-92bf-8746af10c43c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\backtestbed\marketdatareplayer.cpp">
@@ -42,11 +45,23 @@
     <ClCompile Include="..\..\backtestbed\marketdatastore.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\backtestbed\testConfigureManager.h.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\backtestbed\test\testconfiguremanager_test.cpp">
       <Filter>test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\backtestbed\testConfigureManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\backtestbed\main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\backtestbed\run\main.cpp">
+      <Filter>run</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\backtestbed\run\cookdata_main.cpp">
+      <Filter>run</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\backtestbed\testpositionmanager.h">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

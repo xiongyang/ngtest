@@ -72,6 +72,18 @@ namespace BluesTrading
         ScopeGuard& operator=(ScopeGuard const&);
     };
 
+    template<typename MapType, typename pred>
+    void remove_if_map(MapType&& c, pred&& predfun)
+    {
+        for(auto iter = c.begin(); iter != c.end(); ++ iter)
+        {
+            if (predfun(*iter))
+            {
+                c.erase(iter++);
+            }
+        }
+    }
+
 }
 
 

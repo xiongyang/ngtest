@@ -7,7 +7,7 @@ namespace BluesTrading
     {
     public:
         virtual ~ITimerConsumer(){}
-        virtual void onTimer(uint32_t eventID, uint32_t currentTime) = 0;
+        virtual void onTimer(uint32_t eventID, uint32_t currentTime) {};
         virtual void onStartDay(uint32_t date) {};
         virtual void onEndDay(uint32_t date) {};
     };

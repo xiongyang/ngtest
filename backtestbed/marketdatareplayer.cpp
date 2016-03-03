@@ -61,12 +61,12 @@ void MarketDataReplayer::unSubscribeInstrument(uint32_t instrumentID, ITickDataC
 
 void MarketDataReplayer::subscribeAllInstrument(ITickDataConsumer* handler)
 {
-    //TODO
+    allSubscribe_.insert(handler);
 }
 
 void MarketDataReplayer::unSubscribeAllInstrument(ITickDataConsumer* handler)
 {
-    //TODO
+    allSubscribe_.erase(handler);
 }
 
 
@@ -87,14 +87,19 @@ void MarketDataReplayer::startReplay(uint32_t startdate, uint32_t enddate)
 
         std::vector<CTickData>& tickForDay = iter->second;
 
-        for(auto tick : tickForDay)
+        for(auto& tick : tickForDay)
         {
             timerProvider.setNextTickTime(tick.timeInMS);
             auto& subscribeVec = subscribeByInst[tick.instIndex];
             for (auto eachsubscribe : subscribeVec)
             {
                 eachsubscribe->onMarketData(tick);
-            }   
+            }
+
+            for (auto eachAllSubscribe : allSubscribe_)
+            {
+                  eachAllSubscribe->onMarketData(tick);
+            }
         }
 
         timerProvider.endDate(iter->first);

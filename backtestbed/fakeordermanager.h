@@ -1,5 +1,6 @@
 #pragma once
 #include "IOrderManager.h"
+#include "testpositionmanager.h"
 #include<map>
 #include<vector>
 #include <mutex>
@@ -10,7 +11,7 @@ namespace BluesTrading
     {
     public:
         FakeOrderManager()
-            : senderMachineID_(0), sendStrategyID_(0),requestID_(0)
+            : senderMachineID_(0), sendStrategyID_(0),requestID_(0), posMgr_(nullptr)
         {
         }
         virtual uint64_t submitRequest(OrderRequest& request) override;		
@@ -26,6 +27,7 @@ namespace BluesTrading
 
         void MakeOrderTrade(uint64_t orderID);
         void SendNotify();
+        void setPosMgr(testPositionManger* mgr) {posMgr_ = mgr;}
 
     private:
         std::map<uint64_t, OrderRequest>    requests_;
@@ -55,6 +57,7 @@ namespace BluesTrading
          IOrderDataConsumer*  consumer_;
          std::vector<OrderDataDetail>    queued_orderUpdate;
          std::mutex updateMutex_;
+         testPositionManger*    posMgr_;
 
     };
 

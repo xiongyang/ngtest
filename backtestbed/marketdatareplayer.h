@@ -37,7 +37,7 @@ namespace BluesTrading
         std::set<ITickDataConsumer*>    alldateSubscriber;
         std::unordered_map<uint32_t, std::set<ITickDataConsumer*> > subscribeByInst;
         std::map<uint32_t, std::vector<CTickData> >   dataByDateSorted;
-        
+        std::set<ITickDataConsumer*>    allSubscribe_;
         FakeTimerProvider   timerProvider;
     
     };

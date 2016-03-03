@@ -92,14 +92,18 @@ namespace BluesTrading
 
     void FakeOrderManager::handleSSENew(OrderRequest& requset)
     {
-        std::cout << "handleSSE New \n" ;
+        // std::cout << "handleSSE New \n" ;
         orders_[requset.requestID] =  generateOrder(requset);
         //NotifyNewOrder(orders_[requset.requestID]);
         //we can not update order on another thread. because the process tick is too fast
-
+        
+        
         consumer_->onUpdateOrder(orders_[requset.requestID]);
+        if(posMgr_)   posMgr_->updateOrder(orders_[requset.requestID]);
         fakeTradeOrder(orders_[requset.requestID]);
+        if(posMgr_)   posMgr_->updateOrder(orders_[requset.requestID]);
         consumer_->onUpdateOrder(orders_[requset.requestID]);
+        
     }
 
 

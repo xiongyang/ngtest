@@ -39,8 +39,11 @@
     <ClInclude Include="..\..\interface\OrderData.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\interface\util.h">
+    <ClInclude Include="..\..\interface\IPositionManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\interface\wscript" />
   </ItemGroup>
 </Project>

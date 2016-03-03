@@ -66,10 +66,14 @@
   <ItemGroup>
     <ClCompile Include="..\..\backtestbed\fakeordermanager.cpp" />
     <ClCompile Include="..\..\backtestbed\faketimerprovider.cpp" />
+    <ClCompile Include="..\..\backtestbed\main.cpp" />
     <ClCompile Include="..\..\backtestbed\marketdatareplayer.cpp" />
     <ClCompile Include="..\..\backtestbed\marketdatastore.cpp" />
+    <ClCompile Include="..\..\backtestbed\run\cookdata_main.cpp" />
+    <ClCompile Include="..\..\backtestbed\run\main.cpp" />
     <ClCompile Include="..\..\backtestbed\testbed.cpp" />
-    <ClCompile Include="..\..\backtestbed\testConfigureManager.h.cpp" />
+    <ClCompile Include="..\..\backtestbed\testConfigureManager.cpp" />
+    <ClCompile Include="..\..\backtestbed\testpositionmanager.h" />
     <ClCompile Include="..\..\backtestbed\test\fakeordermanager_test.cpp" />
     <ClCompile Include="..\..\backtestbed\test\faketimerprovider_test.cpp" />
     <ClCompile Include="..\..\backtestbed\test\marketdatereplayer_test.cpp" />

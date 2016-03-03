@@ -80,15 +80,14 @@ namespace BluesTrading
             &logger, &configureManager,  dataReplayer.get(), dataReplayer->getTimerProvider(), orderManager.get(),
             &posManager);
         testStrategy.reset(strp);  // TODO we should  delelte it from dll so
+        orderManager->setPosMgr(&posManager);
+        dataReplayer->getTimerProvider()->registerTimerConsumer(&posManager);
+        dataReplayer->subscribeAllInstrument(&posManager);
     }
 
     void TestBed::run(uint32_t startday , uint32_t end_day)
     {
         dataReplayer->startReplay(startday,end_day);
-        //isStop = true;
-        //std::cout << "wait NotifyThread Join "  << std::endl;
-        //orderManagerNotifyThread.join();
-        //std::cout << "wait NotifyThread Joined "  << std::endl;
     }
 
 }
