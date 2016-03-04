@@ -14,7 +14,6 @@ namespace BluesTrading
     class IMarketDataProvider
     {
     public:
-        //virtual void setSubscriber(ITickDataConsumer* handler) = 0;
         virtual void subscribeInstrument(uint32_t instrumentID,ITickDataConsumer* handler ) = 0;
         virtual void unSubscribeInstrument(uint32_t instrumentID, ITickDataConsumer* handler) = 0;
         virtual void subscribeAllInstrument(ITickDataConsumer* handler) = 0;

@@ -66,9 +66,14 @@ namespace BluesTrading
          return ret;
     }
 
-    void FakeOrderManager::regsiterOrderDataConsumer(IOrderDataConsumer* p)
+    void FakeOrderManager::subscribeOrderUpdate(uint32_t updateMask, IOrderDataConsumer* consumer)
     {
-           consumer_ =  p;
+        if(consumer)  orderdataSubscribers_[consumer] = updateMask;
+    }
+
+    void FakeOrderManager::unSubscribeOrderUpdate(IOrderDataConsumer* listerner)
+    {
+        if(listerner)  orderdataSubscribers_.erase(listerner);
     }
 
     void FakeOrderManager::handleSSECancel( OrderRequest&)
@@ -94,14 +99,14 @@ namespace BluesTrading
     {
         orders_[requset.requestID] =  generateOrder(requset);
         OrderDataDetail* targetOrder =  orders_[requset.requestID];
-
-        consumer_->onUpdateOrder(targetOrder);
+        NotifyOrder(targetOrder);
         if (targetOrder->sse_order.orderStatus != SSE_OrderDetail::SSE_OrderRejected)
         { 
             if(posMgr_)   posMgr_->updateOrder(orders_[requset.requestID]);
             fakeTradeOrder(orders_[requset.requestID]);
             if(posMgr_)   posMgr_->updateOrder(orders_[requset.requestID]);
-            consumer_->onUpdateOrder(orders_[requset.requestID]);
+  
+            NotifyOrder(targetOrder);
         }
         else
         {
@@ -140,10 +145,29 @@ namespace BluesTrading
         return SSE_OrderDetail::SSE_NoError;
     }
 
-    void FakeOrderManager::NotifyNewOrder(OrderDataDetail* order)
+    void FakeOrderManager::NotifyOrder(OrderDataDetail* order)
     {
-        std::lock_guard<std::mutex> guard(updateMutex_);
-        queued_orderUpdate.push_back(*order);
+        for(auto each_consumer : orderdataSubscribers_)
+        {
+            uint32_t& ordermask = order->senderid.updateMaskID;
+
+            //TODO how to mask 
+            if (true)
+            {
+                each_consumer.first->onUpdateOrder(order);
+            }
+        }
+
+    }
+
+    BluesTrading::SenderID FakeOrderManager::generateRequest()
+    {
+        SenderID id;
+        id.updateMaskID = 0;
+        //id.senderMachineID = senderMachineID_;
+        //id.sendStrategyID = sendStrategyID_;
+        id.requestID = ++requestID_;
+        return id;
     }
 
     void FakeOrderManager::MakeOrderTrade(uint64_t orderID)
@@ -156,26 +180,6 @@ namespace BluesTrading
             //    std::lock_guard<std::mutex> guard(updateMutex_);
             //    queued_orderUpdate.push_back(*porder);
             //}
-        }
-    }
-
-
-    void FakeOrderManager::SendNotify()
-    {
-        if (consumer_)
-        {
-           std::vector<OrderDataDetail> nofiyorders;
-
-           {
-                  std::lock_guard<std::mutex> guard(updateMutex_);
-                  nofiyorders.swap(queued_orderUpdate);
-           }
-        
-
-            for (auto each: nofiyorders)
-            {
-                consumer_->onUpdateOrder(&each);
-            }
         }
     }
 

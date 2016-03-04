@@ -26,42 +26,15 @@ namespace BluesTrading
     protected:
         virtual void SetUp() 
         {
-             inst.regsiterOrderDataConsumer(&consumer);
+            inst.subscribeOrderUpdate(1,&consumer);
         }
-       
+
         virtual void TearDown() 
         {
         }
-         MockOrderConsumer consumer;
-         FakeOrderManager inst;
+        MockOrderConsumer consumer;
+        FakeOrderManager inst;
     };
-
-    //TEST_F(FakeOrderManagerTest, newRequestExcpetUpdate)
-    //{
-    //   SSE_SecurityNewOrderRequest request;
-    //   request.instrumentID = 1;
-    //   request.isBuy = true;
-    //   request.orderqty = 100;
-    //   request.orderType = 0; //only limit order
-    //   request.price = 10.1;
-    //   request.priceType = 0; // only limit order
-    //    
-    //   uint64_t requestID = submitRequest(request,&inst);
-    //   std::vector<OrderDataDetail*> orders =  inst.getOrderDetailByRequestID(requestID);
-    //   EXPECT_EQ(orders.size(), 1);
-    //   OrderDataDetail* firstOrder = getSingleOrderByOrderRequestID(&inst, requestID);
-
-    //   auto isExpectOrder = [=](OrderDataDetail* porder) 
-    //   { 
-
-    //       if (porder->requestid != requestID ) return false;
-    //       return (*porder) == (*firstOrder);
-    //   };
-
-    //   EXPECT_CALL(consumer, onUpdateOrder(Truly(isExpectOrder))).Times(1);
-
-    //   inst.SendNotify();
-    //}
 
     TEST_F(FakeOrderManagerTest, tradeExpect)
     {
@@ -118,8 +91,7 @@ namespace BluesTrading
         };
 
 
-       EXPECT_CALL(consumer, onUpdateOrder(Truly(istradeOrder))).Times(1);
-
-        uint64_t requestID = submitRequest(request,&inst);
+        EXPECT_CALL(consumer, onUpdateOrder(Truly(istradeOrder))).Times(1);
+        uint64_t requestID = submitRequest(request, &inst);
     }
 }

@@ -9,22 +9,22 @@ namespace BluesTrading
     {
     public:
         virtual void onUpdateOrder(OrderDataDetail* orderData) = 0;
-        //virtual void getUpdateMask() = 0;
-        // we may use some 
     };
+
 
 
     class IOrderManger
     {
     public:
-        // return value is requestID equal to  request.Sender
+        // return value is requestID equal to  request.Sender  give the sender pointer for valid the request 
         virtual uint64_t submitRequest(OrderRequest& request)  = 0;	
 
         // retrieve orders relate to the request (some request may produce many orders)
         virtual std::vector<OrderDataDetail*> getOrderDetailByRequestID(uint64_t requestID) = 0;			
         virtual OrderDataDetail* getOrderDetailByOrderID(uint64_t orderID) = 0;
         virtual std::vector<OrderDataDetail*>   getAllOrders() = 0;
-        virtual void regsiterOrderDataConsumer(IOrderDataConsumer* ) = 0;
+        virtual void subscribeOrderUpdate(uint32_t updateMask, IOrderDataConsumer* listerner) = 0;
+        virtual void unSubscribeOrderUpdate(IOrderDataConsumer* listerner) = 0;
     };
 
     // helper help fill the request type

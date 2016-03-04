@@ -57,10 +57,22 @@ namespace BluesTrading
         CZCE
     };
 
+    struct OrderUpdateMask
+    {
+        uint8_t marketID;
+        uint8_t accountID;
+        uint8_t machineID;
+        uint8_t strategyID;
+    };
+
     struct SenderID
     {
-        uint16_t senderMachineID;
-        uint16_t sendStrategyID;
+        union
+        {
+            uint32_t    updateMaskID;
+            OrderUpdateMask updateMask;
+        };
+
         uint32_t requestID;
     };
 
