@@ -37,8 +37,7 @@ namespace BluesTrading
         std::cout << "EventID:" << eventID << " Time:" << currentTime << std::endl;
         if(eventID == 1)
         {
-            timerprovider_->setTimer(this, 2, 60*1000, false); // target time 
-   
+            timerprovider_->setTimer(this, 2, 60 * 1000 * 10, true); // target time 
         }
         else
         {
@@ -57,6 +56,9 @@ namespace BluesTrading
 
     void SimpleStrategy::onStartDay(uint32_t date)
     {
+
+        PositionItem yst_1_pos {2200, 1000, true,false};
+        positionManager_->getPosition(1).addPosition(yst_1_pos);
         std::cout << "start day " << date << "\n";
 
         //TODO order Mask
@@ -77,6 +79,10 @@ namespace BluesTrading
         static int count = 0;
         count ++ ;
 
+        if (data.instIndex == 1)
+        {
+            lastprice_ = data.last_price;
+        }
 
         if (count % 100 == 0)
         {
@@ -87,9 +93,9 @@ namespace BluesTrading
             request.orderType = 0; //only limit order
             request.price = data.last_price;
             request.priceType = 0; // only limit order
-            std::cout << boost::format("SendOrder %1%, Time:%2% ") %  data.last_price % timerprovider_->getCurrentTimeMsInDay();
+            std::cout << boost::format("SendOrder %1%, Time:%2% ") %  data.last_price % getTimeStr(timerprovider_->getCurrentTimeMsInDay());
 
-            std::cout << "send order " << data.last_price << " Time:" <<"\n";
+           // std::cout << "send order " << data.last_price << " Time:" <<"\n";
             submitRequest(request, orderManager_);
         }
     }

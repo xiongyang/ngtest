@@ -84,6 +84,8 @@ namespace BluesTrading
         }
     }
 
+     const std::string getTimeStr(uint32_t timeInMS);
+
 }
 
 
