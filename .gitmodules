@@ -7,3 +7,6 @@
 [submodule "waf"]
 	path = waf
 	url = https://github.com/waf-project/waf.git
+[submodule "protobuf"]
+	path = protobuf
+	url = https://github.com/google/protobuf.git
