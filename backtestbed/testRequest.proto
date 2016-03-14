@@ -1,0 +1,17 @@
+
+package BluesTrading;
+
+
+message TestRequest
+{
+    optional bytes dllFile = 1;
+    repeated string configspace = 2;
+    // optional uint16_t requestID = 3;
+    repeated string datasrc = 4;
+    //optional string configBase = 5;
+};
+
+message TestResult
+{
+    repeated string result = 1;
+};

@@ -71,11 +71,7 @@ namespace BluesTrading
     void TestBed::LoadTestStrategy(const std::string& dynamicLib)
     {
         auto funptr = GetSharedLibFun<BluesTrading::StrategyFactoryFun>(dynamicLib.c_str(),"createStrategy");
-        //std::cout << "yyyy arguments logger:" << &logger 
-        //    << "  configure:" <<  &configureManager 
-        //    << "  data:"<< dataReplayer.get()
-        //    << " Timer:" << dataReplayer->getTimerProvider() 
-        //    << " Order " <<  orderManager.get() << std::endl;
+ 
         BluesTrading::IStrategy* strp  = funptr("teststr", 
             &logger, &configureManager,  dataReplayer.get(), dataReplayer->getTimerProvider(), orderManager.get(),
             &posManager);
@@ -90,6 +86,26 @@ namespace BluesTrading
     void TestBed::run(uint32_t startday , uint32_t end_day)
     {
         dataReplayer->startReplay(startday,end_day);
+    }
+
+    void TestBed::onMessage(const std::string& propName)
+    {
+
+    }
+
+    std::string TestBed::getDisplayMessage()
+    {
+
+    }
+
+    std::string TestBed::getConfigurableMessage()
+    {
+
+    }
+
+    std::string TestBed::getName()
+    {
+
     }
 
 }

@@ -49,7 +49,6 @@ def gtest_results(bld):
                 Logs.info('%s' % line)
 
 
-
 def configure(conf):
         print (sys.platform)
         if sys.platform == 'win32' or sys.platform == 'cygwin':
@@ -60,12 +59,19 @@ def configure(conf):
        # conf.env['CXX'] = "/usr/bin/x86_64-w64-mingw32-g++.exe"
        # conf.env['CXX'] = "/cygdrive/c/MinGW/bin/g++.exe"
        # conf.load('g++')
-        conf.load('compiler_cxx boost')
+
+
+        conf.load('compiler_cxx  boost')
         conf.check_boost("filesystem system serialization")
-
         conf.load('waf_unit_test')
-
         conf.env.append_unique('CXXFLAGS', BluesCXXFlag)
+
+        conf.find_program('protoc', var='PROTOC')
+        conf.env.PROTOC_ST = '-I%s'
+
+
+
+
         conf.recurse(packageList)
         try:
                 conf.find_program('cpplint.py', var='CPPLINT', path_list = 'cpplint')
@@ -93,8 +99,70 @@ def buildgmock(bld):
 
 def build(bld):
         buildgmock(bld)
+        bld( export_includes =  'protobuf-2.6.1/src',
+            name = 'PROTOBUF')
         bld.recurse(packageList)
         bld.add_post_fun(gtest_results)
         #from waflib.Tools import waf_unit_test
         #bld.add_post_fun(waf_unit_test.summary)
+
+
+
+
+import re
+from waflib.Task import Task
+from waflib.TaskGen import extension 
+
+
+class protoc(Task):
+    # protoc expects the input proto file to be an absolute path.
+
+
+
+    run_str = '${PROTOC} ${PROTOC_FLAGS} ${XXPROTOC_FLAGS} ${SRC[0].abspath()}'
+    color   = 'BLUE'
+    ext_out = ['.h', 'pb.cc']
+    def scan(self):
+        """
+        Scan .proto dependencies
+        """
+        node = self.inputs[0]
+
+        nodes = []
+        names = []
+        seen = []
+
+        if not node: return (nodes, names)
+
+        def parse_node(node):
+            if node in seen:
+                return
+            seen.append(node)
+            code = node.read().splitlines()
+            for line in code:
+                m = re.search(r'^import\s+"(.*)";.*(//)?.*', line)
+                if m:
+                    dep = m.groups()[0]
+                    for incpath in self.env.INCPATHS:
+                        found = incpath.find_resource(dep)
+                        if found:
+                            nodes.append(found)
+                            parse_node(found)
+                        else:
+                            names.append(dep)
+
+        parse_node(node)
+        return (nodes, names)
+
+@extension('.proto')
+def process_protoc(self, node):
+    cpp_node = node.change_ext('.pb.cc')
+    hpp_node = node.change_ext('.pb.h')
+    self.create_task('protoc', node, [cpp_node, hpp_node])
+    self.source.append(cpp_node)
+    self.env.PROTOC_FLAGS = '--cpp_out=%s' % node.parent.get_bld().abspath() 
+    self.env.XXPROTOC_FLAGS = '-I%s' % node.parent.abspath()
+    use = getattr(self, 'use', '')
+    if not 'PROTOBUF' in use:
+        self.use = self.to_list(use) + ['PROTOBUF']
 

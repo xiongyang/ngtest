@@ -11,7 +11,7 @@ def configure(conf):
 
 def build(bld):
         bld.stlib(
-                source          = bld.path.ant_glob('*.cpp', excl = 'test'),
+                source          = bld.path.ant_glob('*.cpp *.proto', excl = 'test'),
                 target          = 'backtestbed',
                 use             =  ['com_interface', 'util', 'BOOST']) 
         bld.recurse('test run') 
