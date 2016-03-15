@@ -2,16 +2,23 @@
 package BluesTrading;
 
 
+message StrategyConfig
+{
+    map<string, string> props = 1；
+}
+
+
 message TestRequest
 {
     optional bytes dllFile = 1;
-    repeated string configspace = 2;
-    // optional uint16_t requestID = 3;
-    repeated string datasrc = 4;
-    //optional string configBase = 5;
+    optional string dllFileName = 2
+    repeated StrategyConfig configSpace = 3;
+    // optional uint16_t requestID = 4;
+    repeated string datasrc = 5;
+    //optional string configBase = 6;
 };
 
-message TestResult
+message 1
 {
     repeated string result = 1;
 };
