@@ -1,8 +1,12 @@
+#!/usr/bin/python
+
 top = '.'
 out = '_build'
 
 
 packageList = 'interface strategy util backtestbed'
+protobuf_base = 'protobuf-2.6.1'
+protobuf_src = protobuf_base + '/src'
 
 BluesCXXFlag= ['-std=gnu++14' , '-O2', '-ggdb' ]
 #,'-I/usr/local/gcc53/include/c++/5.3.0/'
@@ -16,10 +20,7 @@ def options(opt):
 
         #conf.check(header_name='windows.h', features='c cprogram', define_name='BLUE_WINDOWS', mandatory=False)
         opt.load('waf_unit_test')
-
         opt.recurse(packageList)
-        # conf.check(lib='gtest', uselib_store='GTEST')
-    #opt.load("compiler_cxx")
     
 from waflib.Configure import conf
 
@@ -66,11 +67,8 @@ def configure(conf):
         conf.load('waf_unit_test')
         conf.env.append_unique('CXXFLAGS', BluesCXXFlag)
 
-        conf.find_program('protoc', var='PROTOC')
-        conf.env.PROTOC_ST = '-I%s'
-
-
-
+        #conf.find_program('protoc', var='PROTOC')
+        #conf.env.PROTOC_ST = '-I%s'
 
         conf.recurse(packageList)
         try:
@@ -78,6 +76,33 @@ def configure(conf):
         except conf.errors.ConfigurationError:
                 conf.to_log("run 'git submoudle'")
                 print("run 'git submoudle'")
+
+
+
+def buildProtoBuf(bld):
+        #protoc_srcfiles =  protobuf_src + '/google/protobuf/compiler/cpp/*.cc ' + protobuf_src + '/google/protobuf/compiler/*.cc' ,
+        exclpatten = ['**/*unittest.cc' , '**/mock_*', '**/test*']        
+        protoc_srcfiles = bld.path.ant_glob(protobuf_src + '/google/protobuf/compiler/cpp/*.cc ', excl = exclpatten) + bld.path.ant_glob(protobuf_src + '/google/protobuf/compiler/*.cc ', excl = exclpatten)
+        protobuf_srcfiles = bld.path.ant_glob(protobuf_src + '/google/**/*cc ',  excl = exclpatten) 
+
+
+        bld.stlib(
+                source          = protobuf_srcfiles,
+                target          = 'protobuf',
+                includes =  protobuf_src + ' ' + protobuf_base,
+                export_includes = protobuf_src,
+                name = 'PROTOBUF'
+               # use             =  ['com_interface', 'util', 'BOOST']
+               ) 
+        bld.program(
+                source          = protoc_srcfiles,
+                target = 'protoc',
+                includes =  protobuf_src + ' ' + protobuf_base,
+                use             =  ['PROTOBUF'],
+                name = 'PROTOC'
+                )
+       
+
 
 
 def buildgmock(bld):
@@ -99,8 +124,8 @@ def buildgmock(bld):
 
 def build(bld):
         buildgmock(bld)
-        bld( export_includes =  'protobuf-2.6.1/src',
-            name = 'PROTOBUF')
+        buildProtoBuf(bld)
+        bld.add_group()
         bld.recurse(packageList)
         bld.add_post_fun(gtest_results)
         #from waflib.Tools import waf_unit_test
@@ -114,12 +139,13 @@ from waflib.Task import Task
 from waflib.TaskGen import extension 
 
 
+
+
 class protoc(Task):
     # protoc expects the input proto file to be an absolute path.
 
 
-
-    run_str = '${PROTOC} ${PROTOC_FLAGS} ${XXPROTOC_FLAGS} ${SRC[0].abspath()}'
+    run_str = '${SRC[1].abspath()} ${PROTOC_FLAGS} ${XXPROTOC_FLAGS} ${SRC[0].abspath()}'
     color   = 'BLUE'
     ext_out = ['.h', 'pb.cc']
     def scan(self):
@@ -158,11 +184,17 @@ class protoc(Task):
 def process_protoc(self, node):
     cpp_node = node.change_ext('.pb.cc')
     hpp_node = node.change_ext('.pb.h')
-    self.create_task('protoc', node, [cpp_node, hpp_node])
+
+
+    protoc_comp = self.bld.get_tgen_by_name('PROTOC').link_task.outputs[0];
+
+    self.create_task('protoc', [node, protoc_comp], [cpp_node, hpp_node])
     self.source.append(cpp_node)
     self.env.PROTOC_FLAGS = '--cpp_out=%s' % node.parent.get_bld().abspath() 
     self.env.XXPROTOC_FLAGS = '-I%s' % node.parent.abspath()
     use = getattr(self, 'use', '')
+    print use
     if not 'PROTOBUF' in use:
         self.use = self.to_list(use) + ['PROTOBUF']
+        print self.use 
 
