@@ -13,6 +13,9 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Header Files\test">
+      <UniqueIdentifier>{03f7d9e4-1ca1-4b6b-a221-60090346434f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\util\dynamicloader.h">
@@ -28,6 +31,9 @@
     </ClCompile>
     <ClCompile Include="..\..\util\util.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\util\test\util_unittest.cpp">
+      <Filter>Header Files\test</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

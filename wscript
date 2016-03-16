@@ -145,40 +145,40 @@ class protoc(Task):
     # protoc expects the input proto file to be an absolute path.
 
 
-    run_str = '${SRC[1].abspath()} ${PROTOC_FLAGS} ${XXPROTOC_FLAGS} ${SRC[0].abspath()}'
+    run_str = '${PROTOC_BIN} ${PROTOC_FLAGS} ${XXPROTOC_FLAGS} ${SRC[0].abspath()}'
     color   = 'BLUE'
     ext_out = ['.h', 'pb.cc']
-    def scan(self):
-        """
-        Scan .proto dependencies
-        """
-        node = self.inputs[0]
+    # def scan(self):
+    #     """
+    #     Scan .proto dependencies
+    #     """
+    #     node = self.inputs[0]
 
-        nodes = []
-        names = []
-        seen = []
+    #     nodes = []
+    #     names = []
+    #     seen = []
 
-        if not node: return (nodes, names)
+    #     if not node: return (nodes, names)
 
-        def parse_node(node):
-            if node in seen:
-                return
-            seen.append(node)
-            code = node.read().splitlines()
-            for line in code:
-                m = re.search(r'^import\s+"(.*)";.*(//)?.*', line)
-                if m:
-                    dep = m.groups()[0]
-                    for incpath in self.env.INCPATHS:
-                        found = incpath.find_resource(dep)
-                        if found:
-                            nodes.append(found)
-                            parse_node(found)
-                        else:
-                            names.append(dep)
+    #     def parse_node(node):
+    #         if node in seen:
+    #             return
+    #         seen.append(node)
+    #         code = node.read().splitlines()
+    #         for line in code:
+    #             m = re.search(r'^import\s+"(.*)";.*(//)?.*', line)
+    #             if m:
+    #                 dep = m.groups()[0]
+    #                 for incpath in self.env.INCPATHS:
+    #                     found = incpath.find_resource(dep)
+    #                     if found:
+    #                         nodes.append(found)
+    #                         parse_node(found)
+    #                     else:
+    #                         names.append(dep)
 
-        parse_node(node)
-        return (nodes, names)
+    #     parse_node(node)
+    #     return (nodes, names)
 
 @extension('.proto')
 def process_protoc(self, node):
@@ -187,14 +187,13 @@ def process_protoc(self, node):
 
 
     protoc_comp = self.bld.get_tgen_by_name('PROTOC').link_task.outputs[0];
+   # protoc_comp = '/home/snake/sr/temp/ngtest/temp/protoc.exe'
 
-    self.create_task('protoc', [node, protoc_comp], [cpp_node, hpp_node])
+    self.create_task('protoc', [node], [cpp_node, hpp_node])
     self.source.append(cpp_node)
+    self.env.PROTOC_BIN = protoc_comp.abspath();
     self.env.PROTOC_FLAGS = '--cpp_out=%s' % node.parent.get_bld().abspath() 
     self.env.XXPROTOC_FLAGS = '-I%s' % node.parent.abspath()
-    use = getattr(self, 'use', '')
-    print use
-    if not 'PROTOBUF' in use:
-        self.use = self.to_list(use) + ['PROTOBUF']
-        print self.use 
-
+    # use = getattr(self, 'use', '')
+    # if not 'PROTOBUF' in use:
+    #     self.use = self.to_list(use) + ['PROTOBUF']

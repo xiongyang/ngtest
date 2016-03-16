@@ -69,6 +69,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\util\dynamicloader.cpp" />
+    <ClCompile Include="..\..\util\test\util_unittest.cpp" />
     <ClCompile Include="..\..\util\util.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

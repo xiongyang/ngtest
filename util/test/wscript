@@ -1,0 +1,21 @@
+#!/usr/bin/python
+
+def options(opt):
+        opt.load("waf_unit_test")
+    
+
+def configure(conf):
+        conf.load("waf_unit_test")
+
+
+
+def build(bld):
+        bld.program(
+                source          = bld.path.ant_glob('*.cpp'),
+                target          = 'utiltest',
+                features         = 'test',
+               # cxxflags =        ['-ggdb'],
+                use             = ['util', 'gmock', 'BOOST']) 
+
+
+       # bld.add_post_fun(post)
