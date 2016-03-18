@@ -7,6 +7,7 @@
 #include <vector>
 #include "OrderData.h"
 #include "boost/filesystem.hpp"
+#include "boost/asio.hpp"
 
 namespace BluesTrading
 {
@@ -30,23 +31,23 @@ namespace BluesTrading
   double getCpuStatus();
 
 
-   //class UdpSender
-   //{
-   //public:
-   //    UdpSender(const std::string& ip, uint32_t port)
-   //        :  endpoint_(  boost::asio::ip::address::from_string(ip), port), socket_(io, endpoint_)
-   //    {
+   class UdpSender
+   {
+   public:
+       UdpSender(const std::string& ip, uint32_t port)
+           :  endpoint_(  boost::asio::ip::address::from_string(ip), port), socket_(io, endpoint_)
+       {
 
-   //    }
-   //    void send(const std::string& buff)
-   //    {
-   //        socket_.send_to(boost::asio::buffer(buff), endpoint_);
-   //    }
-   //private:
-   //    boost::asio::io_service io;
-   //    boost::asio::ip::udp::socket socket_;
-   //    boost::asio::ip::udp::endpoint endpoint_;
-   //};
+       }
+       void send(const std::string& buff)
+       {
+           socket_.send_to(boost::asio::buffer(buff), endpoint_);
+       }
+   private:
+       boost::asio::io_service io;
+       boost::asio::ip::udp::socket socket_;
+       boost::asio::ip::udp::endpoint endpoint_;
+   };
 
 
     class ScopeGuard

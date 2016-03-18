@@ -75,6 +75,8 @@ void HandleTestRequest(int argc, char**argv)
     //    std::cout << "TestRequest SerializeToString Fail \n";
     //}
     //sender.send(sendbuf);
+
+  /*  boost::asio::*/
 }
 
 // get the hardware info. and avgLoad current

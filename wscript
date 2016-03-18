@@ -8,7 +8,7 @@ packageList = 'interface strategy util backtestbed'
 protobuf_base = 'protobuf-2.6.1'
 protobuf_src = protobuf_base + '/src'
 
-BluesCXXFlag= ['-std=gnu++14' , '-O2', '-ggdb' ]
+BluesCXXFlag= ['-std=gnu++14' , '-O2' ]
 #,'-I/usr/local/gcc53/include/c++/5.3.0/'
 #BluesCXXFlag= ['-std=c++1y' , '-O2', '-ggdb']
 
@@ -54,10 +54,11 @@ def configure(conf):
         print (sys.platform)
         if sys.platform == 'win32' or sys.platform == 'cygwin':
             conf.define('_BL_WIN32_PLATFROM_', 1)
+           # conf.env['CXX'] = "/usr/bin/x86_64-w64-mingw32-g++.exe"
+           # conf.env.append_unique("CXXFLAGS", ["-D__USE_W32_SOCKETS"])
         else:
             conf.define('_BL_LINUX_PLATFROM_', 1)
 
-       # conf.env['CXX'] = "/usr/bin/x86_64-w64-mingw32-g++.exe"
        # conf.env['CXX'] = "/cygdrive/c/MinGW/bin/g++.exe"
        # conf.load('g++')
 
@@ -99,6 +100,7 @@ def buildProtoBuf(bld):
                 target = 'protoc',
                 includes =  protobuf_src + ' ' + protobuf_base,
                 use             =  ['PROTOBUF'],
+
                 name = 'PROTOC'
                 )
        
