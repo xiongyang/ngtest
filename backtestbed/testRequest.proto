@@ -16,11 +16,8 @@ message StrategyConfig
 message TestRequest
 {
     optional bytes dllFile = 1;
-    optional string dllFileName = 2;
-    repeated StrategyConfig configSpace = 3;
-    // optional uint16_t requestID = 4;
-    repeated string datasrc = 5;
-    //optional string configBase = 6;
+    repeated StrategyConfig configSpace = 2;
+    repeated string datasrc = 3;
 }
 
 message TestResult

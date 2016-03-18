@@ -87,6 +87,8 @@ TEST(parserProps, parsString)
                continue;
            }
        }
+       //std::cout << prop4 << " " << prop5_string << " " << prop6 <<  "   does not contain \n";
+       ADD_FAILURE(); 
        return false;
    };
 

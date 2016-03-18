@@ -12,7 +12,7 @@ def configure(conf):
 
 def build(bld):
         bld.stlib(
-            source          = bld.path.ant_glob('*.cpp'),
+            source          = bld.path.ant_glob('*.cpp dynamicloader.cpp'),
             target          = 'util',
             export_includes = '.',
             use             = 'com_interface') 

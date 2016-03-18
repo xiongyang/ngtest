@@ -1,10 +1,12 @@
 
-#include "../testbed.h"
-#include "../marketdatastore.h"
+#include "testbed.h"
+#include "marketdatastore.h"
 #include "util.h"
 
 #include <iostream>
 #include <string>
+#include <fstream>
+#include "testRequest.pb.h"
 
 
 using namespace BluesTrading;
@@ -23,55 +25,90 @@ void cookData(const std::string& dirName)
         }
     };
     traverseDir(dirName, cookDataOne);
-    //if (!boost::filesystem::exists(dirName))
-    //{
-    //    std::cout << "dir not exists" << dirName;
-    //}
-
-    //if (boost::filesystem::is_directory(dirName))
-    //{
-    //    for (boost::filesystem::directory_entry& x : boost::filesystem::directory_iterator(dirName))
-    //    {
-    //        if (boost::filesystem::is_regular_file(x))
-    //        {
-    //            if(".csv" ==  x.path().extension().string())
-    //            {
-    //                MarketDataStore inst( x.path().string());
-    //                boost::filesystem::path newpath = x.path();
-    //                inst.saveToBinFile( newpath.replace_extension(".bin").string());
-    //            }
-    //        }
-    //    }
-    //}
-    //else
-    //{    
-    //    MarketDataStore inst(dirName);
-    //    inst.saveToBinFile(dirName + ".bin");
-    //}
 }
 
 void testBedRun(const std::string& dir, const std::string& strategy, const std::string& startday, const std::string& endDay)
 {
-
     TestBed inst;
     inst.Init(dir, strategy);
     inst.run(atoi(startday.c_str()), atoi(endDay.c_str()));
     return ;
 }
 
+void HandleTestRequest(int argc, char**argv)
+{
+    std::string dllFile = argv[2];
+    std::string dllbytes = readFile(dllFile);
+    TestRequest request;
+    request.set_dllfile(dllbytes.data(), dllbytes.size());
+
+    std::string configFile = argv[3];
+    std::ifstream configFileStream(configFile);
+    std::vector< std::unordered_map<std::string, std::string> > allconfig = parserProps(configFileStream);
+
+
+    for (auto& each_config : allconfig)
+    {
+        StrategyConfig* configMessasge = request.add_configspace();
+        for (auto& each_pair : each_config)
+        {
+              prop* inst =  configMessasge->add_props();
+              inst->set_propname(each_pair.first);
+              inst->set_value(each_pair.second); 
+        }
+    }
+
+    for (int i = 4; i !=argc; ++i)
+    {
+        request.add_datasrc(argv[i]);
+    }
+
+    std::cout << "dllfile " << dllFile << " Size "<< dllbytes.size() << "\n";
+    std::cout << "datasrc size " << request.datasrc_size() << "\n";
+    std::cout << "configspce size " << request.configspace_size() << "\n";
+
+    //UdpSender sender("127.0.0.1 39223");
+    //std::string sendbuf;
+    //bool ret = request.SerializeToString(&sendbuf);
+    //if(!ret)
+    //{
+    //    std::cout << "TestRequest SerializeToString Fail \n";
+    //}
+    //sender.send(sendbuf);
+}
+
+// get the hardware info. and avgLoad current
+void getLocalHostRuningStatus()
+{
+    auto ret = getCpuStatus();
+    static double rttusage = ret;
+    rttusage = rttusage * 0.9 + 0.1 * rttusage;
+    std::cout << "Cpu Usage " << rttusage << "\n";
+}
 
 int main(int argc, char** argv)
 {
     std::string cmd = argv[1];
-    std::string dirName = argv[2];
  
     if(cmd == "cook")
     {
-        cookData(dirName);
+        cookData(argv[2]);
     }
-    else if(cmd == "tb")
+    else if(cmd == "backend")
     {
-        testBedRun(dirName,argv[3], argv[4] , argv[5]);
+        testBedRun(argv[2],argv[3], argv[4] , argv[5]);
+    }
+    else if(cmd == "request")
+    {
+        HandleTestRequest(argc, argv);
+    }
+    else if (cmd == "usage")
+    {
+        while(true)
+        {
+            std::this_thread::sleep_for(std::chrono::seconds(1));
+            getLocalHostRuningStatus();
+        }
     }
 
     return 0;
