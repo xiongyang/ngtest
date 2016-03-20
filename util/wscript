@@ -14,7 +14,7 @@ def build(bld):
         bld.stlib(
             source          = bld.path.ant_glob('*.cpp dynamicloader.cpp'),
             target          = 'util',
-            defines         = ['__USE_W32_SOCKETS'],
+            defines         = ['_USE_W32_SOCKETS'],
             export_includes = '.',
             use             = 'com_interface') 
         bld.recurse('test') 

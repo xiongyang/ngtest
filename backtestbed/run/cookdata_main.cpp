@@ -6,6 +6,7 @@
 #include <iostream>
 #include <string>
 #include <fstream>
+#include <thread>
 #include "testRequest.pb.h"
 
 
@@ -84,7 +85,7 @@ void getLocalHostRuningStatus()
 {
     auto ret = getCpuStatus();
     static double rttusage = ret;
-    rttusage = rttusage * 0.9 + 0.1 * rttusage;
+    rttusage = rttusage * 0.9 + 0.1 * ret;
     std::cout << "Cpu Usage " << rttusage << "\n";
 }
 
@@ -110,6 +111,18 @@ int main(int argc, char** argv)
         {
             std::this_thread::sleep_for(std::chrono::seconds(1));
             getLocalHostRuningStatus();
+        }
+    }
+    else if (cmd == "bo")
+    {
+        std::cout << "Send Hello Bo" << std::endl;
+        UdpSender sender(argv[2], argv[3]);
+        std::cout << "Send Hello to" <<argv[2] << ":" << argv[3] <<  std::endl;
+        while (true)
+        {
+            std::this_thread::sleep_for(std::chrono::seconds(1));
+            std::cout << "Send Hello " << std::endl;
+            std::cout << "SendSize " << sender.send("Hello") << std::endl ;
         }
     }
 

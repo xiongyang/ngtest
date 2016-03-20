@@ -5,6 +5,7 @@
 #include <boost/format.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/asio.hpp>
 
 #ifdef _BL_WIN32_PLATFROM_
 #include <windows.h>
@@ -225,6 +226,8 @@ namespace BluesTrading
 
 
 
+
+
 #ifdef _BL_WIN32_PLATFROM_
 
     PDH_HQUERY query;
@@ -285,7 +288,6 @@ namespace BluesTrading
         {
             PdhGetFormattedCounterValuefun(counter,PDH_FMT_DOUBLE, &CounterType, &DisplayValue);
         }
-
         return  DisplayValue.doubleValue;
     }
 #endif
@@ -298,8 +300,64 @@ namespace BluesTrading
 
     double getCpuStatus()
     {
+        std::cout << "xxxx" << std::endl;
         return  0.0;
     }
 #endif
+
+    class UdpSenderImpl
+    {
+    public:
+        UdpSenderImpl(const std::string& ip , const std::string& port)
+            :socket_(io, boost::asio::ip::udp::v4())
+        {
+            boost::asio::ip::udp::resolver resolver(io);
+            endpoint_ = *resolver.resolve({ boost::asio::ip::udp::v4(), ip, port });
+        }
+
+        uint32_t send(const std::string& buff)
+        {
+            uint32_t send_size = socket_.send_to(boost::asio::buffer(buff), endpoint_);
+            return send_size;
+        }
+
+    private:
+        boost::asio::io_service io;
+        boost::asio::ip::udp::socket socket_;
+        boost::asio::ip::udp::endpoint endpoint_;
+    };
+
+    UdpSender::UdpSender(const std::string & ip, const std::string&  port)
+    {
+        try
+        {
+            impl = new UdpSenderImpl(ip, port);
+        }
+        catch (std::exception& e)
+        {
+            std::cout << "xxx " << e.what() << std::endl;
+        }
+    }
+
+
+    UdpSender::~UdpSender()
+    {
+        delete impl;
+    }
+
+    uint32_t UdpSender::send(const std::string& buff)
+    {
+       return  impl->send(buff);
+    }
+
+    UdpReceiver::UdpReceiver(const std::string& ip, const std::string& port)
+    {
+
+    }
+
+    UdpReceiver::~UdpReceiver()
+    {
+
+    }
 
 }
