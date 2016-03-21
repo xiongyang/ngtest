@@ -23,7 +23,7 @@ namespace BluesTrading
 
         virtual void onTimer(uint32_t eventID, uint32_t currentTime) override;
         virtual void onStartDay(uint32_t date) override;
-        virtual void onEndDay(uint32_t date) override {logger->logEOD("date,par1,para2,para3,tradenum,profit") ;};
+        virtual void onEndDay(uint32_t date) override ;
 
         virtual void onMarketData(const CTickData&) override;
         virtual void onUpdateOrder(OrderDataDetail* orderData) override;

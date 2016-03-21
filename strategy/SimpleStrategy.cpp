@@ -74,6 +74,11 @@ namespace BluesTrading
 
     }
 
+    void SimpleStrategy::onEndDay(uint32_t date)
+    {
+        logger_->LogEOD("date,par1,para2,para3,tradenum,profit","");
+    }
+
     void SimpleStrategy::onMarketData(const CTickData& data)
     {
         static int count = 0;
