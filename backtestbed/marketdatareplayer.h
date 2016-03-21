@@ -30,6 +30,7 @@ namespace BluesTrading
 
     public:
         //    [startdate , enddate)  startdate is include but enddate is not
+        void startReplayAllData();
         void startReplay(uint32_t startdate, uint32_t enddate);
     private:
          std::set<ITickDataConsumer*> getAllSubscriber();

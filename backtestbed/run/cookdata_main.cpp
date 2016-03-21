@@ -8,6 +8,7 @@
 #include <fstream>
 #include <thread>
 #include "testRequest.pb.h"
+#include "testfixture.h"
 
 
 using namespace BluesTrading;
@@ -33,7 +34,24 @@ void testBedRun(const std::string& dir, const std::string& strategy, const std::
     TestBed inst;
     inst.Init(dir, strategy);
     inst.run(atoi(startday.c_str()), atoi(endDay.c_str()));
+    std::cout << std::endl;
     return ;
+}
+
+void HandleTestRequest(TestRequest request)
+{
+    TestFixture fixture;
+    fixture.Init(request);
+    fixture.run();
+
+    std::vector<std::string> allResult = fixture.getResult();
+
+    std::cout <<"=============================";
+    for (auto& each: allResult)
+    {
+        std::cout << each << "\n";
+    }
+    std::cout << std::endl;
 }
 
 void HandleTestRequest(int argc, char**argv)
@@ -67,6 +85,9 @@ void HandleTestRequest(int argc, char**argv)
     std::cout << "dllfile " << dllFile << " Size "<< dllbytes.size() << "\n";
     std::cout << "datasrc size " << request.datasrc_size() << "\n";
     std::cout << "configspce size " << request.configspace_size() << "\n";
+
+
+    HandleTestRequest(request);
 }
 
 // get the hardware info. and avgLoad current
@@ -90,7 +111,7 @@ int main(int argc, char** argv)
     {
         testBedRun(argv[2],argv[3], argv[4] , argv[5]);
     }
-    else if(cmd == "request")
+    else if(cmd == "tr")
     {
         HandleTestRequest(argc, argv);
     }

@@ -40,7 +40,9 @@
     <Import Project="..\add_common_include.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-  <PropertyGroup />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <IncludePath>../../_build/backtestbed;$(IncludePath)</IncludePath>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
@@ -70,9 +72,9 @@
     <ClCompile Include="..\..\backtestbed\marketdatareplayer.cpp" />
     <ClCompile Include="..\..\backtestbed\marketdatastore.cpp" />
     <ClCompile Include="..\..\backtestbed\run\cookdata_main.cpp" />
-    <ClCompile Include="..\..\backtestbed\run\main.cpp" />
     <ClCompile Include="..\..\backtestbed\testbed.cpp" />
     <ClCompile Include="..\..\backtestbed\testConfigureManager.cpp" />
+    <ClCompile Include="..\..\backtestbed\testfixture.cpp" />
     <ClCompile Include="..\..\backtestbed\testpositionmanager.h" />
     <ClCompile Include="..\..\backtestbed\test\fakeordermanager_test.cpp" />
     <ClCompile Include="..\..\backtestbed\test\faketimerprovider_test.cpp" />
@@ -87,6 +89,7 @@
     <ClInclude Include="..\..\backtestbed\nullLogger.h" />
     <ClInclude Include="..\..\backtestbed\testbed.h" />
     <ClInclude Include="..\..\backtestbed\testConfigureManager.h" />
+    <ClInclude Include="..\..\backtestbed\testfixture.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\backtestbed\wscript" />

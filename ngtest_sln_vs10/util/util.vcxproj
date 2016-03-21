@@ -72,6 +72,9 @@
     <ClCompile Include="..\..\util\test\util_unittest.cpp" />
     <ClCompile Include="..\..\util\util.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\util\util.inl" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

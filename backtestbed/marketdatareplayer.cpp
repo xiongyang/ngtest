@@ -70,10 +70,18 @@ void MarketDataReplayer::unSubscribeAllInstrument(ITickDataConsumer* handler)
 }
 
 
+void MarketDataReplayer::startReplayAllData()
+{
+    uint32_t  startdate = dataByDateSorted.begin()->first;
+    uint32_t  enddate = dataByDateSorted.rbegin()->first;
+    startReplay(startdate, enddate);
+}
+
 void MarketDataReplayer::startReplay(uint32_t startdate, uint32_t enddate)
 {
     for(auto iter = dataByDateSorted.begin(); iter != dataByDateSorted.end(); ++iter)
     {
+        std::cout << "Date " << iter->first << std::endl;
         if (iter->first < startdate )
         {
             continue;

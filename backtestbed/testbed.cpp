@@ -17,26 +17,6 @@ namespace BluesTrading
         dataReplayer.reset(new MarketDataReplayer(tickDataStore));
         orderManager.reset(new FakeOrderManager);
         LoadTestStrategy(strategy);
-
-        // auto notifyOrder = [&]()
-        // {
-        //     while(!isStop)
-        //     {
-        //       
-        //          orderManager->SendNotify();
-        //        auto allorders = orderManager->getAllOrders();
-        //       
-        //        for (OrderDataDetail* each : allorders)
-        //        {
-        //            if(each->sse_order.orderStatus != SSE_OrderDetail::SSE_OrderTraded)
-        //            {
-        //                orderManager->MakeOrderTrade(each->orderID);
-        //            }
-        //        } 
-        //     }
-        // };
-        //orderManagerNotifyThread = std::thread(notifyOrder);
-
     }
 
     void TestBed::LoadData(const std::string& dirName)
@@ -46,26 +26,6 @@ namespace BluesTrading
               tickDataStore.push_back(MarketDataStore(fileName));
         };
         traverseDir(dirName, insertToTickDataStore);
-          //if (!boost::filesystem::exists(dirName))
-          //{
-          //    std::cout << "dir not exists" << dirName;
-          //    return;
-          //}
-
-          //if (boost::filesystem::is_directory(dirName))
-          //{
-          //     for (boost::filesystem::directory_entry& x : boost::filesystem::directory_iterator(dirName))
-          //     {
-          //         if (boost::filesystem::is_regular_file(x))
-          //         {
-          //              tickDataStore.push_back(MarketDataStore(x.path().string()));
-          //         }
-          //     }
-          //}
-          //else
-          //{
-          //    tickDataStore.push_back(MarketDataStore(dirName));
-          //}
     }
 
     void TestBed::LoadTestStrategy(const std::string& dynamicLib)

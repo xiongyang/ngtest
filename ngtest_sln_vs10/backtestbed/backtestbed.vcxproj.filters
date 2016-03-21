@@ -54,13 +54,13 @@
     <ClCompile Include="..\..\backtestbed\main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\backtestbed\run\main.cpp">
-      <Filter>run</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\backtestbed\run\cookdata_main.cpp">
       <Filter>run</Filter>
     </ClCompile>
     <ClCompile Include="..\..\backtestbed\testpositionmanager.h">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\backtestbed\testfixture.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -84,6 +84,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\backtestbed\testConfigureManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\backtestbed\testfixture.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
