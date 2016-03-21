@@ -350,14 +350,120 @@ namespace BluesTrading
        return  impl->send(buff);
     }
 
+    class UdpReceiverImpl
+    {
+    public:
+        UdpReceiverImpl(const std::string& ip , const std::string& port)
+            :socket_(io, boost::asio::ip::udp::v4())
+        {
+            boost::asio::ip::udp::resolver resolver(io);
+            endpoint_ = *resolver.resolve({ boost::asio::ip::udp::v4(), ip, port });
+        }
+
+        uint32_t recv(std::string& buff)
+        {
+            buff.resize(2000);
+            uint32_t recv_size = socket_.receive_from(boost::asio::buffer(&buff.front(), buff.size()), endpoint_);
+            buff.resize(recv_size);
+            return recv_size;
+        }
+    private:
+        boost::asio::io_service io;
+        boost::asio::ip::udp::socket socket_;
+        boost::asio::ip::udp::endpoint endpoint_;
+    };
+
+
     UdpReceiver::UdpReceiver(const std::string& ip, const std::string& port)
     {
-
+        impl = new UdpReceiverImpl(ip, port);
     }
 
     UdpReceiver::~UdpReceiver()
     {
+        delete impl;
+    }
 
+    uint32_t UdpReceiver::receiver(std::string* result)
+    {
+        if (result == nullptr)
+        {
+            return 0;
+        }
+        else
+        {
+            return impl->recv(*result);
+        }
+    }
+
+
+    class TcpSenderImpl
+    {
+    public:
+        TcpSenderImpl(const std::string& ip , const std::string& port)
+            :socket_(io)
+        {
+            boost::asio::ip::udp::resolver resolver(io);
+            endpoint_ = *resolver.resolve({ ip, port });
+            socket_.connect(endpoint_);
+        }
+
+        uint32_t send(const std::string& buff)
+        {
+//           return  boost::asio::write(socket_, boost::asio::buffer(buff));
+
+            uint32_t send_size = socket_.send(boost::asio::buffer(buff));
+            return send_size;
+        }
+
+        uint32_t recv(std::string& buff)
+        {
+            buff.resize(2000);
+
+            uint32_t recv_size =  socket_.receive(boost::asio::buffer(&buff.front(), buff.size()));
+            buff.resize(recv_size);
+            return recv_size;
+        }
+
+    private:
+        boost::asio::io_service io;
+        boost::asio::ip::udp::socket socket_;
+        boost::asio::ip::udp::endpoint endpoint_;
+    };
+
+    TcpSender::TcpSender(const std::string & ip, const std::string&  port)
+    {
+        try
+        {
+            impl = new TcpSenderImpl(ip, port);
+        }
+        catch (std::exception& e)
+        {
+            std::cout << "xxx " << e.what() << std::endl;
+        }
+    }
+
+
+    TcpSender::~TcpSender()
+    {
+        delete impl;
+    }
+
+    uint32_t TcpSender::send(const std::string& buff)
+    {
+        return  impl->send(buff);
+    }
+
+    std::uint32_t TcpSender::recv(std::string* result)
+    {
+        if (result == nullptr)
+        {
+            return 0;
+        }
+        else
+        {
+            return impl->recv(*result);
+        }
     }
 
 }

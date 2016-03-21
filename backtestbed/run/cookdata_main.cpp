@@ -67,17 +67,6 @@ void HandleTestRequest(int argc, char**argv)
     std::cout << "dllfile " << dllFile << " Size "<< dllbytes.size() << "\n";
     std::cout << "datasrc size " << request.datasrc_size() << "\n";
     std::cout << "configspce size " << request.configspace_size() << "\n";
-
-    //UdpSender sender("127.0.0.1 39223");
-    //std::string sendbuf;
-    //bool ret = request.SerializeToString(&sendbuf);
-    //if(!ret)
-    //{
-    //    std::cout << "TestRequest SerializeToString Fail \n";
-    //}
-    //sender.send(sendbuf);
-
-  /*  boost::asio::*/
 }
 
 // get the hardware info. and avgLoad current
@@ -123,6 +112,18 @@ int main(int argc, char** argv)
             std::this_thread::sleep_for(std::chrono::seconds(1));
             std::cout << "Send Hello " << std::endl;
             std::cout << "SendSize " << sender.send("Hello") << std::endl ;
+        }
+    }
+    else if (cmd == "recv")
+    {
+        UdpReceiver recver(argv[2], argv[3]);
+        std::cout << "Send RecvFrom " <<argv[2] << ":" << argv[3] <<  std::endl;
+        while (true)
+        {
+            std::this_thread::sleep_for(std::chrono::seconds(1));
+            std::string buf;
+            recver.receiver(&buf);
+            std::cout << "recv  " << buf << std::endl ;
         }
     }
 

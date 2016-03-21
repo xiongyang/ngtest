@@ -31,7 +31,6 @@ namespace BluesTrading
     double getCpuStatus();
 
     class UdpSenderImpl;
-
     class UdpSender
     {
     public:
@@ -49,10 +48,38 @@ namespace BluesTrading
     public:
         UdpReceiver(const std::string& ip, const std::string& port);
         ~UdpReceiver();
-        void receiver(std::string* result);
+        uint32_t receiver(std::string* result);
     private:
         UdpReceiverImpl* impl;
     };
+
+    class TcpSenderImpl;
+    class TcpSender
+    {
+    public:
+        TcpSender(const std::string& ip, const std::string& port);
+
+        ~TcpSender();
+        uint32_t send(const std::string& buff);
+        uint32_t recv(std::string* buff);
+    private:
+        TcpSenderImpl* impl;
+    };
+
+
+    //class TcpServerImpl;
+    //class    TcpServer
+    //{
+    //public:
+    //    // listen sock
+    //    TcpReceiver(const std::string& ip, const std::string& port);
+    //    ~TcpReceiver();
+
+
+    //private:
+    //    TcpServerImpl* impl;
+    //};
+
 
 
 
