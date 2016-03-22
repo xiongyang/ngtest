@@ -1,5 +1,6 @@
 #include "SimpleStrategy.h"
 #include "util.h"
+#include "bluemessage.pb.h"
 
 using namespace BluesTrading;
 extern "C"
@@ -76,6 +77,8 @@ namespace BluesTrading
 
     void SimpleStrategy::onEndDay(uint32_t date)
     {
+        //boost::format fmt("%1%,%2%,%3%,%4%,%5%,%6%,");
+        //fmt % date %
         logger_->LogEOD("date,par1,para2,para3,tradenum,profit","");
     }
 
@@ -108,6 +111,47 @@ namespace BluesTrading
     void SimpleStrategy::onUpdateOrder(OrderDataDetail* orderData)
     {
         printOrder(std::cout, *orderData);
+    }
+
+    void SimpleStrategy::onMessage(const std::string& propName)
+    {
+        StrategyConfig msg;
+        msg.ParseFromString(propName);
+
+        for (auto& prop_pair: msg.props())
+        {
+            const std::string& propName = prop_pair.propname();
+            const std::string& propValue = prop_pair.value();
+
+            if(propName == "prop1")
+            {
+                paras_.prop1 =  propValue;
+            }
+            else if (propName == "prop2")
+            {
+                  paras_.prop2 =  propValue;
+            }
+            else if (propName == "prop3")
+            {
+                paras_.prop3 =  propValue;
+            }
+            else if (propName == "prop4")
+            {
+                paras_.prop4 =  propValue;
+            }
+            else if (propName == "prop5")
+            {
+                paras_.prop5 =  propValue;
+            }
+            else if (propName == "prop6")
+            {
+                paras_.prop6 =  propValue;
+            }
+            else
+            {
+                std::cout << "ERR UNKNOWN PROPNAME " <<  propName << std::endl;
+            }
+        }
     }
 
 }

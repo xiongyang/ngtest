@@ -11,9 +11,9 @@ def configure(conf):
 
 def build(bld):
         bld.stlib(
-                source          = bld.path.ant_glob('*.cpp *.proto', excl = 'test'),
+                source          = bld.path.ant_glob('*.cpp', excl = 'test'),
                 target          = 'backtestbed',
                 includes        = '.',
                 export_includes = '.',
-                use             =  ['com_interface', 'util', 'BOOST', 'PROTOBUF']) 
+                use             =  ['com_interface', 'util', 'BOOST', 'bluemessage']) 
         bld.recurse('test run') 

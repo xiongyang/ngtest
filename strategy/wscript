@@ -13,5 +13,5 @@ def build(bld):
         bld.shlib(
                 source          = bld.path.ant_glob('*.cpp'),
                 target          = 'simpleLib',
-                use             = ['com_interface', 'util',  'BOOST'])
+                use             = ['com_interface', 'util',  'BOOST', 'bluemessage'])
         bld.recurse('test') 

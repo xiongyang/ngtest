@@ -14,7 +14,7 @@
 #include <thread>
 #include "marketdatastore.h"
 #include "testpositionmanager.h"
-#include "testRequest.pb.h"
+#include "bluemessage.pb.h"
 
 namespace BluesTrading
 {
@@ -36,7 +36,7 @@ namespace BluesTrading
         //// dir or file
         void LoadData(TestRequest& request);
         std::string dumpDllFile(TestRequest& request);
-        TestInstGroup LoadTestInstGroup(const std::string& dynamicLib);
+        TestInstGroup LoadTestInstGroup(BluesTrading::StrategyFactoryFun createFun);
        
       
     public:

@@ -7,7 +7,7 @@
 #include <string>
 #include <fstream>
 #include <thread>
-#include "testRequest.pb.h"
+#include "bluemessage.pb.h"
 #include "testfixture.h"
 
 
@@ -42,11 +42,12 @@ void HandleTestRequest(TestRequest request)
 {
     TestFixture fixture;
     fixture.Init(request);
+    std::cout << "============================" <<std::endl;
     fixture.run();
 
     std::vector<std::string> allResult = fixture.getResult();
 
-    std::cout <<"=============================";
+    std::cout <<"============================="<<std::endl;
     for (auto& each: allResult)
     {
         std::cout << each << "\n";
@@ -54,10 +55,29 @@ void HandleTestRequest(TestRequest request)
     std::cout << std::endl;
 }
 
+//void testdumpfile(int argc, char**argv)
+//{
+//    std::string dllFile = argv[2];
+//    std::string dllBytes = readFile(dllFile);
+//
+//    std::string dumpfile = "tempfile2.dll";
+//    std::fstream dumpfile_stream(dumpfile, std::ios_base::out | std::ios_base::binary);
+//    if (! dumpfile_stream)
+//    {
+//        std::cerr << " Create TempDll File Fail " << std::endl;
+//        throw std::exception(/*" Create TempDll File Fail "*/);
+//    }
+//    dumpfile_stream.write(dllBytes.c_str(), dllBytes.size());
+//    dumpfile_stream.close();
+//}
+
+
+
 void HandleTestRequest(int argc, char**argv)
 {
     std::string dllFile = argv[2];
     std::string dllbytes = readFile(dllFile);
+    
     TestRequest request;
     request.set_dllfile(dllbytes.data(), dllbytes.size());
 
@@ -113,7 +133,15 @@ int main(int argc, char** argv)
     }
     else if(cmd == "tr")
     {
-        HandleTestRequest(argc, argv);
+        try
+        {
+                    HandleTestRequest(argc, argv);
+        }
+        catch (std::exception& ex)
+        {
+        	std::cout << ex.what() << std::endl;
+        }
+
     }
     else if (cmd == "usage")
     {
@@ -147,6 +175,11 @@ int main(int argc, char** argv)
             std::cout << "recv  " << buf << std::endl ;
         }
     }
+    //else if (cmd == "dumpfile")
+    //{
+
+    //    testdumpfile(argc, argv);
+    //}
 
     return 0;
 }

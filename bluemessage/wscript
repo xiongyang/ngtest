@@ -1,0 +1,18 @@
+#!/usr/bin/python
+
+
+
+def options(opt):
+        pass
+    
+
+def configure(conf):
+        pass
+
+def build(bld):
+        bld.stlib(
+                source          = bld.path.ant_glob('*.proto', excl = 'test'),
+                target          = 'bluemessage',
+                export_includes = '.',
+                features = 'cxx',
+                use             =  ['PROTOBUF']) 

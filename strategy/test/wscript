@@ -20,7 +20,7 @@ def build(bld):
                 source          = bld.path.ant_glob('*.cpp'),
                 target          = 'simpletestload',
                 features        = 'test',
-                use             = ['com_interface', 'util', 'simpleLib'],
+                use             = ['com_interface', 'util', 'simpleLib', 'bluemessage'],
                # ut_cwd   = bld.path.abspath(),
                 ut_fun   = fun
     ) 

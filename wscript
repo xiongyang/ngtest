@@ -4,11 +4,11 @@ top = '.'
 out = '_build'
 
 
-packageList = 'interface strategy util backtestbed'
+packageList = 'interface strategy util backtestbed bluemessage'
 protobuf_base = 'protobuf-2.6.1'
 protobuf_src = protobuf_base + '/src'
 
-BluesCXXFlag= ['-std=gnu++14' , '-O2' ]
+BluesCXXFlag= ['-std=gnu++14' , '-O2' ,'-ggdb']
 #,'-I/usr/local/gcc53/include/c++/5.3.0/'
 #BluesCXXFlag= ['-std=c++1y' , '-O2', '-ggdb']
 

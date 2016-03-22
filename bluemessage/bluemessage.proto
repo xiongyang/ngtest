@@ -10,7 +10,12 @@ message prop
 
 message StrategyConfig
 {
-    repeated prop  props = 1;
+    repeated prop props = 1;
+}
+
+message DisplayMessage
+{
+    repeated prop props = 1;
 }
 
 message TestRequest

@@ -12,7 +12,7 @@ def build(bld):
                 source          = bld.path.ant_glob('*.cpp'),
                 target          = 'backtestbed_run',
     
-                use             = ['com_interface', 'backtestbed', 'BOOST']) 
+                use             = ['com_interface', 'backtestbed', 'BOOST', 'bluemessage']) 
 
 
        # bld.add_post_fun(post)
