@@ -3,8 +3,9 @@
 
 #include <iostream>
 #include <sstream>
-#include "../marketdatareplayer.h"
-#include "../marketdatastore.h"
+#include "marketdatareplayer.h"
+#include "marketdatastore.h"
+#include "util.h"
 namespace BluesTrading
 {
     using ::testing::Invoke;

@@ -39,39 +39,4 @@ namespace BluesTrading
         }
     };
 
-    uint32_t getDate(const std::string& date);
-    uint32_t getTime(const std::string& date_time_str);
-
-    //static std::istream& operator>>(std::istream& istream, MarketDataStore& ref)
-    //{
-    //    istream.readref.instIndex;
-    //    istream >>  ref.date;
-    //     int count = 0;
-    //    while(istream)
-    //    {
-    //        count ++;
-    //        CTickData data;
-    //        istream >> data;
-    //        ref.tickDataVec.push_back(std::move(data));
-    //    }
-    //    std::cout << "read " << count << " ticks" << std::endl;
-    //    return istream;
-    //}
-
-    //static std::ostream& operator<<(std::ostream& of, const MarketDataStore& ref )
-    //{
-    //    of <<  ref.instIndex;
-    //    of <<  ref.date;
-    //    int count = 0; 
-    //    for(auto& each :  ref.tickDataVec)
-    //    {
-    //        count ++;
-    //        of << each;
-    //    }
-
-    //     std::cout << "save " << count << " ticks" << std::endl;
-    //    return of;
-    //}
-
-
 }

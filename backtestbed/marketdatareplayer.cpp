@@ -7,18 +7,6 @@
 namespace BluesTrading 
 {
 
-
-
-//template<typename T>
-//void insertTicks(std::vector<CTickData<1>*>& vecForAllDepths, const std::vector<T*>& vec)
-//{
-//    for (auto iter = vec.begin(); iter != vec.end(); ++iter)
-//    {
-//        vecForAllDepths.push_back(reinterpret_cast<CTickData<1>*>(*iter));
-//    }
-//}
-
-
 MarketDataReplayer::MarketDataReplayer(std::vector<MarketDataStore> datestore)
 {
     std::cout << "create MarketDataReplayer store size:" <<  datestore.size() << std::endl;
@@ -27,11 +15,6 @@ MarketDataReplayer::MarketDataReplayer(std::vector<MarketDataStore> datestore)
         uint32_t date = iter->date;
         std::vector<CTickData>& targetDate = dataByDateSorted[date];
         targetDate.insert(targetDate.end(), iter->tickDataVec.begin(),  iter->tickDataVec.end());
-
-        //insertTicks(dataByDateSorted[date], (*iter)->getStore<1>());
-        //insertTicks(dataByDateSorted[date], (*iter)->getStore<5>());
-        //insertTicks(dataByDateSorted[date], (*iter)->getStore<10>());
-        //insertTicks(dataByDateSorted[date], (*iter)->getStore<20>());
     }
 
 
@@ -82,7 +65,6 @@ void MarketDataReplayer::startReplay(uint32_t startdate, uint32_t enddate)
     std::cout << "start Date " << startdate  << "  to "  << enddate << std::endl;
     for(auto iter = dataByDateSorted.begin(); iter != dataByDateSorted.end(); ++iter)
     {
-        std::cout << " Date " << iter->first << std::endl;
         if (iter->first < startdate )
         {
             continue;
@@ -91,7 +73,6 @@ void MarketDataReplayer::startReplay(uint32_t startdate, uint32_t enddate)
         {
             break;
         }
-         std::cout << " Date " << iter->first << " run " << std::endl;
         timerProvider.startDate(iter->first);
 
         std::vector<CTickData>& tickForDay = iter->second;

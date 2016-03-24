@@ -470,4 +470,24 @@ namespace BluesTrading
         }
     }
 
+
+    uint32_t getDate(const std::string& date)
+    {
+        std::vector<std::string> strings;
+        boost::split(strings, date, boost::is_any_of("- "));
+        assert(strings.size() >= 3);
+
+        return atoi(strings[0].c_str())  * 10000  + atoi(strings[1].c_str()) * 100 + atoi(strings[2].c_str()) ;
+    }
+
+    uint32_t getTime(const std::string& dateTime)
+    {
+        //2013-10-10 09:15:05
+        std::vector<std::string> fields;
+        boost::split(fields, dateTime, boost::is_any_of(" :"));
+        return atoi(fields[1].c_str()) * 3600 * 1000 + atoi(fields[2].c_str()) * 60 * 1000 +  atoi(fields[3].c_str()) *  1000;
+        //return 0;
+    } 
+
+
 }

@@ -81,30 +81,58 @@ namespace BluesTrading
     void testPositionManger::printPnl(uint32_t date)
     {
         std::cout << "printPnl " << date << std::endl;
-        auto printPos = [](auto& posPair)
+
+        for (auto& posPair : allPositions_)
         {
             CPosition& pos = posPair.second;
             CPosition::PositionItemContainer& todayPos = pos.getPositions(CPosition::LongToday);
             CPosition::PositionItemContainer& ystPos = pos.getPositions(CPosition::LongYst);
-
-            const std::pair<uint32_t, double> zero_qty_ammount {0, 0.0};
-
-            auto accumulate = [](const auto& sum, const auto& positem)
+            
+            uint32_t tpos = 0;
+            double todayBasis = 0;
+            for (auto& eachTodayPos : todayPos)
             {
-                auto  sumplus = sum;
-                sumplus.first +=  positem.qty;
-                sumplus.second += positem.qty * positem.price;
-                return sumplus;
-            };
-            std::pair<uint32_t, double> todayPosSum  = std::accumulate(todayPos.begin(), todayPos.end(), zero_qty_ammount , accumulate);
-            std::pair<uint32_t, double>  ystPosSum  = std::accumulate(ystPos.begin(), ystPos.end(), zero_qty_ammount , accumulate);
-            double avgPrice = (todayPosSum.second + ystPosSum.second) / (todayPosSum.first + ystPosSum.first);
-            std::cout << boost::format("Inst:%1% Position[%2%(yst) + %3%(today) = %4%] AvgPrice %5% [RelizedPnl: %6%] [PositionPnl: %7%] \n")
-                % posPair.first % ystPosSum.first % todayPosSum.first % (todayPosSum.first + ystPosSum.first) % avgPrice % pos.getRealizedPnL() % pos.getPositionPnl()
-                << std::endl;
-        };
+                tpos += eachTodayPos.qty;
+                todayBasis += eachTodayPos.price * eachTodayPos.qty;
+            }
 
-        std::for_each(allPositions_.begin(), allPositions_.end(), printPos);
+            uint32_t yPos = 0;
+            double ystBasis = 0;
+            for (auto& eachPos : ystPos)
+            {
+                yPos += eachPos.qty;
+                ystBasis += eachPos.price * eachPos.qty;
+            }
+
+            std::cout <<  boost::format("Inst:%1% Position[%2%(yst) + %3%(today) = %4%]") 
+                % posPair.first % yPos % tpos % (tpos + yPos) << std::endl;
+
+        }
+
+        //auto printPos = [](auto& posPair)
+        //{
+        //    CPosition& pos = posPair.second;
+        //    CPosition::PositionItemContainer& todayPos = pos.getPositions(CPosition::LongToday);
+        //    CPosition::PositionItemContainer& ystPos = pos.getPositions(CPosition::LongYst);
+
+        //    const std::pair<uint32_t, double> zero_qty_ammount {0, 0.0};
+
+        //    auto accumulate = [](const auto& sum, const auto& positem)
+        //    {
+        //        auto  sumplus = sum;
+        //        sumplus.first +=  positem.qty;
+        //        sumplus.second += positem.qty * positem.price;
+        //        return sumplus;
+        //    };
+        //    std::pair<uint32_t, double> todayPosSum  = std::accumulate(todayPos.begin(), todayPos.end(), zero_qty_ammount , accumulate);
+        //    std::pair<uint32_t, double>  ystPosSum  = std::accumulate(ystPos.begin(), ystPos.end(), zero_qty_ammount , accumulate);
+        //    double avgPrice = (todayPosSum.second + ystPosSum.second) / (todayPosSum.first + ystPosSum.first);
+        //    std::cout << boost::format("Inst:%1% Position[%2%(yst) + %3%(today) = %4%] AvgPrice %5% [RelizedPnl: %6%] [PositionPnl: %7%] \n")
+        //        % posPair.first % ystPosSum.first % todayPosSum.first % (todayPosSum.first + ystPosSum.first) % avgPrice % pos.getRealizedPnL() % pos.getPositionPnl()
+        //        << std::endl;
+        //};
+
+        //std::for_each(allPositions_.begin(), allPositions_.end(), printPos);
       
     }
 
