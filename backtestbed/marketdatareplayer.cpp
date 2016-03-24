@@ -74,14 +74,15 @@ void MarketDataReplayer::startReplayAllData()
 {
     uint32_t  startdate = dataByDateSorted.begin()->first;
     uint32_t  enddate = dataByDateSorted.rbegin()->first;
-    startReplay(startdate, enddate);
+    startReplay(startdate, enddate + 1);
 }
 
 void MarketDataReplayer::startReplay(uint32_t startdate, uint32_t enddate)
 {
+    std::cout << "start Date " << startdate  << "  to "  << enddate << std::endl;
     for(auto iter = dataByDateSorted.begin(); iter != dataByDateSorted.end(); ++iter)
     {
-        std::cout << "Date " << iter->first << std::endl;
+        std::cout << " Date " << iter->first << std::endl;
         if (iter->first < startdate )
         {
             continue;
@@ -90,7 +91,7 @@ void MarketDataReplayer::startReplay(uint32_t startdate, uint32_t enddate)
         {
             break;
         }
-
+         std::cout << " Date " << iter->first << " run " << std::endl;
         timerProvider.startDate(iter->first);
 
         std::vector<CTickData>& tickForDay = iter->second;

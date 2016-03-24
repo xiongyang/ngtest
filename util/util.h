@@ -7,10 +7,18 @@
 #include <vector>
 #include "OrderData.h"
 #include "boost/filesystem.hpp"
-
+#include "boost/lexical_cast.hpp"
 
 namespace BluesTrading
 {
+
+    template<typename T>
+    void convert(const std::string& value, T& value_output)
+    {
+       value_output =  boost::lexical_cast<T>(value);
+    }
+
+
 
     std::string getTimeInMSStr(uint32_t timeInMS);
 

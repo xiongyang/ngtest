@@ -13,23 +13,30 @@ namespace BluesTrading
 
     void TestFixture::Init(TestRequest& request)
     {
-
+       
         LoadData(request);
         dataReplayer.reset(new MarketDataReplayer(tickDataStore));
-
 
         std::string filename = dumpDllFile(request);
         auto createStrategyFun = GetSharedLibFun<BluesTrading::StrategyFactoryFun>(filename.c_str(),"createStrategy");
 
+        if(!createStrategyFun)
+        {
+            std::cout << "Load DLL Fun Fail " << std::endl;
+            return ;
+        }
+
+
         for (auto& configMessage : request.configspace())
         {
-  
             TestInstGroup inst = LoadTestInstGroup(createStrategyFun);
             std::string configstring ;
             configMessage.SerializeToString(&configstring);
             inst.testStrategy->onMessage(configstring);
             allStrInst.push_back(inst);
         }
+
+        std::cout << "create TestInst " << allStrInst.size()  <<std::endl;
     }
 
     void TestFixture::LoadData(TestRequest& request)
@@ -57,6 +64,10 @@ namespace BluesTrading
         }
         dllfilestream.write(request.dllfile().c_str(), request.dllfile().size());
         dllfilestream.close();
+
+        boost::filesystem::path file(dllFile);
+        permissions(file, boost::filesystem::perms::all_all);
+
         return dllFile;
     }
 
@@ -74,14 +85,10 @@ namespace BluesTrading
         {
             std::cout << "Create Null Strategy " << std::endl;
         }
-
-
         ret.testStrategy.reset(strp);
         ret.orderManager->setPosMgr(ret.posManager.get());
-
         dataReplayer->getTimerProvider()->registerTimerConsumer(ret.posManager.get());
         dataReplayer->subscribeAllInstrument(ret.posManager.get());
-
         return ret;
     }
 

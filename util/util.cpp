@@ -216,7 +216,11 @@ namespace BluesTrading
         size_t filesize = filestr.tellg();
 
         std::string ret;
+        std::cout << "Resize to " << filesize << std::endl;
+
         ret.resize(filesize);
+
+        std::cout << "after Resize to " << filesize << std::endl;
 
         filestr.seekg(0);
         filestr.read((char*)ret.data(), filesize);

@@ -42,12 +42,12 @@ void HandleTestRequest(TestRequest request)
 {
     TestFixture fixture;
     fixture.Init(request);
-    std::cout << "============================" <<std::endl;
+    std::cout << "========  Start Run ====================" <<std::endl;
     fixture.run();
 
     std::vector<std::string> allResult = fixture.getResult();
 
-    std::cout <<"============================="<<std::endl;
+    std::cout <<"=========== End Run getResult ========"<<std::endl;
     for (auto& each: allResult)
     {
         std::cout << each << "\n";
@@ -75,13 +75,13 @@ void HandleTestRequest(TestRequest request)
 
 void HandleTestRequest(int argc, char**argv)
 {
-    std::string dllFile = argv[2];
+    std::string dllFile = argv[3];
     std::string dllbytes = readFile(dllFile);
-    
+
     TestRequest request;
     request.set_dllfile(dllbytes.data(), dllbytes.size());
 
-    std::string configFile = argv[3];
+    std::string configFile = argv[4];
     std::ifstream configFileStream(configFile);
     std::vector< std::unordered_map<std::string, std::string> > allconfig = parserProps(configFileStream);
 
@@ -91,16 +91,18 @@ void HandleTestRequest(int argc, char**argv)
         StrategyConfig* configMessasge = request.add_configspace();
         for (auto& each_pair : each_config)
         {
-              prop* inst =  configMessasge->add_props();
-              inst->set_propname(each_pair.first);
-              inst->set_value(each_pair.second); 
+            prop* inst =  configMessasge->add_props();
+            inst->set_propname(each_pair.first);
+            inst->set_value(each_pair.second); 
         }
     }
 
-    for (int i = 4; i !=argc; ++i)
-    {
-        request.add_datasrc(argv[i]);
-    }
+    //for (int i = 4; i !=argc; ++i)
+    //{
+    //    request.add_datasrc(argv[i]);
+    //}
+
+    request.add_datasrc(argv[2]);
 
     std::cout << "dllfile " << dllFile << " Size "<< dllbytes.size() << "\n";
     std::cout << "datasrc size " << request.datasrc_size() << "\n";
@@ -121,59 +123,62 @@ void getLocalHostRuningStatus()
 
 int main(int argc, char** argv)
 {
-    std::string cmd = argv[1];
- 
-    if(cmd == "cook")
+    try
     {
-        cookData(argv[2]);
-    }
-    else if(cmd == "backend")
-    {
-        testBedRun(argv[2],argv[3], argv[4] , argv[5]);
-    }
-    else if(cmd == "tr")
-    {
-        try
-        {
-                    HandleTestRequest(argc, argv);
-        }
-        catch (std::exception& ex)
-        {
-        	std::cout << ex.what() << std::endl;
-        }
+        std::string cmd = argv[1];
 
-    }
-    else if (cmd == "usage")
-    {
-        while(true)
+        if(cmd == "cook")
         {
-            std::this_thread::sleep_for(std::chrono::seconds(1));
-            getLocalHostRuningStatus();
+            cookData(argv[2]);
+        }
+        else if(cmd == "backend")
+        {
+            testBedRun(argv[2],argv[3], argv[4] , argv[5]);
+        }
+        else if(cmd == "tr")
+        {
+            HandleTestRequest(argc, argv);
+        }
+        else if (cmd == "usage")
+        {
+            while(true)
+            {
+                std::this_thread::sleep_for(std::chrono::seconds(1));
+                getLocalHostRuningStatus();
+            }
+        }
+        else if (cmd == "bo")
+        {
+            std::cout << "Send Hello Bo" << std::endl;
+            UdpSender sender(argv[2], argv[3]);
+            std::cout << "Send Hello to" <<argv[2] << ":" << argv[3] <<  std::endl;
+            while (true)
+            {
+                std::this_thread::sleep_for(std::chrono::seconds(1));
+                std::cout << "Send Hello " << std::endl;
+                std::cout << "SendSize " << sender.send("Hello") << std::endl ;
+            }
+        }
+        else if (cmd == "recv")
+        {
+            UdpReceiver recver(argv[2], argv[3]);
+            std::cout << "Send RecvFrom " <<argv[2] << ":" << argv[3] <<  std::endl;
+            while (true)
+            {
+                std::this_thread::sleep_for(std::chrono::seconds(1));
+                std::string buf;
+                recver.receiver(&buf);
+                std::cout << "recv  " << buf << std::endl ;
+            }
         }
     }
-    else if (cmd == "bo")
+    catch (std::exception& ex)
     {
-        std::cout << "Send Hello Bo" << std::endl;
-        UdpSender sender(argv[2], argv[3]);
-        std::cout << "Send Hello to" <<argv[2] << ":" << argv[3] <<  std::endl;
-        while (true)
-        {
-            std::this_thread::sleep_for(std::chrono::seconds(1));
-            std::cout << "Send Hello " << std::endl;
-            std::cout << "SendSize " << sender.send("Hello") << std::endl ;
-        }
+        std::cout << ex.what() << std::endl;
     }
-    else if (cmd == "recv")
+    catch (...)
     {
-        UdpReceiver recver(argv[2], argv[3]);
-        std::cout << "Send RecvFrom " <<argv[2] << ":" << argv[3] <<  std::endl;
-        while (true)
-        {
-            std::this_thread::sleep_for(std::chrono::seconds(1));
-            std::string buf;
-            recver.receiver(&buf);
-            std::cout << "recv  " << buf << std::endl ;
-        }
+        std::cout << "Test Catch " << std::endl;
     }
     //else if (cmd == "dumpfile")
     //{
