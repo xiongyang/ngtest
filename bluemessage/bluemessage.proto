@@ -18,11 +18,20 @@ message DisplayMessage
     repeated prop props = 1;
 }
 
+message DataSrc
+{
+    repeated string instrument = 1;
+    optional uint32 start_date = 2;
+    optional uint32 end_date = 3;
+    optional uint32 datasrcType  = 4;     // 0 mean it's the dir.  // 1 mean the MS Sql table // 2 mean mysql table 
+    repeated string   datasrcInfo = 5;     // one or more fields for sql (eg. table name and password , user and so on) 
+}
+
 message TestRequest
 {
     optional bytes dllFile = 1;
     repeated StrategyConfig configSpace = 2;
-    repeated string datasrc = 3;
+    repeated DataSrc datasrc = 3;
 }
 
 message TestResult

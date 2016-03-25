@@ -41,6 +41,22 @@ namespace BluesTrading
         return pTimeBuf;
     }
 
+    std::string getTimeStr(uint32_t timeInMS)
+    {
+        uint32_t ms = timeInMS % 1000;
+        uint32_t s = timeInMS  / 1000 % 60;
+        uint32_t min = timeInMS / (60 * 1000) % 60;
+        uint32_t hour = timeInMS / (60 * 60 * 1000);
+        return (boost::format("%02d:%02d:%02d.%03d") % hour % min % s % ms).str();
+    }
+
+
+
+    std::uint32_t getTimeInMS(int hour, int mins, int second, int ms /*= 0*/)
+    {
+        return hour * 3600 * 1000 + mins * 60 * 1000 + second * 1000 + ms ;
+    }
+
     void printOrder(std::ostream& of, const OrderDataDetail& order)
     {
         switch(order.exchangeType)
@@ -62,14 +78,6 @@ namespace BluesTrading
         }
     }
 
-    const std::string getTimeStr(uint32_t timeInMS)
-    {
-        uint32_t ms = timeInMS % 1000;
-        uint32_t s = timeInMS  / 1000 % 60;
-        uint32_t min = timeInMS / (60 * 1000) % 60;
-        uint32_t hour = timeInMS / (60 * 60 * 1000);
-        return (boost::format("%02d:%02d:%02d.%02d") % hour % min % s % ms).str();
-    }
 
     std::vector< std::unordered_map<std::string, std::string> > parserProps(std::istream& inputStr)
     {
@@ -216,12 +224,7 @@ namespace BluesTrading
         size_t filesize = filestr.tellg();
 
         std::string ret;
-        std::cout << "Resize to " << filesize << std::endl;
-
         ret.resize(filesize);
-
-        std::cout << "after Resize to " << filesize << std::endl;
-
         filestr.seekg(0);
         filestr.read((char*)ret.data(), filesize);
 

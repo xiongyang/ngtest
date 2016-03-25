@@ -23,8 +23,8 @@ namespace BluesTrading
     uint32_t getTime(const std::string& date_time_str);
 
     std::string getTimeInMSStr(uint32_t timeInMS);
-
-    const std::string getTimeStr(uint32_t timeInMS);
+    std::string getTimeStr(uint32_t timeInMS);
+    uint32_t getTimeInMS(int hour, int mins, int second, int ms = 0);
 
     void printOrder(std::ostream& of, const OrderDataDetail& order);
 
@@ -34,7 +34,7 @@ namespace BluesTrading
     template<typename MapType, typename pred>
     void remove_if_map(MapType&& c, pred&& predfun);
 
-    std::vector< std::unordered_map<std::string, std::string> > parserProps(std::istream& inputStr);
+    std::vector< std::unordered_map<std::string, std::string> >  parserProps(std::istream& inputStr);
     std::unordered_map<std::string, std::vector<std::string>>    parserPropsSpace(std::istream& inputstream);
     std::string readFile(const std::string& file);
 

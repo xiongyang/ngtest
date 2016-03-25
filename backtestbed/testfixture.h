@@ -34,7 +34,7 @@ namespace BluesTrading
 
     private:
         //// dir or file
-        void LoadData(TestRequest& request);
+        //void LoadData(TestRequest& request);
         std::string dumpDllFile(TestRequest& request);
         TestInstGroup LoadTestInstGroup(BluesTrading::StrategyFactoryFun createFun);
        
@@ -46,13 +46,11 @@ namespace BluesTrading
         virtual std::string getName() override;
 
     private:
-      ////  bool    isStop;
-        std::vector<MarketDataStore> tickDataStore;
-        std::shared_ptr<MarketDataReplayer> dataReplayer;
-
+      //////  bool    isStop;
+      //  std::vector<MarketDataStore> tickDataStore;
+      //  std::shared_ptr<MarketDataReplayer> dataReplayer;
 
         std::vector<TestInstGroup>  allStrInst;
-
         nullLogger  logger;
         TestConfigureManager configureManager;
     };

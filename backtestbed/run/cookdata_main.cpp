@@ -2,13 +2,15 @@
 #include "testbed.h"
 #include "marketdatastore.h"
 #include "util.h"
+#include "bluemessage.pb.h"
+#include "testfixture.h"
 
 #include <iostream>
 #include <string>
 #include <fstream>
 #include <thread>
-#include "bluemessage.pb.h"
-#include "testfixture.h"
+
+#include <boost/algorithm/string.hpp>
 
 
 using namespace BluesTrading;
@@ -40,69 +42,136 @@ void testBedRun(const std::string& dir, const std::string& strategy, const std::
 
 void HandleTestRequest(TestRequest request)
 {
-    TestFixture fixture;
-    fixture.Init(request);
-    std::cout << "========  Start Run ====================" <<std::endl;
-    fixture.run();
+    //TestFixture fixture;
+    //fixture.Init(request);
+    //std::cout << "========  Start Run ====================" <<std::endl;
+    //fixture.run();
 
-    std::vector<std::string> allResult = fixture.getResult();
+    //std::vector<std::string> allResult = fixture.getResult();
 
-    std::cout <<"=========== End Run getResult ========"<<std::endl;
-    for (auto& each: allResult)
-    {
-        std::cout << each << "\n";
-    }
-    std::cout << std::endl;
+    //std::cout <<"=========== End Run getResult ========"<<std::endl;
+    //for (auto& each: allResult)
+    //{
+    //    std::cout << each << "\n";
+    //}
+    //std::cout << std::endl;
 }
 
-//void testdumpfile(int argc, char**argv)
-//{
-//    std::string dllFile = argv[2];
-//    std::string dllBytes = readFile(dllFile);
-//
-//    std::string dumpfile = "tempfile2.dll";
-//    std::fstream dumpfile_stream(dumpfile, std::ios_base::out | std::ios_base::binary);
-//    if (! dumpfile_stream)
-//    {
-//        std::cerr << " Create TempDll File Fail " << std::endl;
-//        throw std::exception(/*" Create TempDll File Fail "*/);
-//    }
-//    dumpfile_stream.write(dllBytes.c_str(), dllBytes.size());
-//    dumpfile_stream.close();
-//}
 
-
-
-void HandleTestRequest(int argc, char**argv)
+struct DataSrcInfo
 {
-    std::string dllFile = argv[3];
+    std::vector<std::string> instruments;
+    uint32_t start_date;
+    uint32_t end_date;
+    uint32_t datasrcType;     // 0 mean it's the dir.  // 1 mean the MS Sql table // 2 mean mysql table 
+    std::vector<std::string>    datasrcInfo;    // one or more fields for sql (eg. table name and password , user and so on) 
+
+    void clear()
+    {
+        instruments.clear();
+        datasrcInfo.clear();
+        start_date = 0;
+        end_date = 0;
+        datasrcType = -1;
+    }
+};
+
+
+std::vector<DataSrcInfo> getDataSrcInfo( const std::unordered_map<std::string, std::string>&  config)
+{
+    const int substr_off = strlen("DataSrc_");
+
+    std::vector<DataSrcInfo> ret;
+    DataSrcInfo currentDataSrc;
+
+    for (auto& each_pair : config)
+    {
+        const std::string& key_value = each_pair.first;
+        const std::string& value = each_pair.second;
+        if (key_value.find("DataSrc_") != std::string::npos)
+        {
+            std::string subkey = key_value.substr(substr_off);
+            if(subkey.find("Instruments") != std::string::npos)
+            {
+                if (currentDataSrc.instruments.size() != 0)
+                {
+                    ret.push_back(currentDataSrc);
+                }
+                currentDataSrc.clear();
+                boost::split(currentDataSrc.instruments,value, boost::algorithm::is_any_of("#"));
+            }
+            else if(subkey.find("StartDate") != std::string::npos)
+            {
+                currentDataSrc.start_date = atoi(value.c_str());
+            }
+            else if(subkey.find("EndDate") != std::string::npos)
+            {
+                currentDataSrc.end_date = atoi(value.c_str());
+            }
+            else if(subkey.find("Type") != std::string::npos)
+            {
+                currentDataSrc.datasrcType = atoi(value.c_str());
+            }
+            else if(subkey.find("Info") != std::string::npos)
+            {
+                boost::split(currentDataSrc.datasrcInfo,value, boost::algorithm::is_any_of("#"));
+            }
+        }
+    }
+
+    if (currentDataSrc.instruments.size() > 0 )
+    {
+        ret.push_back(currentDataSrc);
+    }
+
+    return ret;
+}
+void CreateTestRequest(int argc, char**argv)
+{
+    std::string dllFile = argv[2];
     std::string dllbytes = readFile(dllFile);
 
     TestRequest request;
     request.set_dllfile(dllbytes.data(), dllbytes.size());
 
-    std::string configFile = argv[4];
+    std::string configFile = argv[3];
     std::ifstream configFileStream(configFile);
     std::vector< std::unordered_map<std::string, std::string> > allconfig = parserProps(configFileStream);
 
+     std::vector<DataSrcInfo>  datasrcInfo = getDataSrcInfo(*allconfig.begin());
+
+     for (auto& eachDataSrc: datasrcInfo)
+     {
+         DataSrc* datasrcMsg = request.add_datasrc();
+
+         for (auto& each : eachDataSrc.instruments)
+         {
+             datasrcMsg->add_instrument(each);
+         }
+         for (auto& each : eachDataSrc.datasrcInfo)
+         {
+             datasrcMsg->add_datasrcinfo(each);
+         }
+
+         datasrcMsg->set_start_date(eachDataSrc.start_date);
+         datasrcMsg->set_end_date(eachDataSrc.end_date);
+         datasrcMsg->set_datasrctype(eachDataSrc.datasrcType);
+     }
 
     for (auto& each_config : allconfig)
     {
         StrategyConfig* configMessasge = request.add_configspace();
         for (auto& each_pair : each_config)
         {
-            prop* inst =  configMessasge->add_props();
-            inst->set_propname(each_pair.first);
-            inst->set_value(each_pair.second); 
+            if (each_pair.first.find("DataSrc_") == std::string::npos)
+            {
+                prop* inst =  configMessasge->add_props();
+                inst->set_propname(each_pair.first);
+                inst->set_value(each_pair.second); 
+            }
         }
     }
 
-    //for (int i = 4; i !=argc; ++i)
-    //{
-    //    request.add_datasrc(argv[i]);
-    //}
-
-    request.add_datasrc(argv[2]);
 
     std::cout << "dllfile " << dllFile << " Size "<< dllbytes.size() << "\n";
     std::cout << "datasrc size " << request.datasrc_size() << "\n";
@@ -137,7 +206,7 @@ int main(int argc, char** argv)
         }
         else if(cmd == "tr")
         {
-            HandleTestRequest(argc, argv);
+            CreateTestRequest(argc, argv);
         }
         else if (cmd == "usage")
         {
