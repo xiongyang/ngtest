@@ -130,6 +130,11 @@ namespace BluesTrading
                 if (cache_result.empty())
                 {
                     std::string cache_file_name = getInstumentDataPath(inst_index, date);
+                    std::string dirname = getInstrumentDir(inst_index);
+                    if (!boost::filesystem::exists(dirname))
+                    {
+                        boost::filesystem::create_directory(dirname);
+                    }
                     MarketDataStore storeforday(inst_index, date);
 
                     CTickData tick;
@@ -195,7 +200,7 @@ namespace BluesTrading
                     }
 
                     storeforday.sort();
-                    storeforday.saveToBinFile(cache_result);
+                    storeforday.saveToBinFile(cache_file_name);
                     cache_status[inst_index].cacheStatus_[date] = cache_result;
                     std::cout << "Load Data  " << inst << "  Date:" << date << " SaveTo " << cache_result << std::endl;
                 }
