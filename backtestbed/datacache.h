@@ -22,7 +22,7 @@ namespace BluesTrading
         void getDataFromRemote(const std::vector<std::string>& instruments, const std::vector<std::string>& dateinfos, uint32_t datatype, uint32_t date);
         void getDataFromMSSql(const std::vector<std::string>& instruments, const std::vector<std::string>& dateinfos, uint32_t date);
         void CheckCacheForInst(const boost::filesystem::path& checkpath);
-        void doGetDatFromMSSql(const std::string& tableview, const std::string& inst, uint32_t date, const std::string& fileStorePath);
+      
         std::string getInstrumentDir(uint32_t inst);
         std::string getInstumentDataPath(uint32_t inst, uint32_t date);
         struct InstCacheInfo 

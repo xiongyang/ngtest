@@ -130,11 +130,8 @@ namespace BluesTrading
                 if (cache_result.empty())
                 {
                     std::string cache_file_name = getInstumentDataPath(inst_index, date);
-                    std::string dirname = getInstrumentDir(inst_index);
-                    if (!boost::filesystem::exists(dirname))
-                    {
-                        boost::filesystem::create_directory(dirname);
-                    }
+               
+           
                     MarketDataStore storeforday(inst_index, date);
 
                     CTickData tick;
@@ -295,18 +292,10 @@ namespace BluesTrading
 
 
 
-
-
-    void DataCache::doGetDatFromMSSql(const std::string& tableview, const std::string& inst, uint32_t date, const std::string& fileStorePath)
-    {
-      
-
-    }
-
     std::string DataCache::getInstrumentDir(uint32_t inst)
     {
         boost::filesystem::path localPath(localCache_path);
-        localPath /= boost::lexical_cast<std::string>(inst);
+        localPath.append( boost::lexical_cast<std::string>(inst));
         return localPath.string();
     }
 
@@ -321,6 +310,7 @@ namespace BluesTrading
         std::string cache_file_name = boost::lexical_cast<std::string>(inst);
         cache_file_name += "_";
         cache_file_name += boost::lexical_cast<std::string>(date);
+        cache_file_name += ".bin";
 
         instrumentdir.append(cache_file_name);
         return instrumentdir.string();
