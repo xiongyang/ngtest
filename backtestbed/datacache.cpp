@@ -201,8 +201,8 @@ namespace BluesTrading
 
                     storeforday.sort();
                     storeforday.saveToBinFile(cache_file_name);
-                    cache_status[inst_index].cacheStatus_[date] = cache_result;
-                    std::cout << "Load Data  " << inst << "  Date:" << date << " SaveTo " << cache_result << std::endl;
+                    cache_status[inst_index].cacheStatus_[date] = cache_file_name;
+                    std::cout << "Load Data  " << inst << "  Date:" << date << " SaveTo " << cache_file_name << std::endl;
                 }
             }
 
