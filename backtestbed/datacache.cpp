@@ -21,6 +21,7 @@ namespace BluesTrading
 
     void DataCache::InitDataCache(const std::string& dirName)
     {
+        localCache_path = dirName;
         if (!boost::filesystem::exists(dirName))
         {
             std::cout << "DataCache dir not exists" << dirName;
