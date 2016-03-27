@@ -24,6 +24,7 @@ namespace BluesTrading
         if (!boost::filesystem::exists(dirName))
         {
             std::cout << "DataCache dir not exists" << dirName;
+            boost::filesystem::create_directory(dirName);
             return;
         }
 
@@ -108,6 +109,24 @@ namespace BluesTrading
                 uint32_t inst_index = getInstrumentIndex(inst);
                 std::string cache_result = getDataCache(inst_index, date);
 
+                otl_datetime startTime;
+                startTime.year = date / 10000;
+                startTime.month = (date - startTime.year * 10000) / 100;
+                startTime.day = date % 100;
+                startTime.hour = 0;
+                startTime.minute = 0;
+                startTime.second = 0;
+                // startTime.set_non_null();
+
+
+                otl_datetime endTime;
+                endTime.year = date / 10000;
+                endTime.month = (date - endTime.year * 10000) / 100;
+                endTime.day = date % 100;
+                endTime.hour = 23;
+                endTime.minute = 59;
+                endTime.second = 59;
+
                 if (cache_result.empty())
                 {
                     std::string cache_file_name = getInstumentDataPath(inst_index, date);
@@ -117,23 +136,7 @@ namespace BluesTrading
                     otl_datetime fulltime;
                     fulltime.frac_precision = 3;
 
-                    otl_datetime startTime;
-                    startTime.year = date / 10000;
-                    startTime.month = (date - fulltime.year * 10000) / 100;
-                    startTime.day = date % 100;
-                    startTime.hour = 0;
-                    startTime.minute = 0;
-                    startTime.second = 0;
-                   // startTime.set_non_null();
      
-
-                    otl_datetime endTime;
-                    endTime.year = date / 10000;
-                    endTime.month = (date - fulltime.year * 10000) / 100;
-                    endTime.day = date % 100;
-                    endTime.hour = 23;
-                    endTime.minute = 59;
-                    endTime.second = 59;
                    // endTime.set_non_null();
 
                     tick.instIndex = inst_index;
@@ -141,9 +144,9 @@ namespace BluesTrading
                         "bidprice1,bidsize1,bidprice2,bidsize2,bidprice3,bidsize3,bidprice4,bidsize4,bidprice5,bidsize5,bidprice6,bidsize6,bidprice7,bidsize7,bidprice8,bidsize8,bidprice9,bidsize9,bidprice10,bidsize10,"
                         "askprice1,asksize1,askprice2,asksize2,askprice3,asksize3,askprice4,asksize4,askprice5,asksize5,askprice6,asksize6,askprice7,asksize7,askprice8,asksize8,askprice9,asksize9,askprice10,asksize10"
                        " from " + mssql_table;
-                    query_str += " where instrument = ";
+                    query_str += " where instrument = '";
                     query_str += inst;
-                    query_str += " and fulltime >:startTime<timestamp>  and fulltime <:endTime<timestamp> ";
+                    query_str += "' and fulltime >:startTime<timestamp>  and fulltime <:endTime<timestamp> ";
                     otl_stream query_stream(50000, // buffer size
                         query_str.c_str(),
                         // SELECT statement
