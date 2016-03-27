@@ -70,6 +70,15 @@ namespace BluesTrading
         return tick;
     }
 
+    void MarketDataStore::sort()
+    {
+        auto sortfunForTick = [](const CTickData& lr, const CTickData& rr)
+        {
+            return lr.timeInMS < rr.timeInMS;
+        };
+        std::sort(tickDataVec.begin(), tickDataVec.end(), sortfunForTick);
+    }
+
     void MarketDataStore::loadDataFromFile(const std::string& fileName)
     {
 

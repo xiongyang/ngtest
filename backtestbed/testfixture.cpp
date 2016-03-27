@@ -16,6 +16,9 @@ namespace BluesTrading
         //LoadData(request);
         //dataReplayer.reset(new MarketDataReplayer(tickDataStore));
 
+
+        prepareDataCache(request);
+
         std::string filename = dumpDllFile(request);
         auto createStrategyFun = GetSharedLibFun<BluesTrading::StrategyFactoryFun>(filename.c_str(),"createStrategy");
 
@@ -89,6 +92,11 @@ namespace BluesTrading
         //dataReplayer->getTimerProvider()->registerTimerConsumer(ret.posManager.get());
         //dataReplayer->subscribeAllInstrument(ret.posManager.get());
         return ret;
+    }
+
+    void TestFixture::prepareDataCache(TestRequest& request)
+    {
+
     }
 
     void TestFixture::run()

@@ -474,6 +474,8 @@ namespace BluesTrading
     }
 
 
+
+
     uint32_t getDate(const std::string& date)
     {
         std::vector<std::string> strings;
@@ -491,6 +493,22 @@ namespace BluesTrading
         return atoi(fields[1].c_str()) * 3600 * 1000 + atoi(fields[2].c_str()) * 60 * 1000 +  atoi(fields[3].c_str()) *  1000;
         //return 0;
     } 
+
+    uint32_t getInstrumentIndex(const std::string& instrument)
+    {
+        if (instrument == "ag")
+        {
+            return 5280000;
+        }
+        else if (instrument == "pb")
+        {
+            return 5290000;
+        }
+        else
+        {
+            return 0;
+        }
+    }
 
 
 }

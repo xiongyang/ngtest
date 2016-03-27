@@ -12,8 +12,6 @@ BluesCXXFlag= ['-std=gnu++14' , '-O2' ]
 #,'-I/usr/local/gcc53/include/c++/5.3.0/'
 #BluesCXXFlag= ['-std=c++1y' , '-O2', '-ggdb']
 
-
-
 import sys
 def options(opt):
         opt.load('compiler_cxx boost')
@@ -54,6 +52,7 @@ def configure(conf):
         print (sys.platform)
         if sys.platform == 'win32' or sys.platform == 'cygwin':
             conf.define('_BL_WIN32_PLATFROM_', 1)
+            conf.env.LIB_ODBC = ['odbc32']
            # conf.env['CXX'] = "/usr/bin/x86_64-w64-mingw32-g++.exe"
            # conf.env.append_unique("CXXFLAGS", ["-D__USE_W32_SOCKETS"])
         else:

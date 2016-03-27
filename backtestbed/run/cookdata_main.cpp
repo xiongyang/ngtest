@@ -4,6 +4,7 @@
 #include "util.h"
 #include "bluemessage.pb.h"
 #include "testfixture.h"
+#include "datacache.h"
 
 #include <iostream>
 #include <string>
@@ -42,39 +43,20 @@ void testBedRun(const std::string& dir, const std::string& strategy, const std::
 
 void HandleTestRequest(TestRequest request)
 {
-    //TestFixture fixture;
-    //fixture.Init(request);
-    //std::cout << "========  Start Run ====================" <<std::endl;
-    //fixture.run();
+    TestFixture fixture;
+    fixture.Init(request);
+    std::cout << "========  Start Run ====================" << std::endl;
+    fixture.run();
 
-    //std::vector<std::string> allResult = fixture.getResult();
+    std::vector<std::string> allResult = fixture.getResult();
 
-    //std::cout <<"=========== End Run getResult ========"<<std::endl;
-    //for (auto& each: allResult)
-    //{
-    //    std::cout << each << "\n";
-    //}
-    //std::cout << std::endl;
-}
-
-
-struct DataSrcInfo
-{
-    std::vector<std::string> instruments;
-    uint32_t start_date;
-    uint32_t end_date;
-    uint32_t datasrcType;     // 0 mean it's the dir.  // 1 mean the MS Sql table // 2 mean mysql table 
-    std::vector<std::string>    datasrcInfo;    // one or more fields for sql (eg. table name and password , user and so on) 
-
-    void clear()
+    std::cout << "=========== End Run getResult ========" << std::endl;
+    for (auto& each : allResult)
     {
-        instruments.clear();
-        datasrcInfo.clear();
-        start_date = 0;
-        end_date = 0;
-        datasrcType = -1;
+        std::cout << each << "\n";
     }
-};
+    std::cout << std::endl;
+}
 
 
 std::vector<DataSrcInfo> getDataSrcInfo( const std::unordered_map<std::string, std::string>&  config)
@@ -126,7 +108,7 @@ std::vector<DataSrcInfo> getDataSrcInfo( const std::unordered_map<std::string, s
 
     return ret;
 }
-void CreateTestRequest(int argc, char**argv)
+TestRequest CreateTestRequest(int argc, char**argv)
 {
     std::string dllFile = argv[2];
     std::string dllbytes = readFile(dllFile);
@@ -175,10 +157,10 @@ void CreateTestRequest(int argc, char**argv)
 
     std::cout << "dllfile " << dllFile << " Size "<< dllbytes.size() << "\n";
     std::cout << "datasrc size " << request.datasrc_size() << "\n";
-    std::cout << "configspce size " << request.configspace_size() << "\n";
+    std::cout << "configspace size " << request.configspace_size() << "\n";
 
 
-    HandleTestRequest(request);
+    return request;
 }
 
 // get the hardware info. and avgLoad current
@@ -239,6 +221,26 @@ int main(int argc, char** argv)
                 recver.receiver(&buf);
                 std::cout << "recv  " << buf << std::endl ;
             }
+        }
+        else if (cmd == "sql")
+        {
+            //auto request = CreateTestRequest(argc, argv);
+            DataCache cache;
+            cache.InitDataCache("LocalCache");
+            DataSrcInfo inst;
+            inst.datasrcType = 1;
+            inst.instruments.push_back("ag");
+            inst.start_date = 20160201;
+            inst.end_date = 20160322;
+            inst.datasrcInfo.push_back("dl_level2");
+            inst.datasrcInfo.push_back("lfull_sunrain_shfe_test");
+            cache.addDataCacheRequest(inst);
+            //for (auto& datasrc : request.datasrc())
+            //{
+            // 
+
+            //}
+           
         }
     }
     catch (std::exception& ex)

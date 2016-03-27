@@ -37,6 +37,9 @@ namespace BluesTrading
         //void LoadData(TestRequest& request);
         std::string dumpDllFile(TestRequest& request);
         TestInstGroup LoadTestInstGroup(BluesTrading::StrategyFactoryFun createFun);
+
+
+        void prepareDataCache(TestRequest& request);
        
       
     public:

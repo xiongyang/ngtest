@@ -44,3 +44,4 @@ protobuf-2.6.1/src/google/protobuf/io/.deps/
 protobuf-2.6.1/src/google/protobuf/stubs/.deps/
 protobuf-2.6.1/src/google/protobuf/testing/.deps/
 protobuf-2.6.1/stamp-h1
+ngtest_sln_vs10/ngtest_sln.VC.opendb

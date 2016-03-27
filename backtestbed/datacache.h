@@ -1,0 +1,38 @@
+#pragma once
+
+#include "util.h"
+
+#include <string>
+#include <unordered_map>
+#include <map>
+
+namespace BluesTrading
+{
+    class DataCache
+    {
+    public:
+        void InitDataCache(const std::string& datachaceDir);    // check local cache and 
+        void addDataCacheRequest(const DataSrcInfo& datarequest);
+
+        //get the DataCached File path. if not cached. return empty string
+        std::string getDataCache(uint32_t inst, uint32_t date);
+       
+
+    private:
+        void getDataFromRemote(const std::vector<std::string>& instruments, const std::vector<std::string>& dateinfos, uint32_t datatype, uint32_t date);
+        void getDataFromMSSql(const std::vector<std::string>& instruments, const std::vector<std::string>& dateinfos, uint32_t date);
+        void CheckCacheForInst(const boost::filesystem::path& checkpath);
+        void doGetDatFromMSSql(const std::string& tableview, const std::string& inst, uint32_t date, const std::string& fileStorePath);
+        std::string getInstrumentDir(uint32_t inst);
+        std::string getInstumentDataPath(uint32_t inst, uint32_t date);
+        struct InstCacheInfo 
+        {
+            std::map<uint32_t, std::string> cacheStatus_;      // Every Date Cache Status
+        };
+
+        std::unordered_map<uint32_t, InstCacheInfo>  cache_status;
+        std::string localCache_path;
+    };
+
+
+}

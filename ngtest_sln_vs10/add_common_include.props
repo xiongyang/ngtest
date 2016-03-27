@@ -3,7 +3,7 @@
   <ImportGroup Label="PropertySheets" />
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
-    <IncludePath>../../interface;../../util;../../_build/bluemessage;$(IncludePath)</IncludePath>
+    <IncludePath>../../interface;../../util;../../_build/bluemessage;../../../../../../../usr/include;C:\cygwin64\usr\include\;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>

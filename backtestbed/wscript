@@ -15,5 +15,5 @@ def build(bld):
                 target          = 'backtestbed',
                 includes        = '.',
                 export_includes = '.',
-                use             =  ['com_interface', 'util', 'BOOST', 'bluemessage']) 
+                use             =  ['com_interface', 'util', 'BOOST', 'bluemessage', 'ODBC']) 
         bld.recurse('test run') 

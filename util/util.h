@@ -1,16 +1,41 @@
 #pragma once
+
+#include "OrderData.h"
+
 #include <string>
 #include <stdio.h>
 #include <functional>
 #include <iostream>
 #include <unordered_map>
 #include <vector>
-#include "OrderData.h"
+
 #include "boost/filesystem.hpp"
 #include "boost/lexical_cast.hpp"
 
 namespace BluesTrading
 {
+
+
+
+    struct DataSrcInfo
+    {
+        std::vector<std::string> instruments;
+        uint32_t start_date;
+        uint32_t end_date;
+        uint32_t datasrcType;     // 0 mean it's the dir.  // 1 mean the MS Sql table // 2 mean mysql table 
+        std::vector<std::string>    datasrcInfo;    // one or more fields for sql (eg. table name and password , user and so on) 
+
+        void clear()
+        {
+            instruments.clear();
+            datasrcInfo.clear();
+            start_date = 0;
+            end_date = 0;
+            datasrcType = -1;
+        }
+    };
+
+    uint32_t getInstrumentIndex(const std::string& instrument);
 
     template<typename T>
     void convert(const std::string& value, T& value_output)
