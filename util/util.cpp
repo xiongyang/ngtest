@@ -609,6 +609,7 @@ namespace BluesTrading
         else if (instrument == "RM")
         {
             return 5460000;
+        }
         else if (instrument == "MA")
         {
             return 5470000;
