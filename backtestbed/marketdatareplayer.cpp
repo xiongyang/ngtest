@@ -107,4 +107,23 @@ std::set<ITickDataConsumer*> MarketDataReplayer::getAllSubscriber()
     return ret;
 }
 
+MarketDataReplayerMultiThread::MarketDataReplayerMultiThread(std::vector<MarketDataStore> datestore, uint32_t date)
+    : date_(date)
+{
+    std::cout << "create MarketDataReplayerMultiThread store size:" <<  datestore.size() << " date:" <<  date << "\n";
+
+
+    auto sortfunForTick = [](const CTickData& lr , const CTickData& rr)
+    {
+        return lr.timeInMS < rr.timeInMS;
+    };
+
+    for (std::vector<MarketDataStore>::iterator iter = datestore.begin(); iter != datestore.end(); ++iter)
+    {
+        std::vector<CTickData> tempret;
+        std::merge(allTicks_.begin(), allTicks_.end(), iter->tickDataVec.begin(), iter->tickDataVec.end(), tempret.begin(), sortfunForTick);
+        allTicks_.swap(tempret);
+    }
+}
+
 }

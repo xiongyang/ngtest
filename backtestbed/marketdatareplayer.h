@@ -40,7 +40,24 @@ namespace BluesTrading
         std::map<uint32_t, std::vector<CTickData> >   dataByDateSorted;
         std::set<ITickDataConsumer*>    allSubscribe_;
         FakeTimerProvider   timerProvider;
-    
+    };
+
+    // only for one day
+    class MarketDataReplayerMultiThread : public IMarketDataProvider
+    {
+    public:
+        MarketDataReplayerMultiThread(std::vector<MarketDataStore> datestore, uint32_t date);
+        virtual void subscribeInstrument(uint32_t instrumentID,ITickDataConsumer* handler ) override;
+        virtual void unSubscribeInstrument(uint32_t instrumentID, ITickDataConsumer* handler) override;
+        virtual void subscribeAllInstrument(ITickDataConsumer* handler) override;
+        virtual void unSubscribeAllInstrument(ITickDataConsumer* handler) override;
+
+    public:
+        void StartReplay(std::set<ITickDataConsumer*>  consumer, FakeTimerProvider* timerProvider) const;
+
+    private:
+        uint32_t date_;
+        std::vector<CTickData> allTicks_;
     };
 
 
