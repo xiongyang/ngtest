@@ -18,6 +18,7 @@
 
 namespace BluesTrading
 {
+    class      DataCache;
     class TestFixture :public IConfigureable
     {
         struct TestInstGroup
@@ -28,7 +29,7 @@ namespace BluesTrading
         };
 
     public:
-        void Init(TestRequest& request);
+        void Init(TestRequest& request, DataCache* data);
         void run();
         std::vector<std::string> getResult() {return logger.getResult();}
 
@@ -56,5 +57,6 @@ namespace BluesTrading
         std::vector<TestInstGroup>  allStrInst;
         nullLogger  logger;
         TestConfigureManager configureManager;
+        DataCache* data_;
     };
 }

@@ -1,24 +1,27 @@
-#include <fstream>
-#include <iostream>
-#include "boost/filesystem.hpp"
-
+#include "util.h"
 #include "testfixture.h"
 #include "dynamicloader.h"
+#include "datacache.h"
+
+#include "boost/filesystem.hpp"
+
+#include <fstream>
+#include <iostream>
 #include <chrono>
-#include "util.h"
 #include <exception>
 
 namespace BluesTrading
 {
 
-    void TestFixture::Init(TestRequest& request)
+    void TestFixture::Init(TestRequest& request, DataCache* data)
     {
+        data_ = data;
         //LoadData(request);
         //dataReplayer.reset(new MarketDataReplayer(tickDataStore));
 
-
-        prepareDataCache(request);
-
+        std::thread getDataCache( [&](){prepareDataCache(request);} );
+        getDataCache.detach();
+ 
         std::string filename = dumpDllFile(request);
         auto createStrategyFun = GetSharedLibFun<BluesTrading::StrategyFactoryFun>(filename.c_str(),"createStrategy");
 
@@ -94,9 +97,21 @@ namespace BluesTrading
         return ret;
     }
 
-    void TestFixture::prepareDataCache(TestRequest& request)
+
+    std::vector<DataSrcInfo> getDataSrcInfoFromRequest(TestRequest& request)
     {
 
+    }
+
+    void TestFixture::prepareDataCache(TestRequest& request)
+    {
+        std::cout << "Start Fetch DataCache \n";
+        std::vector<DataSrcInfo> src= getDataSrcInfoFromRequest(request);
+        for (auto& datasrc : src)
+        {
+             data_->addDataCacheRequest(datasrc);
+        }
+       
     }
 
     void TestFixture::run()

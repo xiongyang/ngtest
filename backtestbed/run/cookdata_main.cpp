@@ -17,6 +17,8 @@
 using namespace BluesTrading;
 
 
+
+
 void cookData(const std::string& dirName)
 {
 
@@ -41,10 +43,10 @@ void testBedRun(const std::string& dir, const std::string& strategy, const std::
     return ;
 }
 
-void HandleTestRequest(TestRequest request)
+void HandleTestRequest(TestRequest request, DataCache* datacache)
 {
     TestFixture fixture;
-    fixture.Init(request);
+    fixture.Init(request, datacache);
     std::cout << "========  Start Run ====================" << std::endl;
     fixture.run();
 
@@ -108,6 +110,8 @@ std::vector<DataSrcInfo> getDataSrcInfo( const std::unordered_map<std::string, s
 
     return ret;
 }
+
+
 TestRequest CreateTestRequest(int argc, char**argv)
 {
     std::string dllFile = argv[2];
@@ -174,6 +178,9 @@ void getLocalHostRuningStatus()
 
 int main(int argc, char** argv)
 {
+
+    DataCache datacache;
+    datacache.InitDataCache("LocalCache");
     try
     {
         std::string cmd = argv[1];
@@ -188,7 +195,8 @@ int main(int argc, char** argv)
         }
         else if(cmd == "tr")
         {
-            CreateTestRequest(argc, argv);
+           auto request =  CreateTestRequest(argc, argv);
+           HandleTestRequest(request, &datacache);
         }
         else if (cmd == "usage")
         {
@@ -224,17 +232,14 @@ int main(int argc, char** argv)
         }
         else if (cmd == "sql")
         {
-            //auto request = CreateTestRequest(argc, argv);
-            DataCache cache;
-            cache.InitDataCache("LocalCache");
             DataSrcInfo inst;
             inst.datasrcType = 1;
             inst.instruments.push_back("ag");
             inst.start_date = 20160201;
-            inst.end_date = 20160322;
+            inst.end_date = 20160203;
             inst.datasrcInfo.push_back("dl_level2");
             inst.datasrcInfo.push_back("lfull_sunrain_shfe_test");
-            cache.addDataCacheRequest(inst);
+            datacache.addDataCacheRequest(inst);
             //for (auto& datasrc : request.datasrc())
             //{
             // 
