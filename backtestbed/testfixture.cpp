@@ -19,8 +19,7 @@ namespace BluesTrading
         //LoadData(request);
         //dataReplayer.reset(new MarketDataReplayer(tickDataStore));
 
-        std::thread getDataCache( [&](){prepareDataCache(request);} );
-        getDataCache.detach();
+        fetchDataCacheThread = std::thread ( [&](){prepareDataCache(request);} );
  
         std::string filename = dumpDllFile(request);
         auto createStrategyFun = GetSharedLibFun<BluesTrading::StrategyFactoryFun>(filename.c_str(),"createStrategy");
@@ -117,6 +116,9 @@ namespace BluesTrading
     void TestFixture::run()
     {
         //dataReplayer->startReplayAllData();
+
+        if(fetchDataCacheThread.joinable())   fetchDataCacheThread.join();
+      
     }
 
     void TestFixture::onMessage(const std::string& propName)

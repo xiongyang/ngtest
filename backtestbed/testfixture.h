@@ -58,5 +58,6 @@ namespace BluesTrading
         nullLogger  logger;
         TestConfigureManager configureManager;
         DataCache* data_;
+        std::thread fetchDataCacheThread;
     };
 }
