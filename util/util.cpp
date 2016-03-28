@@ -504,11 +504,112 @@ namespace BluesTrading
     {
         if (instrument == "ag")
         {
+            return 5200000;
+        }
+        else if (instrument == "rb")
+        {
+            return 5210000;
+        }
+        else if (instrument == "au")
+        {
+            return 5220000;
+        }
+        else if (instrument == "bu")
+        {
+            return 5230000;
+        }
+        else if (instrument == "cu")
+        {
+            return 5240000;
+        }
+        else if (instrument == "hc")
+        {
+            return 5250000;
+        }
+        else if (instrument == "ni")
+        {
+            return 5260000;
+        }
+        else if (instrument == "ru")
+        {
+            return 5270000;
+        }
+        else if (instrument == "zn")
+        {
             return 5280000;
         }
-        else if (instrument == "pb")
+        else if (instrument == "a")
         {
             return 5290000;
+        }
+        else if (instrument == "c")
+        {
+            return 5300000;
+        }
+        else if (instrument == "cs")
+        {
+            return 5310000;
+        }
+        else if (instrument == "i")
+        {
+            return 5320000;
+        }
+        else if (instrument == "j")
+        {
+            return 5330000;
+        }
+        else if (instrument == "jm")
+        {
+            return 5340000;
+        else if (instrument == "jd")
+        {
+            return 5350000;
+        }
+        else if (instrument == "l")
+        {
+            return 5360000;
+        }
+        else if (instrument == "m")
+        {
+            return 5370000;
+        }
+        else if (instrument == "p")
+        {
+            return 5380000;
+        else if (instrument == "pp")
+        {
+            return 5390000;
+        }
+        else if (instrument == "y")
+        {
+            return 5400000;
+        }
+        else if (instrument == "CF")
+        {
+            return 5410000;
+        }
+        else if (instrument == "TA")
+        {
+            return 5420000;
+        }
+        else if (instrument == "TA")
+        {
+            return 5430000;
+        }
+        else if (instrument == "SR")
+        {
+            return 5440000;
+        }
+        else if (instrument == "FG")
+        {
+            return 5450000;
+        }
+        else if (instrument == "RM")
+        {
+            return 5460000;
+        else if (instrument == "MA")
+        {
+            return 5470000;
         }
         else
         {
