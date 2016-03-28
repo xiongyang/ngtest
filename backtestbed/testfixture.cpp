@@ -16,8 +16,6 @@ namespace BluesTrading
     void TestFixture::Init(TestRequest& request, DataCache* data)
     {
         data_ = data;
-        //LoadData(request);
-        //dataReplayer.reset(new MarketDataReplayer(tickDataStore));
 
         fetchDataCacheThread = std::thread ( [&](){prepareDataCache(request);} );
  
@@ -43,20 +41,6 @@ namespace BluesTrading
         std::cout << "create TestInst " << allStrInst.size()  <<std::endl;
     }
 
-    //void TestFixture::LoadData(TestRequest& request)
-    //{ 
-        //auto insertToTickDataStore = [&](const std::string& fileName)
-        //{
-        //    tickDataStore.push_back(MarketDataStore(fileName));
-        //};
-
-        //for (auto& eachdatesrc : request.datasrc())
-        //{
-        //    traverseDir(eachdatesrc, insertToTickDataStore);
-        //}
-
-    //}
-
     std::string TestFixture::dumpDllFile(TestRequest& request)
     {
         std::string dllFile = "tempfile.dll";
@@ -78,16 +62,16 @@ namespace BluesTrading
     TestFixture::TestInstGroup TestFixture::LoadTestInstGroup(BluesTrading::StrategyFactoryFun createFun)
     {
         TestFixture::TestInstGroup ret;
-        //ret.orderManager.reset(new FakeOrderManager);
-        //ret.posManager.reset(new testPositionManger);
-        //BluesTrading::IStrategy* strp  = createFun("teststr", 
-        //    &logger, &configureManager,  dataReplayer.get(), 
-        //    dataReplayer->getTimerProvider(),  ret.orderManager.get(),
-        //    ret.posManager.get());
+        ret.orderManager.reset(new FakeOrderManager);
+        ret.posManager.reset(new testPositionManger);
+        //bluestrading::istrategy* strp  = createfun("teststr", 
+        //    &logger, &configuremanager,  datareplayer.get(), 
+        //    datareplayer->gettimerprovider(),  ret.ordermanager.get(),
+        //    ret.posmanager.get());
 
         //if (strp == nullptr)
         //{
-        //    std::cout << "Create Null Strategy " << std::endl;
+        //    std::cout << "create null strategy " << std::endl;
         //}
         //ret.testStrategy.reset(strp);
         //ret.orderManager->setPosMgr(ret.posManager.get());
@@ -99,7 +83,28 @@ namespace BluesTrading
 
     std::vector<DataSrcInfo> getDataSrcInfoFromRequest(TestRequest& request)
     {
+         std::vector<DataSrcInfo> ret;
+         for (auto& datasrcinfo :request.datasrc())
+         {
+             DataSrcInfo inst;
+             for(auto& each_id : datasrcinfo.instrument())
+             {
+                 inst.instruments.push_back(each_id);
+             }
 
+             for(auto& each_info : datasrcinfo.datasrcinfo())
+             {
+                 inst.datasrcInfo.push_back(each_info);
+             }
+
+
+             inst.start_date = datasrcinfo.start_date();
+             inst.end_date = datasrcinfo.end_date();
+             inst.datasrcType = datasrcinfo.datasrctype();
+             ret.push_back(inst);
+         }
+
+         return ret;
     }
 
     void TestFixture::prepareDataCache(TestRequest& request)
