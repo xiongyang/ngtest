@@ -485,7 +485,7 @@ namespace BluesTrading
         return atoi(strings[0].c_str())  * 10000  + atoi(strings[1].c_str()) * 100 + atoi(strings[2].c_str()) ;
     }
 
-    uint32_t getTime(const std::string& dateTime)
+    uint32_t getTimeFromDateTime(const std::string& dateTime)
     {
         //2013-10-10 09:15:05
         std::vector<std::string> fields;
@@ -493,6 +493,12 @@ namespace BluesTrading
         return atoi(fields[1].c_str()) * 3600 * 1000 + atoi(fields[2].c_str()) * 60 * 1000 +  atoi(fields[3].c_str()) *  1000;
         //return 0;
     } 
+
+	 uint32_t getTime(const std::string& date_time_str)
+	 {
+		 return 0;
+	 }
+
 
     uint32_t getInstrumentIndex(const std::string& instrument)
     {

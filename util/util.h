@@ -45,7 +45,8 @@ namespace BluesTrading
 
     // used for stock raw data
     uint32_t getDate(const std::string& date);
-    uint32_t getTime(const std::string& date_time_str);
+    uint32_t getTimeFromDateTime(const std::string& date_time_str);
+	uint32_t getTime(const std::string& date_time_str);
 
     std::string getTimeInMSStr(uint32_t timeInMS);
     std::string getTimeStr(uint32_t timeInMS);
