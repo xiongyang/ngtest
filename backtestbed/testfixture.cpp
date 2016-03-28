@@ -34,7 +34,7 @@ namespace BluesTrading
             TestInstGroup inst = LoadTestInstGroup(createStrategyFun);
             std::string configstring ;
             configMessage.SerializeToString(&configstring);
-            inst.testStrategy->onMessage(configstring);
+          //  inst.testStrategy->onMessage(configstring);
             allStrInst.push_back(inst);
         }
 
