@@ -561,6 +561,7 @@ namespace BluesTrading
         else if (instrument == "jm")
         {
             return 5340000;
+        }
         else if (instrument == "jd")
         {
             return 5350000;
@@ -576,6 +577,7 @@ namespace BluesTrading
         else if (instrument == "p")
         {
             return 5380000;
+        }
         else if (instrument == "pp")
         {
             return 5390000;
