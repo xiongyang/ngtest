@@ -236,7 +236,7 @@ int main(int argc, char** argv)
             inst.datasrcType = 1;
             inst.instruments.push_back("ag");
             inst.start_date = 20160201;
-            inst.end_date = 20160203;
+            inst.end_date = 20160230;
             inst.datasrcInfo.push_back("dl_level2");
             inst.datasrcInfo.push_back("lfull_sunrain_shfe_test");
             datacache.addDataCacheRequest(inst);
