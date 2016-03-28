@@ -4,27 +4,21 @@
 // DataSrc_Type find info in bluemessage.proto	
 // Instrument 必须是每组DataSrc的第一行
 DataSrc_Instruments=ag#ru
-DataSrc_StartDate=20131010
-DataSrc_EndDate=20131212
+DataSrc_StartDate=20160201
+DataSrc_EndDate=20160228
 
-// Type equal 2 mean MySql DataSrc
-DataSrc_Type=2
-DataSrc_Info=192.168.1.70#3000#User#Pass#SqlTable
+// Type equal 2 mean MySql DataSrc  1 mean MS SQl
+DataSrc_Type=1
+DataSrc_Info=dl_level2#lfull_sunrain_shfe_test
 
 
-DataSrc_Instruments_pb=pb
-DataSrc_StartDate_pb=20131010
-DataSrc_EndDate_pb=20131212
+
+//DataSrc_Instruments_10000=100000
+//DataSrc_StartDate_10000=20131010
+//DataSrc_EndDate_10000=20131212
 // Type equal 1 mean mssql datasrc
-DataSrc_Type_pb=1
-DataSrc_Info_pb=MsSqlDataSrc#Tables#Views
-
-DataSrc_Instruments_10000=100000
-DataSrc_StartDate_10000=20131010
-DataSrc_EndDate_10000=20131212
-// Type equal 1 mean mssql datasrc
-DataSrc_Type_10000=1
-DataSrc_Info_10000=MsSqlDataSrc#Tables#Views
+//DataSrc_Type_10000=1
+//DataSrc_Info_10000=MsSqlDataSrc#Tables#Views
 
 
 
