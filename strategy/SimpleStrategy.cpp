@@ -57,9 +57,6 @@ namespace BluesTrading
 
     void SimpleStrategy::onStartDay(uint32_t date)
     {
-
-        PositionItem yst_1_pos {2200, 1000, true,false};
-        positionManager_->getPosition(1).addPosition(yst_1_pos);
         std::cout << "start day " << date << "\n";
 
         //TODO order Mask

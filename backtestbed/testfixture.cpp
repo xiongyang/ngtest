@@ -117,7 +117,7 @@ namespace BluesTrading
         ret.orderManager.reset(new FakeOrderManager);
         ret.posManager.reset(new testPositionManger);
         ret.timerProvider.reset(new FakeTimerProvider);
-        ret.current_date = 0;
+        ret.current_date = std::make_shared<uint32_t>(0);
 
         BluesTrading::IStrategy* strp  = createFun("teststr",  &logger, &configureManager,  &nullDataReplayer,  
             ret.timerProvider.get(),  ret.orderManager.get(), ret.posManager.get());
@@ -194,7 +194,7 @@ namespace BluesTrading
         uint32_t min_usage_date = 0;
         for (auto& str : allStrInst)
         {
-            if (str.current_date == 0)
+            if (*str.current_date == 0)
             {
                 //  it not finished any day yet. so no clean
                 return;
@@ -202,11 +202,11 @@ namespace BluesTrading
 
             if (min_usage_date == 0)
             {
-                min_usage_date = str.current_date;
+                min_usage_date = *str.current_date;
             }
             else
             {
-                min_usage_date = std::min(min_usage_date, str.current_date);
+                min_usage_date = std::min(min_usage_date, *str.current_date);
             }
         }
 
@@ -229,13 +229,13 @@ namespace BluesTrading
     {
 
        uint32_t targetDate = 0;
-       if (inst.current_date == 0)
+       if (*inst.current_date == 0)
        {
            targetDate = datasrc[0].start_date;
        }
        else
        {
-           auto start_ = getDateFromNum( inst.current_date);
+           auto start_ = getDateFromNum( *inst.current_date);
            start_ += boost::gregorian::days(1);
 
            targetDate = getNumFromDate(start_);
@@ -253,15 +253,15 @@ namespace BluesTrading
        std::shared_ptr<MarketDataReplayerMultiThread> data =  getMarketReplayer(targetDate);
        if (data)
        {
-           std::cout << "runForDay Start Run Day " << targetDate << "\n";
+           std::cout << "runForDay Start Run Day " << targetDate << "data Date:" << data->getDate() << "\n";
            std::set<ITickDataConsumer*> consumer;
            consumer.insert(inst.testStrategy.get());
            consumer.insert(inst.posManager.get());
 
            data->StartReplay(consumer, inst.timerProvider.get());
             std::cout << "runForDay Finished Run Day " << targetDate << "\n";
-           inst.current_date = data->getDate();
-            postRunWork(inst);
+           *inst.current_date = targetDate;
+           postRunWork(inst);
        }
        else
        {

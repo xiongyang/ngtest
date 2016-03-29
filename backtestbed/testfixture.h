@@ -31,9 +31,8 @@ namespace BluesTrading
             std::shared_ptr<IStrategy>  testStrategy;
             std::shared_ptr<FakeTimerProvider>  timerProvider;
           //  std::shared_ptr<boost::asio::io_service::strand> strandForThisStrategy;
-            uint32_t current_date;
+             std::shared_ptr<uint32_t>  current_date;
         };
-
     public:
         void Init(TestRequest& request, DataCache* data);
 
