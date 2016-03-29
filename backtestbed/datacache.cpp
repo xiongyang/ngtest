@@ -54,26 +54,17 @@ namespace BluesTrading
         }
     }
 
-    std::tuple<uint32_t, uint32_t,uint32_t> spliteYearMonthDay(uint32_t date)
-    {
-        uint32_t start_year = date / 10000;
-        uint32_t start_month = ( date - start_year * 10000) / 100;
-        uint32_t start_day = date % 100;
-        return std::make_tuple(start_year, start_month, start_day);
-    }
+
 
     void DataCache::addDataCacheRequest(const DataSrcInfo& datarequest)
     {
-        auto start_ = spliteYearMonthDay(datarequest.start_date);
-        auto end_ = spliteYearMonthDay(datarequest.end_date);
-
-        boost::gregorian::date start(std::get<0>(start_), std::get<1>(start_), std::get<2>(start_));
-        boost::gregorian::date end(std::get<0>(end_), std::get<1>(end_), std::get<2>(end_));
+        boost::gregorian::date start = getDateFromNum(datarequest.start_date);
+        boost::gregorian::date end = getDateFromNum(datarequest.end_date); 
         boost::gregorian::days one_day(1);
 
         for (auto date = start; date != end; date += one_day)
         {
-            uint32_t dateint = boost::lexical_cast<uint32_t>( boost::gregorian::to_iso_string(date));
+            uint32_t dateint = getNumFromDate(date);
             getDataFromRemote(datarequest.instruments, datarequest.datasrcInfo, datarequest.datasrcType, dateint);
         }
     }

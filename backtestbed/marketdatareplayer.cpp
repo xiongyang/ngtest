@@ -126,4 +126,22 @@ MarketDataReplayerMultiThread::MarketDataReplayerMultiThread(std::vector<MarketD
     }
 }
 
+
+
+void MarketDataReplayerMultiThread::StartReplay(std::set<ITickDataConsumer*> consumer, FakeTimerProvider* timerProvider) const
+{
+    timerProvider->startDate(date_);
+
+    for(auto& tick : allTicks_)
+    {
+        timerProvider->setNextTickTime(tick.timeInMS);
+        for (auto& eachConsumer : consumer)
+        {
+            eachConsumer->onMarketData(tick);
+        }
+    }
+
+    timerProvider->endDate(date_);
+}
+
 }

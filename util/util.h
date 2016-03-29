@@ -11,6 +11,7 @@
 
 #include "boost/filesystem.hpp"
 #include "boost/lexical_cast.hpp"
+#include "boost/date_time.hpp"
 
 namespace BluesTrading
 {
@@ -34,6 +35,10 @@ namespace BluesTrading
             datasrcType = -1;
         }
     };
+
+    
+    boost::gregorian::date getDateFromNum(uint32_t date);
+    uint32_t getNumFromDate(boost::gregorian::date date);
 
     uint32_t getInstrumentIndex(const std::string& instrument);
 

@@ -13,11 +13,7 @@
 
 #include <boost/algorithm/string.hpp>
 
-
 using namespace BluesTrading;
-
-
-
 
 void cookData(const std::string& dirName)
 {

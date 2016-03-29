@@ -500,7 +500,9 @@ namespace BluesTrading
 	 }
 
 
-    uint32_t getInstrumentIndex(const std::string& instrument)
+
+
+     uint32_t getInstrumentIndex(const std::string& instrument)
     {
         if (instrument == "ag")
         {
@@ -620,5 +622,24 @@ namespace BluesTrading
         }
     }
 
+    std::tuple<uint32_t, uint32_t,uint32_t> spliteYearMonthDay(uint32_t date)
+    {
+        uint32_t start_year = date / 10000;
+        uint32_t start_month = ( date - start_year * 10000) / 100;
+        uint32_t start_day = date % 100;
+        return std::make_tuple(start_year, start_month, start_day);
+    }
+
+    boost::gregorian::date getDateFromNum(uint32_t date)
+    {
+       auto datetuple = spliteYearMonthDay(date);
+       return boost::gregorian::date( std::get<0>(datetuple), std::get<1>(datetuple), std::get<2>(datetuple));
+    }
+
+
+    uint32_t getNumFromDate(boost::gregorian::date date)
+    {
+        return boost::lexical_cast<uint32_t>( boost::gregorian::to_iso_string(date));
+    }
 
 }
