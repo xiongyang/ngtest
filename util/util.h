@@ -19,7 +19,7 @@ namespace BluesTrading
 
 
     struct DataSrcInfo
-1    {
+    {
         std::vector<std::string> instruments;
         uint32_t start_date;
         uint32_t end_date;
