@@ -151,10 +151,10 @@ namespace BluesTrading
 
         for (auto date = start; date != end; date += one_day)
         {
-            {
-                std::lock_guard<std::mutex>  guard(dateReplayerMutex);
-                waitforDataSlotAviale();
-            }
+
+
+            waitforDataSlotAviale();
+
 
             uint32_t dateint = boost::lexical_cast<uint32_t>( boost::gregorian::to_iso_string(date));
             std::vector<MarketDataStore> alldata;
@@ -222,11 +222,15 @@ namespace BluesTrading
             if(each.first <= min_usage_date)
                 removedays.insert(each.first);
         }
-        for(auto & each_remove_day : removedays)
-        {
-            dateReplayerStored.erase(each_remove_day);
 
+        {
+            std::lock_guard<std::mutex>  guard(dateReplayerMutex);
+            for(auto & each_remove_day : removedays)
+            {
+                dateReplayerStored.erase(each_remove_day);
+            }
         }
+
 
         std::cout << "Remove " << removedays.size() << " Days Date From Memory" << std::endl;
     }
@@ -249,8 +253,9 @@ namespace BluesTrading
        }
 
 
-       if (targetDate >=  datasrc.rbegin()->end_date)
+       if (targetDate >= datasrc[0].end_date)
        {
+           std::cout << "Finishe to Date " << targetDate << " endDate:" <<  datasrc[0].end_date << std::endl;
            //end run of this inst
            return;
        }
@@ -271,8 +276,9 @@ namespace BluesTrading
        }
        else
        {
+          std::cout << "Not get Data for Date Yet. sleep  1 second " << targetDate << std::endl;
           std::this_thread::sleep_for(std::chrono::seconds(1));
-           postRunWork(inst);
+          postRunWork(inst);
        }
     }
 
