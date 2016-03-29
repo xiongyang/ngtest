@@ -49,8 +49,9 @@ namespace BluesTrading
     void TestFixture::Init(TestRequest& request, DataCache* data)
     {
         data_ = data;
-        datasrc= getDataSrcInfoFromRequest(request);
-
+        datasrc = getDataSrcInfoFromRequest(request);
+        singleDataSrcInfo = datasrc[0];
+       
         for (auto& singleData : datasrc)
         {
              std::thread  fetchThread ( [&](){prepareDataCache(singleData);} );
@@ -144,9 +145,9 @@ namespace BluesTrading
 
     void TestFixture::prepareMarketDataReplayer()
     {
-
-        boost::gregorian::date start(getDateFromNum(datasrc[0].start_date));
-        boost::gregorian::date end(getDateFromNum(datasrc[0].end_date));
+        DataSrcInfo& target = singleDataSrcInfo;
+        boost::gregorian::date start(getDateFromNum(target.start_date));
+        boost::gregorian::date end(getDateFromNum(target.end_date));
         boost::gregorian::days one_day(1);
 
         for (auto date = start; date != end; date += one_day)

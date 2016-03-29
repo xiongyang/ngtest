@@ -244,7 +244,7 @@ namespace BluesTrading
                 boost::split(filename_parts, fileName, boost::is_any_of("_"));
                 uint32_t date = boost::lexical_cast<uint32_t>(filename_parts[1]);
                 uint32_t inst = boost::lexical_cast<uint32_t>(filename_parts[0]);
-                cache_status[inst].cacheStatus_[date] = x.path().filename().string();
+                cache_status[inst].cacheStatus_[date] = x.path().string();
             }
         }
     }

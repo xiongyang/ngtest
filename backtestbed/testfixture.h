@@ -78,6 +78,7 @@ namespace BluesTrading
         boost::asio::io_service io_;
 
         std::vector<DataSrcInfo> datasrc;
+        DataSrcInfo             singleDataSrcInfo;
         std::map<uint32_t, std::shared_ptr<MarketDataReplayerMultiThread> > dateReplayerStored;
         std::mutex dateReplayerMutex;
     };
