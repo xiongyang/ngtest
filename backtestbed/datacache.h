@@ -8,6 +8,7 @@
 
 namespace BluesTrading
 {
+    const static char * LocalCacheFileIndexFileName = "index.txt";
     class DataCache
     {
     public:
@@ -32,6 +33,8 @@ namespace BluesTrading
 
         std::unordered_map<uint32_t, InstCacheInfo>  cache_status;
         std::string localCache_path;
+        boost::filesystem::path index_file_path;
+        std::unorderd_map<std::string, uint32_t>  cached_file_size;
     };
 
 

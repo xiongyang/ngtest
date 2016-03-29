@@ -30,6 +30,13 @@ namespace BluesTrading
             return;
         }
 
+        index_file_path = (dirName);
+        index_file_path.append(LocalCacheFileIndexFileName);
+        if (!boost::filesystem::exists(dirName))
+        {
+              std::cout << "DataCache dir not exists" << dirName;
+        }
+
 
         if (boost::filesystem::is_directory(dirName))
         {
@@ -207,6 +214,7 @@ namespace BluesTrading
 
                     storeforday.sort();
                     storeforday.saveToBinFile(cache_file_name);
+                    boost::filesystem::file_size(cache_file_name);
                     cache_status[inst_index].cacheStatus_[date] = cache_file_name;
                     std::cout << "Load Data  " << inst << "  Date:" << date << " SaveTo " << cache_file_name << std::endl;
                 }
@@ -239,67 +247,6 @@ namespace BluesTrading
             }
         }
     }
-
-
-
-
-
-
-
-
-
-    //int main()
-    //{
-    //    otl_connect db; // connect object
-    //    otl_connect::otl_initialize(); // initialize ODBC environment
-    //    try {
-
-    //        //db.rlogon("UID=system;PWD=oracle;DSN=Single_test"); // connect to ODBC
-    //        db.rlogon("DSN=Single_test");
-
-    //        {
-    //            otl_stream i(50, // buffer size
-    //                "select top 100 * from spot",
-    //                // SELECT statement
-    //                db // connect object
-    //                );
-
-    //            while (!i.eof()) { // while not end-of-data
-    //                               //char fulltime[50];
-    //                otl_value<otl_datetime> fulltime;
-    //                //unsigned int fulltime;
-    //                double bidprice;
-    //                int bidsize;
-    //                double askprice;
-    //                int asksize;
-    //                double tradeprice;
-    //                int totalVol;
-    //                int reciD;
-    //                char instrumentID[20];
-
-    //                int openinterst;
-
-    //                i >> fulltime >> bidprice >> bidsize >> askprice >> asksize >> tradeprice >> totalVol >> reciD >> (char*)&instrumentID >> openinterst;
-    //                std::cout << " " << fulltime << " " << bidprice << " " << bidsize << " " << askprice << " " << asksize << " " << tradeprice << " " << totalVol << " " << reciD << " " << instrumentID << " " << openinterst;
-    //                std::cout << std::endl;
-    //            }
-    //        }
-    //    }
-
-    //    catch (otl_exception& p) { // intercept OTL exceptions
-    //        cerr << p.msg << endl; // print out error message
-    //        cerr << p.stm_text << endl; // print out SQL that caused the error
-    //        cerr << p.sqlstate << endl; // print out SQLSTATE message
-    //        cerr << p.var_info << endl; // print out the variable that caused the error
-    //    }
-
-    //    db.logoff(); // disconnect from Oracle
-
-    //    return 0;
-
-    //}
-
-
 
     std::string DataCache::getInstrumentDir(uint32_t inst)
     {
