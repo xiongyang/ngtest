@@ -210,11 +210,19 @@ namespace BluesTrading
             }
         }
 
-        auto iter = dateReplayerStored.lower_bound(min_usage_date + 1);
-        size_t cleandays = std::distance(dateReplayerStored.begin(), iter);
-     
-        dateReplayerStored.erase(dateReplayerStored.begin(), iter);
-        std::cout << "Remove " << cleandays << " Days Date From Memory" << std::endl;
+        std::set<uint32_t> removedays;
+        for (auto& each : dateReplayerStored)
+        {
+            if(each.first <= min_usage_date)
+                removedays.insert(each.first);
+        }
+        for(auto & each_remove_day : removedays)
+        {
+            dateReplayerStored.erase(each_remove_day);
+
+        }
+
+        std::cout << "Remove " << removedays.size() << " Days Date From Memory" << std::endl;
     }
 
     void TestFixture::runForDay(TestInstGroup inst)
