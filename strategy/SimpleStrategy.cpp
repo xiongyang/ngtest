@@ -79,7 +79,7 @@ namespace BluesTrading
     {
         //boost::format fmt("%1%,%2%,%3%,%4%,%5%,%6%,");
         //fmt % date %
-        logger_->LogEOD("date,par1,para2,para3,tradenum,profit","");
+        logger_->LogEOD("date,par1,para2,para3,tradenum,profit","xxxx,1111,1222");
     }
 
     void SimpleStrategy::onMarketData(const CTickData& data)

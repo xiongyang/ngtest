@@ -118,15 +118,22 @@ MarketDataReplayerMultiThread::MarketDataReplayerMultiThread(std::vector<MarketD
         return lr.timeInMS < rr.timeInMS;
     };
 
-    std::vector<CTickData> tempret;
+    //std::vector<CTickData> tempret;
+    //for (std::vector<MarketDataStore>::iterator iter = datestore.begin(); iter != datestore.end(); ++iter)
+    //{
+    //    tempret.clear();
+    //    std::merge(allTicks_.begin(), allTicks_.end(), iter->tickDataVec.begin(), iter->tickDataVec.end(), tempret.begin(), sortfunForTick);
+    //    allTicks_.swap(tempret);
+    //}
+
     for (std::vector<MarketDataStore>::iterator iter = datestore.begin(); iter != datestore.end(); ++iter)
     {
-        tempret.clear();
-        std::merge(allTicks_.begin(), allTicks_.end(), iter->tickDataVec.begin(), iter->tickDataVec.end(), tempret.begin(), sortfunForTick);
-        allTicks_.swap(tempret);
+        allTicks_.insert(allTicks_.end(), iter->tickDataVec.begin(), iter->tickDataVec.end());
+        std::sort(allTicks_.begin(), allTicks_.end(), sortfunForTick);
+        //    std::sort(vec.begin(), vec.end(), sortfunForTick);
     }
 
-    std::cout << "1 create MarketDataReplayerMultiThread store size:" <<  datestore.size() << " date:" <<  date << "\n";
+   // std::cout << "1 create MarketDataReplayerMultiThread store size:" <<  datestore.size() << " date:" <<  date << "\n";
 }
 
 
