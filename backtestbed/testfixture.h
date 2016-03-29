@@ -14,6 +14,7 @@
 #include <memory>
 #include <vector>
 #include <thread>
+#include <mutex>
 
 #include <boost/asio/io_service.hpp>
 
@@ -78,5 +79,6 @@ namespace BluesTrading
 
         std::vector<DataSrcInfo> datasrc;
         std::map<uint32_t, std::shared_ptr<MarketDataReplayerMultiThread> > dateReplayerStored;
+        std::mutex dateReplayerMutex;
     };
 }

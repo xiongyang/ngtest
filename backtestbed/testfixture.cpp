@@ -150,7 +150,10 @@ namespace BluesTrading
 
         for (auto date = start; date != end; date += one_day)
         {
-            waitforDataSlotAviale();
+            {
+                std::lock_guard<std::mutex>  guard(dateReplayerMutex);
+                waitforDataSlotAviale();
+            }
 
             uint32_t dateint = boost::lexical_cast<uint32_t>( boost::gregorian::to_iso_string(date));
             std::vector<MarketDataStore> alldata;
@@ -170,14 +173,16 @@ namespace BluesTrading
                 alldata.emplace_back(cache_path);   
             }
             std::cout << "Load   date:" << dateint << "  in Memory" << std::endl;
-            dateReplayerStored[dateint] = std::make_shared<MarketDataReplayerMultiThread>(alldata, dateint);
+            {
+                std::lock_guard<std::mutex>  guard(dateReplayerMutex);
+                dateReplayerStored[dateint] = std::make_shared<MarketDataReplayerMultiThread>(alldata, dateint);
+            }
         }
    
     }
 
     void TestFixture::waitforDataSlotAviale()
     {
-      
         do 
         {
              cleanFinishedDataReplyer();
@@ -272,6 +277,7 @@ namespace BluesTrading
 
     std::shared_ptr<MarketDataReplayerMultiThread> TestFixture::getMarketReplayer(uint32_t date)
     {
+       std::lock_guard<std::mutex>  guard(dateReplayerMutex);
        auto iter =  dateReplayerStored.find(date);
        if (iter != dateReplayerStored.end())
        {
