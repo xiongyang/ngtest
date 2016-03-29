@@ -30,12 +30,13 @@ namespace BluesTrading
             return;
         }
 
-        index_file_path = (dirName);
-        index_file_path.append(LocalCacheFileIndexFileName);
-        if (!boost::filesystem::exists(dirName))
-        {
-              std::cout << "DataCache dir not exists" << dirName;
-        }
+        //index_file_path = (dirName);
+        //index_file_path.append(LocalCacheFileIndexFileName);
+        //if (!boost::filesystem::exists(dirName))
+        //{
+        //      std::cout << "DataCache IndexFile not exists" << dirName;
+        //      return;
+        //}
 
 
         if (boost::filesystem::is_directory(dirName))

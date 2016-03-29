@@ -6,6 +6,8 @@
 #include <unordered_map>
 #include <map>
 
+
+//TODO log every cache filesize for valid the Cache file
 namespace BluesTrading
 {
     const static char * LocalCacheFileIndexFileName = "index.txt";
@@ -34,7 +36,7 @@ namespace BluesTrading
         std::unordered_map<uint32_t, InstCacheInfo>  cache_status;
         std::string localCache_path;
         boost::filesystem::path index_file_path;
-        std::unorderd_map<std::string, uint32_t>  cached_file_size;
+        std::unordered_map<std::string, uint32_t>  cached_file_size;
     };
 
 
