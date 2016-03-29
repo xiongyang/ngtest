@@ -35,6 +35,7 @@ namespace BluesTrading
 
     void SimpleStrategy::onTimer(uint32_t eventID, uint32_t currentTime)
     {
+        return;
         std::cout << "EventID:" << eventID << " Time:" << currentTime << std::endl;
         if(eventID == 1)
         {
@@ -81,6 +82,7 @@ namespace BluesTrading
 
     void SimpleStrategy::onMarketData(const CTickData& data)
     {
+        return;
         static int count = 0;
         count ++ ;
 
