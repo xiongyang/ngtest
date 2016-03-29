@@ -258,7 +258,7 @@ namespace BluesTrading
        std::shared_ptr<MarketDataReplayerMultiThread> data =  getMarketReplayer(targetDate);
        if (data)
        {
-           std::cout << "runForDay Start Run Day " << targetDate << "data Date:" << data->getDate()  << " ThreadID :" std::this_thread::id() << "\n";
+           std::cout << "runForDay Start Run Day " << targetDate << "data Date:" << data->getDate()  << " ThreadID :" << std::this_thread::id() << "\n";
            std::set<ITickDataConsumer*> consumer;
            consumer.insert(inst.testStrategy.get());
            consumer.insert(inst.posManager.get());
