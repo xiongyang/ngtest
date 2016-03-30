@@ -85,7 +85,7 @@ namespace BluesTrading
         std::cout << "create TestInst " << allStrInst.size()  <<std::endl;
 
 
-        std::cout << "Create Work Thread Group " << std::endl;
+       
         int cores = std::thread::hardware_concurrency();
         int thread_num  = std::min(cores + 4,  int(cores * 1.5));
         thread_num = std::min(int(allStrInst.size()), thread_num);
@@ -93,6 +93,7 @@ namespace BluesTrading
         {
             workerThreads.emplace_back([&](){io_.run();});
         }
+         std::cout << "Create Work Thread Group " << workerThreads.size() <<  std::endl;
     }
 
     std::string TestFixture::dumpDllFile(TestRequest& request)
