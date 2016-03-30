@@ -167,6 +167,42 @@ std::vector<DataSrcInfo> getDataSrcInfo(const std::vector< std::unordered_map<st
     return ret;
 }
 
+#include <memory>
+#include <vector>
+#include <thread>
+
+void TestThread(char ** argv)
+{
+    std::vector<std::string>  ourstrings;
+
+    auto workfun = [&](int target)
+    {
+        double start = target;
+        for (int i = 0; i != target ; ++ i)
+        {
+            start *= i;
+            start /= i;
+        }
+
+         std::cout << "print our sum " << start << "   \n" ;
+    };
+    int theradNUm = atoi(argv[2]);
+     std::cout << "Test Thread Num " <<  theradNUm << std::endl;
+     std::vector<std::shared_ptr<std::thread> > workthread;
+    for (int i = 0; i != theradNUm; ++i)
+    {
+        workthread.push_back(std::make_shared<std::thread>(workfun, 100000000));
+    }
+
+     std::cout << "Create All thread Don"     << std::endl;
+
+    for (auto& each : workthread)
+    {
+        if(each->joinable()) each->join();
+        //std::vector<std::shared_ptr<std::thread> > workthread = std::make_shared<std::thread>(workfun, 100000);
+        //workthread.insert(workthread);
+    }
+}
 
 TestRequest CreateTestRequest(int argc, char**argv)
 {
@@ -250,6 +286,11 @@ int main(int argc, char** argv)
         if(cmd == "cook")
         {
             cookData(argv[2]);
+        }
+        else if (cmd == "thread")
+        {
+
+            TestThread(argv);
         }
         else if(cmd == "backend")
         {

@@ -74,7 +74,7 @@ namespace BluesTrading
         DataCache* data_;
         NullMarketDataProvider nullDataReplayer; // useless just for create the strategy
 
-        std::vector<std::thread> workerThreads;
+        std::vector<std::shared_ptr<std::thread> >workerThreads;
         boost::asio::io_service io_;
 
         std::vector<DataSrcInfo> datasrc;

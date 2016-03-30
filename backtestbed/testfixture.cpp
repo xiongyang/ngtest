@@ -89,9 +89,10 @@ namespace BluesTrading
         int cores = std::thread::hardware_concurrency();
         int thread_num  = std::min(cores + 4,  int(cores * 1.5));
         thread_num = std::min(int(allStrInst.size()), thread_num);
-        for (int i = 0; i != thread_num; ++i)
+        for (int i = 0; i != 8; ++i)
         {
-            workerThreads.emplace_back([&](){io_.run();});
+            auto workThread = std::make_shared<std::thread>([&](){io_.run();});
+            workerThreads.push_back(workThread);
         }
          std::cout << "Create Work Thread Group " << workerThreads.size() <<  std::endl;
     }
@@ -302,7 +303,7 @@ namespace BluesTrading
     {
         for (auto& worker : workerThreads)
         {
-            if(worker.joinable()) worker.join();
+            if(worker->joinable()) worker->join();
         }
     }
 

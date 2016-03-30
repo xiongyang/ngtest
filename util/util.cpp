@@ -499,7 +499,6 @@ namespace BluesTrading
          std::vector<std::string> fields;
          boost::split(fields, date_time_str, boost::is_any_of(" :"));
          return atoi(fields[0].c_str()) * 3600 * 1000 + atoi(fields[1].c_str()) * 60 * 1000 +  atoi(fields[2].c_str()) *  1000;
-		 return 0;
 	 }
 
 
