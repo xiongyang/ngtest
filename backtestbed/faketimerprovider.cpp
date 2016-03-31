@@ -35,8 +35,8 @@ namespace BluesTrading
                 repeat
         };
         bool ret = allTimers[consumer].insert(std::make_pair(eventID, info)).second;
-        std::cout << "Insert New Timer at Mem " << allTimers[consumer][eventID] << std::endl;
-        printTimer(info);
+       // std::cout << "Insert New Timer at Mem " << allTimers[consumer][eventID] << std::endl;
+       // printTimer(info);
         return ret;
     }
 
@@ -129,9 +129,9 @@ namespace BluesTrading
     {
         TimerInfo* ret = NULL;
 
-        for(auto eachConsumerMap : allTimers)
+        for(auto& eachConsumerMap : allTimers)
         {
-            for(auto eachTimer : eachConsumerMap.second)
+            for(auto& eachTimer : eachConsumerMap.second)
             {
                if (ret == NULL)
                {

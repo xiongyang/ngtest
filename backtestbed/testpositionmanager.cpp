@@ -143,15 +143,15 @@ namespace BluesTrading
 
     void testPositionManger::onStartDay(uint32_t date)
     {
-        std::cout << "PositionManager OnStart Day" << date << std::endl;
+        //std::cout << "PositionManager OnStart Day" << date << std::endl;
         resetPositionTodayToYst();
     }
 
     void testPositionManger::onEndDay(uint32_t date)
     {
-        std::cout << "PositionManager onEndDay Day" << date << std::endl;
-        printPnl(date);
-        removeEmptyPosition();
+        //std::cout << "PositionManager onEndDay Day" << date << std::endl;
+        //printPnl(date);
+        //removeEmptyPosition();
     }
 
     void testPositionManger::removeEmptyPosition()

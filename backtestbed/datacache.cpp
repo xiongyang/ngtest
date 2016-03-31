@@ -25,7 +25,7 @@ namespace BluesTrading
         localCache_path = dirName;
         if (!boost::filesystem::exists(dirName))
         {
-            std::cout << "DataCache dir not exists" << dirName;
+            std::cout << "DataCache dir not exists" << dirName << "\n";
             boost::filesystem::create_directory(dirName);
             return;
         }
@@ -57,7 +57,7 @@ namespace BluesTrading
         }
         else if (boost::filesystem::is_regular_file(dirName))
         {
-            std::cout << "DataCache dir not exists" << dirName;
+            std::cout << "DataCache dir not exists" << dirName << "\n";
             return;
         }
     }
@@ -66,6 +66,7 @@ namespace BluesTrading
 
     void DataCache::addDataCacheRequest(const DataSrcInfo& datarequest)
     {
+        return;
         boost::gregorian::date start = getDateFromNum(datarequest.start_date);
         boost::gregorian::date end = getDateFromNum(datarequest.end_date); 
         boost::gregorian::days one_day(1);
@@ -245,6 +246,11 @@ namespace BluesTrading
                 uint32_t date = boost::lexical_cast<uint32_t>(filename_parts[1]);
                 uint32_t inst = boost::lexical_cast<uint32_t>(filename_parts[0]);
                 cache_status[inst].cacheStatus_[date] = x.path().string();
+                std::cout <<  "LoadCache File for Inst " << inst << " date" << date << " File:" << x.path().string() << "\n";
+            }
+            else
+            {
+                std::cout << "ignore invalid cache fiel " << x.path().string();
             }
         }
     }

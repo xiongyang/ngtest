@@ -204,6 +204,61 @@ void TestThread(char ** argv)
     }
 }
 
+boost::asio::io_service io;
+void TestPostFun2(double startVal);
+void TestPostFun1(double startVal)
+{
+    double start = startVal;
+    for (int i = 0; i != 1000000 ; ++ i)
+    {
+        start *= i;
+        start /= i;
+    }
+    io.post([=]{TestPostFun2(start);});
+}
+
+void TestPostFun2(double startVal)
+{
+    double start = startVal;
+    for (int i = 0; i != 1000000 ; ++ i)
+    {
+        start *= i;
+        start /= i;
+    }
+     io.post([=]{TestPostFun1(start);});
+}
+
+void TestThreadPost(char ** argv)
+{
+
+    int theradNUm = atoi(argv[2]);
+    std::cout << "Test Thread Num " <<  theradNUm << std::endl;
+    std::vector<std::shared_ptr<std::thread> > workthread;
+
+    for (int i = 0; i != theradNUm; ++i)
+    {
+       io.post([=]{TestPostFun1(100.0);});
+    }
+
+    for (int i = 0; i != theradNUm; ++i)
+    {
+        workthread.push_back(std::make_shared<std::thread>([&](){
+            std::cout<< "thread Create " << std::this_thread::get_id() << std::endl;
+            io.run();
+            std::cout << "Thread Quit "<< std::this_thread::get_id() << std::endl ;}));
+    }
+
+    std::cout << "Create All thread Don"     << std::endl;
+
+    for (auto& each : workthread)
+    {
+        if(each->joinable()) each->join();
+        //std::vector<std::shared_ptr<std::thread> > workthread = std::make_shared<std::thread>(workfun, 100000);
+        //workthread.insert(workthread);
+    }
+}
+
+
 TestRequest CreateTestRequest(int argc, char**argv)
 {
     std::string dllFile = argv[2];
@@ -286,6 +341,10 @@ int main(int argc, char** argv)
         if(cmd == "cook")
         {
             cookData(argv[2]);
+        }
+        else if(cmd == "post")
+        {
+            TestThreadPost(argv);
         }
         else if (cmd == "thread")
         {

@@ -3,6 +3,8 @@
 #include <unordered_map>
 #include <map>
 
+#include <boost/pool/pool_alloc.hpp>
+
 namespace BluesTrading
 {
     class FakeTimerProvider :public ITimerProvider

@@ -11,7 +11,23 @@ def build(bld):
         bld.program(
                 source          = bld.path.ant_glob('*.cpp'),
                 target          = 'backtestbed_run',
-    
+                # features     = ['more', 'features'], 3
+
+                # includes     = ['.'], 4
+                # defines      = ['LINUX=1', 'BIDULE'],
+
+               #  lib          = ['pthread','tcmalloc_minimal' ], 
+                # libpath      = ['/home/snake/sr/temp/ngtest/gperftools/.libs'],
+                # stlib        = ['dl'], 6
+                # stlibpath    = ['/usr/local/lib'],
+               #  linkflags    = ['-pthread'], 
+                # rpath        = ['/opt/kde/lib'] 8
+                # vnum         = '1.2.3',
+
+                # install_path = '${SOME_PATH}/bin', 9
+                # cflags       = ['-O2', '-Wall'], 10
+                # cxxflags     = ['-O3'],
+                # dflags       = ['-g'],
                 use             = ['com_interface', 'backtestbed', 'BOOST', 'bluemessage']) 
 
 

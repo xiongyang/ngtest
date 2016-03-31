@@ -37,9 +37,42 @@ namespace BluesTrading
     public:
         void Init(TestRequest& request, DataCache* data);
 
-        void postRunWork(TestInstGroup inst)
+        //void postRunWork(TestInstGroup inst)
+        //{
+        //    postCount ++ ;
+        //   io_.post([=](){runForDay(inst);});
+        //}
+
+        void postRunWork(TestInstGroup inst, std::shared_ptr<MarketDataReplayerMultiThread> data)
         {
-           io_.post([=](){runForDay(inst);});
+            auto runDataOnDay = [=]()
+            {
+                if (*inst.current_date != 0)
+                {
+                    auto current_end_day = getDateFromNum( *inst.current_date);
+                    current_end_day += boost::gregorian::days(1);
+
+                    auto current_data_day = getDateFromNum(data->getDate());
+
+                    if (current_end_day != current_data_day)
+                    {
+                        // not ready for pre day. re post this work;
+                        postRunWork(inst, data);
+                        return;
+                    }
+                }
+
+  
+
+                std::set<ITickDataConsumer*> consumer;
+                consumer.insert(inst.testStrategy.get());
+                consumer.insert(inst.posManager.get());
+
+                data->StartReplay(consumer, inst.timerProvider.get());
+                *inst.current_date = data->getDate();
+            };
+
+            io_.post([=](){runDataOnDay();});
         }
 
         void run();
@@ -54,10 +87,10 @@ namespace BluesTrading
 
         void prepareDataCache(DataSrcInfo& request);
         void prepareMarketDataReplayer();
-        void waitforDataSlotAviale();
-        void cleanFinishedDataReplyer();
-        void runForDay(TestInstGroup inst);
-        std::shared_ptr<MarketDataReplayerMultiThread> getMarketReplayer(uint32_t date);
+        //void waitforDataSlotAviale();
+        //void cleanFinishedDataReplyer();
+        //void runForDay(TestInstGroup inst);
+        //std::shared_ptr<MarketDataReplayerMultiThread> getMarketReplayer(uint32_t date);
 
       
     public:
@@ -79,7 +112,6 @@ namespace BluesTrading
 
         std::vector<DataSrcInfo> datasrc;
         DataSrcInfo             singleDataSrcInfo;
-        std::map<uint32_t, std::shared_ptr<MarketDataReplayerMultiThread> > dateReplayerStored;
-        std::mutex dateReplayerMutex;
+        //int postCount;
     };
 }

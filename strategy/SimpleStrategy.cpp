@@ -82,6 +82,12 @@ namespace BluesTrading
 
     void SimpleStrategy::onMarketData(const CTickData& data)
     {
+        //static double start = 100.0;
+        //for (int i = 0; i != 1000000 ; ++ i)
+        //{
+        //    start *= i;
+        //    start /= i;
+        //}
         return;
         static int count = 0;
         count ++ ;
