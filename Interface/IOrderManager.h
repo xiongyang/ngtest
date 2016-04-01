@@ -9,6 +9,7 @@ namespace BluesTrading
     {
     public:
         virtual void onUpdateOrder(OrderDataDetail* orderData) = 0;
+        virtual void onUpdateTrade()
     };
 
 

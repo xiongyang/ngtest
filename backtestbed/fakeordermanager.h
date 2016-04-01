@@ -29,29 +29,28 @@ namespace BluesTrading
         void MakeOrderTrade(uint64_t orderID);
         void setPosMgr(testPositionManger* mgr) {posMgr_ = mgr;}
 
-    private:
-        std::map<uint64_t, OrderRequest>    requests_;
-        std::map<uint64_t, OrderDataDetail*> orders_;
+
 
     private:
          void handleSSECancel(OrderRequest&);
          void handleSSEModify(OrderRequest&);
-         void handleSSENew(OrderRequest&);
-         void handleProductFutureNew(OrderRequest& req);
+         void handleSecurityNew(OrderRequest&);
+         void handleFutureNew(OrderRequest& req);
 
 
-         std::uint8_t checkProductFutureRequestValid(const OrderRequest & request);
-         uint8_t checkSSERequestValid(const SSE_SecurityNewOrderRequest &);
-
+         std::tuple<OrderErrorCode, ExchangeTypes> checkNewOrderRequestValid(const OrderRequest & request);
          void NotifyOrder(OrderDataDetail*);
-
          SenderID generateRequest();
-
          OrderDataDetail* generateOrder(OrderRequest&);
+         std::vector<OrderDataDetail*>  generateFutureOrder(OrderRequest& req, std::tuple< OrderErrorCode,ExchangeTypes>& hint);
 
-         uint32_t requestID_;
-         //std::vector<OrderDataDetail>    queued_orderUpdate;
-         //std::mutex updateMutex_;
+        
+    private:
+        std::map<uint64_t, OrderRequest>    requests_;
+        std::map<uint64_t, OrderDataDetail*> orders_;
+        uint32_t requestID_;
+        uint64_t orderID_;
+
          testPositionManger*    posMgr_;
 
          std::unordered_map<IOrderDataConsumer* , uint32_t> orderdataSubscribers_;

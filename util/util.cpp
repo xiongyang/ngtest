@@ -644,4 +644,16 @@ namespace BluesTrading
         return boost::lexical_cast<uint32_t>( boost::gregorian::to_iso_string(date));
     }
 
+    uint32_t InstrumentInfoFactory::getInstrumentUnitMultiplier(uint32_t inst)
+    {
+        //TODO 
+        return 10;
+    }
+
+    double InstrumentInfoFactory::getInstrumentMarginRate(uint32_t inst)
+    {
+        //TODO
+        return 0.1;
+    }
+
 }

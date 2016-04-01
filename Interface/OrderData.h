@@ -17,6 +17,11 @@ namespace BluesTrading
         SSE_SecurityNewOrder,
         SSE_SecurityModify,
 
+        SZE_SecurityCancel ,
+        SZE_SecurityNewOrder,
+        SZE_SecurityModify,
+
+
         SSE_OptionsCancel,
         SSE_OptionsNewOrder,
         SSE_OptionsModify,
@@ -24,7 +29,7 @@ namespace BluesTrading
         CFFEX_IndexFutureCancel,
         CFFEX_IndexFutureNewOrder,
         CFFEX_IndexFutureModify,
-      
+
         DCE_ProductFutureCancel,
         DCE_ProductFutureNewOrder,
         DCE_ProductFutureModify,
@@ -40,13 +45,6 @@ namespace BluesTrading
         // more exchange more instrument types
     };
 
-    //enum OrderStatus
-    //{
-    //    PendingNew,
-    //    New,
-    //    Parti
-    //};
-
     enum ExchangeTypes
     {
         CFFEX,
@@ -56,6 +54,66 @@ namespace BluesTrading
         SHFE,
         CZCE
     };
+
+    enum OrderPriceType
+    {
+        None  = 0,
+        LimitOrder ,
+        MarketOrder,
+    };
+
+    enum OrderTimeType
+    {
+        None = 0,
+        IOC,
+    };
+
+    // our client can send order via Close. but OrderManager may select the actually Type
+    enum OpenCloseFlag
+    {
+        None = 0,
+        Open,
+        Close,
+        CloseToday,
+        CloseYst,
+    };
+
+    enum HedgeFlag
+    {
+        None = 0,
+        Speculation,
+        Arbitrage,
+        //OrderHedgeFlag_Hedge,
+        //OrderHedgeFlag_CFFEX_MarketMaker,
+        //OrderHedgeFlag_Unknown
+    };
+
+    enum LongShortFlag
+    {
+        None = 0,
+        Long ,
+        Short,
+    };
+
+
+    enum  OrderStatus
+    {
+        OrderPendingNew = 0,
+        OrderNew,
+        OrderRejected,
+        OrderCanceled,
+        OrderFilled,
+        OrderPartFilled,
+    };
+
+    enum OrderErrorCode
+    {
+         NoError,
+         OrderReject_NotEnoughCash,
+         OrderReject_NotEnoughInventory
+    };
+
+
 
     struct OrderUpdateMask
     {
@@ -76,74 +134,129 @@ namespace BluesTrading
         uint32_t requestID;
     };
 
-    struct SSE_SecurityCancelRequest
+    template<int RequestTypeValue>
+    struct CancelRequest
     {
         static const int RequestType = SSE_SecurityCancel;
         uint64_t blueOrderID;
     };
 
-    struct  SSE_SecurityModifyOrderRequest
+    typedef CancelRequest<SSE_SecurityCancel> SSE_SecurityCancelRequest;
+    typedef CancelRequest<SZE_SecurityCancel> SZE_SecurityCancelRequest;
+    typedef CancelRequest<CFFEX_IndexFutureCancel> CFFEX_CancelRequest;
+    typedef CancelRequest<DCE_ProductFutureCancel> DCE_CancelRequest;
+    typedef CancelRequest<SHFE_ProductFutureCancel> SHFE_CancelRequest;
+    typedef CancelRequest<CZCE_ProductFutureCancel> CZCE_CancelRequest;
+
+    template<int RequestTypeValue>
+    struct  SecurityModifyOrderRequest
     {
-        static const int RequestType = SSE_SecurityModify;
-        uint32_t instrumentID;
-        double price;
-        uint8_t orderType;
-        uint8_t priceType;
-        uint8_t diretion;
-     
-        uint32_t orderqty; 
+        static const int RequestType = RequestTypeValue;
+        SecurityNewOrderRequest<RequestTypeValue>   newOrder;
+        uint64_t blueOrderID;   
     };
 
-    struct SSE_SecurityNewOrderRequest
+    typedef SecurityModifyOrderRequest<SSE_SecurityModify> SSE_SecurityModifyOrderRequest;
+    typedef SecurityModifyOrderRequest<SZE_SecurityModify> SZE_SecurityModifyOrderRequest;
+
+    template<int RequestTypeValue>
+    struct SecurityNewOrderRequest
     {
-        static const int RequestType = SSE_SecurityNewOrder;
+        static const int RequestType = RequestTypeValue;
         uint32_t instrumentID;
         double price;
         uint32_t orderqty; 
-        uint8_t orderType;
-        uint8_t priceType;
-        bool isBuy;
+
+        LongShortFlag longshortFlag;
+
     };
 
-    struct SSE_OrderDetail
+    typedef SecurityNewOrderRequest<SSE_SecurityNewOrder> SSE_SecurityNewOrderRequest;
+    typedef SecurityNewOrderRequest<SZE_SecurityNewOrder> SZE_SecurityNewOrderRequest;
+
+
+    struct SecurityOrderDetail
     {
-        enum 
-        {
-            SSE_OrderPendingNew = 0,
-            SSE_OrderNew,
-            SSE_OrderRejected,
-            SSE_OrderCanceled,
-            SSE_OrderTraded,
-        };
-
-        enum
-        {
-            SSE_NoError,
-            SSE_OrderReject_NotEnoughCash,
-            SSE_OrderReject_NotEnoughInventory
-        };
-
         uint32_t instrumentID;
         uint32_t orderQty;
         uint32_t filledQty;
         double orderprice;
         double tradeprice;
-        bool   isbuy;
-        uint8_t  orderStatus;
-        uint8_t  orderErrorCode;
+
+        LongShortFlag   longshortflag;
+        OrderStatus  orderStatus;
+        OrderErrorCode  orderErrorCode;
     };
 
-    typedef SSE_OrderDetail SZE_OrderDetail;
+    typedef SecurityOrderDetail SSE_OrderDetail;
+    typedef SecurityOrderDetail SZE_OrderDetail;
 
-
-    struct CFFEX_OrderDetail
+    template<int RequestTypeValue>
+    struct Future_NewOrderRequest
     {
+        Future_NewOrderRequest()
+        {
+            memset(this, 0, sizeof(Future_NewOrderRequest<RequestTypeValue>));
+        }
 
+
+        static const int RequestType = RequestTypeValue;
+        uint32_t instrumentID;
+        uint32_t orderqty; 
+        double price;
+        
+
+        OpenCloseFlag openCloseType;
+        OrderPriceType priceType;
+        OrderTimeType timeType;
+        HedgeFlag hedgeType;
+        LongShortFlag longshortType;
     };
 
-    typedef CFFEX_OrderDetail  DCE_OrderDetail;
-    typedef CFFEX_OrderDetail  SHFE_OrderDetail;
-    typedef CFFEX_OrderDetail  CZCE_OrderDetail;
+
+    typedef Future_NewOrderRequest<CFFEX_IndexFutureNewOrder>  CFFEX_NewOrderRequest;
+    typedef Future_NewOrderRequest<DCE_ProductFutureNewOrder>  DCE_NewOrderRequest;
+    typedef Future_NewOrderRequest<SHFE_ProductFutureNewOrder>  SHFE_NewOrderRequest;
+    typedef Future_NewOrderRequest<CZCE_ProductFutureNewOrder>  CZCE_NewOrderRequest;
+
+    template<int RequestTypeValue>
+    struct Future_ModifyOrderRequest
+    {
+        static const int RequestType = RequestTypeValue;
+        Future_NewOrderRequest<RequestTypeValue>  newOrder;
+        uint64_t blueOrderID;   
+    }
+
+    typedef Future_ModifyOrderRequest<CFFEX_IndexFutureModify>  CFFEX_ModifyOrderRequest;
+    typedef Future_ModifyOrderRequest<DCE_ProductFutureModify>  DCE_ModifyOrderRequest;
+    typedef Future_ModifyOrderRequest<SHFE_ProductFutureModify>  SHFE_ModifyOrderRequest;
+    typedef Future_ModifyOrderRequest<CZCE_ProductFutureModify>  CZCE_ModifyOrderRequest;
+
+    struct FutureOrderDetail
+    {
+        uint32_t instrumentID;
+        uint32_t orderqty; 
+        double price;
+        double tradeprice ;
+        uint32_t filledQty;
+      
+       
+
+
+        OpenCloseFlag openCloseType;
+        OrderPriceType priceType;
+        OrderTimeType timeType;
+        HedgeFlag hedgeType;
+        LongShortFlag longshortType;
+
+        OrderStatus  orderStatus;
+        OrderErrorCode  orderErrorCode;
+    };
+
+    typedef FutureOrderDetail CFFEX_OrderDetail;
+    typedef FutureOrderDetail DCE_OrderDetail;
+    typedef FutureOrderDetail SHFE_OrderDetail;
+    typedef FutureOrderDetail CZCE_OrderDetail;
 
 
     //  the strategy send requestID with  sendID  
@@ -151,8 +264,8 @@ namespace BluesTrading
     {
         union
         {
-                uint64_t requestID;
-                SenderID senderID;
+            uint64_t requestID;
+            SenderID senderID;
         } ;
         uint16_t requestType;
 
@@ -161,11 +274,51 @@ namespace BluesTrading
             SSE_SecurityCancelRequest       sse_securityCancelRequest;
             SSE_SecurityModifyOrderRequest  sse_securityModifyOrderRequest;
             SSE_SecurityNewOrderRequest     sse_securityNewOrder;
+
+            SZE_SecurityCancelRequest       sze_securityCancelRequest;
+            SZE_SecurityModifyOrderRequest  sze_securityModifyOrderRequest;
+            SZE_SecurityNewOrderRequest     sze_securityNewOrder;
+
+            CFFEX_NewOrderRequest cffex_neworderrequest;
+            DCE_NewOrderRequest dce_neworderrequest;
+            SHFE_NewOrderRequest shfe_neworderrequest;
+            CZCE_NewOrderRequest czce_neworderrequest;
+
+            CFFEX_ModifyOrderRequest cffex_modifyorderrequest;
+            DCE_ModifyOrderRequest dce_modifyorderrequest;
+            SHFE_ModifyOrderRequest shfe_modifyorderrequest;
+            CZCE_ModifyOrderRequest czce_modifyorderrequest;
+
+            CFFEX_CancelRequest cffex_cancelrequest;
+            DCE_CancelRequest dce_cancelrequest;
+            SHFE_CancelRequest shfe_cancelrequest;
+            CZCE_CancelRequest czce_cancelrequest;
         } ;
 
         void fillDetail(const SSE_SecurityCancelRequest& request) { sse_securityCancelRequest  = request;}
         void fillDetail(const SSE_SecurityModifyOrderRequest& request) { sse_securityModifyOrderRequest  = request;}
         void fillDetail(const SSE_SecurityNewOrderRequest& request) { sse_securityNewOrder  = request;}
+
+        void fillDetail(const SZE_SecurityCancelRequest& request) { sze_securityCancelRequest  = request;}
+        void fillDetail(const SZE_SecurityModifyOrderRequest& request) { sze_securityModifyOrderRequest  = request;}
+        void fillDetail(const SZE_SecurityNewOrderRequest& request) { sze_securityNewOrder  = request;}
+
+        void fillDetail(const CFFEX_NewOrderRequest& request) { cffex_neworderrequest  = request;}
+        void fillDetail(const DCE_NewOrderRequest& request) { dce_neworderrequest  = request;}
+        void fillDetail(const SHFE_NewOrderRequest& request) { shfe_neworderrequest  = request;}
+        void fillDetail(const CZCE_NewOrderRequest& request) { czce_neworderrequest  = request;}
+
+        void fillDetail(const CFFEX_ModifyOrderRequest& request) { cffex_modifyorderrequest  = request;}
+        void fillDetail(const DCE_ModifyOrderRequest& request) { dce_modifyorderrequest  = request;}
+        void fillDetail(const SHFE_ModifyOrderRequest& request) { shfe_modifyorderrequest  = request;}
+        void fillDetail(const CZCE_ModifyOrderRequest& request) { czce_modifyorderrequest  = request;}
+
+
+        void fillDetail(const CFFEX_CancelRequest& request) { cffex_cancelrequest  = request;}
+        void fillDetail(const DCE_CancelRequest& request) { dce_cancelrequest  = request;}
+        void fillDetail(const SHFE_CancelRequest& request) { shfe_cancelrequest  = request;}
+        void fillDetail(const CZCE_CancelRequest& request) { czce_cancelrequest  = request;}
+
     };
 
     struct OrderDataDetail
@@ -178,6 +331,7 @@ namespace BluesTrading
         };
         // other fields
         // normal it equal to requestID. but sometimes we may meet one request multi orders.
+        // blueOrderID
         uint64_t  orderID;
         uint16_t  exchangeType;
 
@@ -195,5 +349,36 @@ namespace BluesTrading
         {
             return memcmp(&left, this, sizeof(OrderDataDetail)) == 0;
         }
+    };
+
+
+
+    struct SecurityTrade
+    {
+        uint32_t instrumentID;
+
+    };
+
+    struct FutureTrade
+    {
+
+    };
+
+    struct TradeDataDetail
+    {
+        union
+        {
+            uint64_t requestid;
+            SenderID senderid;
+        };
+
+        uint64_t  orderID;
+        uint16_t  exchangeType;
+
+        union 
+        {
+            SecurityTrade  sse_order;
+            FutureTrade sze_order;
+        };
     };
 }

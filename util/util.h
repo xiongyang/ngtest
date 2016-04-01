@@ -36,6 +36,13 @@ namespace BluesTrading
         }
     };
 
+    class InstrumentInfoFactory
+    {
+        static uint32_t getInstrumentUnitMultiplier(uint32_t inst);
+        static double   getInstrumentMarginRate(uint32_t inst);
+    };
+
+
     
     boost::gregorian::date getDateFromNum(uint32_t date);
     uint32_t getNumFromDate(boost::gregorian::date date);
