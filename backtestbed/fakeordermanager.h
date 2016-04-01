@@ -37,7 +37,10 @@ namespace BluesTrading
          void handleSSECancel(OrderRequest&);
          void handleSSEModify(OrderRequest&);
          void handleSSENew(OrderRequest&);
+         void handleProductFutureNew(OrderRequest& req);
 
+
+         std::uint8_t checkProductFutureRequestValid(const OrderRequest & request);
          uint8_t checkSSERequestValid(const SSE_SecurityNewOrderRequest &);
 
          void NotifyOrder(OrderDataDetail*);

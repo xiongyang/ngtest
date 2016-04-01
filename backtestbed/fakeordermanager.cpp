@@ -25,6 +25,11 @@ namespace BluesTrading
         case SSE_SecurityNewOrderRequest::RequestType:
             handleSSENew(request);
             break;
+        case    DCE_ProductFutureNewOrder:
+        case    SHFE_ProductFutureNewOrder:
+        case    CZCE_ProductFutureNewOrder:
+            handleProductFutureNew(request);
+            break;
         default:
             throw UnknownRequestExceptionType();
             break;
@@ -115,6 +120,25 @@ namespace BluesTrading
     }
 
 
+
+    void FakeOrderManager::handleProductFutureNew(OrderRequest& req)
+    {
+
+    }
+
+    std::uint8_t FakeOrderManager::checkProductFutureRequestValid(const OrderRequest & request)
+    {
+        if (!posMgr_)
+        {
+            return SSE_OrderDetail::SSE_NoError;
+        }
+
+        if (request.isBuy)
+        {
+
+        }
+
+    }
 
     std::uint8_t FakeOrderManager::checkSSERequestValid(const SSE_SecurityNewOrderRequest & request)
     {

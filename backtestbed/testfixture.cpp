@@ -129,8 +129,9 @@ namespace BluesTrading
         ret.posManager.reset(new testPositionManger);
         ret.timerProvider.reset(new FakeTimerProvider);
         ret.current_date = std::make_shared<uint32_t>(0);
+         ret.logger = std::make_shared<nullLogger>();
 
-        BluesTrading::IStrategy* strp  = createFun("teststr",  &logger, &configureManager,  &nullDataReplayer,  
+        BluesTrading::IStrategy* strp  = createFun("teststr",  ret.logger.get(), &configureManager,  &nullDataReplayer,  
             ret.timerProvider.get(),  ret.orderManager.get(), ret.posManager.get());
 
         if (strp == nullptr)
@@ -342,6 +343,18 @@ namespace BluesTrading
             if(worker->joinable()) worker->join();
         }
        // std::cout << "PostCount " << postCount << "\n";
+    }
+
+    std::vector<std::string> TestFixture::getResult()
+    {
+        std::vector<std::string>  ret;
+        for (auto& eachinst : allStrInst)
+        {
+            auto each_ret = eachinst.logger->getResult();
+            ret.insert(ret.end(), each_ret.begin(), each_ret.end());
+        }
+
+        return ret;
     }
 
     void TestFixture::onMessage(const std::string& propName)

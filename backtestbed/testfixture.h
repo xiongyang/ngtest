@@ -33,15 +33,10 @@ namespace BluesTrading
             std::shared_ptr<FakeTimerProvider>  timerProvider;
           //  std::shared_ptr<boost::asio::io_service::strand> strandForThisStrategy;
              std::shared_ptr<uint32_t>  current_date;
+             std::shared_ptr<nullLogger>  logger;;
         };
     public:
         void Init(TestRequest& request, DataCache* data);
-
-        //void postRunWork(TestInstGroup inst)
-        //{
-        //    postCount ++ ;
-        //   io_.post([=](){runForDay(inst);});
-        //}
 
         void postRunWork(TestInstGroup inst, std::shared_ptr<MarketDataReplayerMultiThread> data)
         {
@@ -76,7 +71,7 @@ namespace BluesTrading
         }
 
         void run();
-        std::vector<std::string> getResult() {return logger.getResult();}
+        std::vector<std::string> getResult();
 
     private:
         //// dir or file
