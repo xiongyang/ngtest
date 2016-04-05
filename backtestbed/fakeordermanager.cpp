@@ -229,10 +229,10 @@ namespace BluesTrading
                 //OpenCloseFlag openCloseType;
                 //OrderPriceType priceType;
                 //OrderTimeType timeType;
-                //HedgeFlag hedgeType;
+                //HedgeFlag hedgeflag;
                 //LongShortFlag longshortType;
 
-                if (request.openCloseType == OpenCloseFlag_Open)
+                if (request.opencloseflag == OpenCloseFlag_Open)
                 {
                     double need_cash = request.orderqty * request.price  * 
                         InstrumentInfoFactory::getInstrumentUnitMultiplier(request.instrumentID) * 
@@ -379,10 +379,10 @@ namespace BluesTrading
             order.price = request.price;
             order.tradeprice  = 0;
             order.filledQty = 0;
-            order.openCloseType = request.openCloseType;
-            order.priceType = request.priceType;
-            order.timeType = request.timeType;
-            order.hedgeType = request.hedgeType;
+            order.opencloseflag = request.opencloseflag;
+            order.pricetype = request.pricetype;
+            order.timetype = request.timetype;
+            order.hedgeflag = request.hedgeflag;
             order.longshortflag = request.longshortflag;
             order.common.orderErrorCode = std::get<0>(hint);
             order.common.orderStatus = OrderRejected;
@@ -392,7 +392,7 @@ namespace BluesTrading
         }
         else
         {
-            if (request.openCloseType != OpenCloseFlag_Open)
+            if (request.opencloseflag != OpenCloseFlag_Open)
             {
                 CPosition::PositionType ystPosType;
                 CPosition::PositionType todayPosType;
@@ -426,10 +426,10 @@ namespace BluesTrading
                     order.price = request.price;
                     order.tradeprice  = 0;
                     order.filledQty = 0;
-                    order.openCloseType = OpenCloseFlag_CloseToday;
-                    order.priceType = request.priceType;
-                    order.timeType = request.timeType;
-                    order.hedgeType = request.hedgeType;
+                    order.opencloseflag  = OpenCloseFlag_CloseToday;
+                    order.pricetype = request.pricetype;
+                    order.timetype = request.timetype;
+                    order.hedgeflag = request.hedgeflag;
                     order.longshortflag = request.longshortflag;
                     order.common.orderErrorCode = std::get<0>(hint);
                     order.common.orderStatus = OrderNew;
@@ -453,10 +453,10 @@ namespace BluesTrading
                     order.price = request.price;
                     order.tradeprice  = 0;
                     order.filledQty = 0;
-                    order.openCloseType = OpenCloseFlag_CloseYst;
-                    order.priceType = request.priceType;
-                    order.timeType = request.timeType;
-                    order.hedgeType = request.hedgeType;
+                    order.opencloseflag = OpenCloseFlag_CloseYst;
+                    order.pricetype = request.pricetype;
+                    order.timetype = request.timetype;
+                    order.hedgeflag = request.hedgeflag;
                     order.longshortflag = request.longshortflag;
                     order.common.orderErrorCode =std::get<0>(hint);
                     order.common.orderStatus = OrderNew;
@@ -480,10 +480,10 @@ namespace BluesTrading
                 order.price = request.price;
                 order.tradeprice  = 0;
                 order.filledQty = 0;
-                order.openCloseType = request.openCloseType;
-                order.priceType = request.priceType;
-                order.timeType = request.timeType;
-                order.hedgeType = request.hedgeType;
+                order.opencloseflag = request.opencloseflag;
+                order.pricetype = request.pricetype;
+                order.timetype = request.timetype;
+                order.hedgeflag = request.hedgeflag;
                 order.longshortflag = request.longshortflag;
                 order.common.orderErrorCode = std::get<0>(hint);
                 order.common.orderStatus = OrderNew;

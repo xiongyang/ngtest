@@ -87,7 +87,7 @@ namespace BluesTrading
         if (OrderFilled == order.common.orderStatus)
         {
 
-            if(OpenCloseFlag_Open == order.openCloseType )
+            if(OpenCloseFlag_Open == order.opencloseflag )
             {
                   TradeInfo trade;
 
@@ -107,7 +107,7 @@ namespace BluesTrading
 
                 trade.is_open  =  false;
                 trade.is_long =  (LongShortFlag_Long == order.longshortflag);
-                trade.is_today =  (OpenCloseFlag_CloseToday  == order.openCloseType);
+                trade.is_today =  (OpenCloseFlag_CloseToday  == order.opencloseflag);
                 trade.price = order.tradeprice;
                 trade.qty = order.filledQty;
                 pos.addTrade(trade);
