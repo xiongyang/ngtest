@@ -30,13 +30,20 @@ namespace BluesTrading
     class CPosition
     {
     public:
-        CPosition() : instrumentID_(0), lastPrice_(0), updateTick_(0), unitMultiplier_(1),realizedPnL_(0) {};
+        CPosition() : instrumentID_(0), lastPrice_(0), updateTick_(0), unitMultiplier_(1),realizedPnL_(0), tradeCount_(0) {};
         
         enum PositionType{
             LongToday,
             LongYst,
             ShortToday,
             ShortYst
+        };
+
+
+        struct QryAmmount
+        {
+            uint32_t qty;
+            double totalAmmount;
         };
 
         typedef std::deque<PositionItem> PositionItemContainer;
@@ -47,12 +54,110 @@ namespace BluesTrading
         double getPositionPnl() const {return  getPositionPnl(lastPrice_);}
        
         double getRealizedPnL() const {return realizedPnL_;}
+        void setRealizedPnl(double value) { realizedPnL_ = value;}
+
+        uint32_t getTradeCount() const {return tradeCount_;}
+        void resetTradeCount() {tradeCount_ = 0;}
+
+        void resetPnl()
+        {
+            for (auto& each_pos : shortPosition_)
+            {
+                TradeInfo info;
+                info.is_long = true;
+                info.is_open = false;
+                info.is_today = true;
+                info.price = lastPrice_;
+                info.qty = each_pos.qty;
+
+                addTrade(info);
+                info.is_open = true;
+                info.is_long = false;
+                addTrade(info);
+            }
+
+            for (auto& each_pos : shortPositionYst_)
+            {
+                TradeInfo info;
+                info.is_long = true;
+                info.is_open = false;
+                info.is_today = false;
+                info.price = lastPrice_;
+                info.qty = each_pos.qty;
+
+                addTrade(info);
+                info.is_open = true;
+                info.is_long = false;
+                addTrade(info);
+            }
+
+
+            for (auto& each_pos : longPosition_)
+            {
+                TradeInfo info;
+                info.is_long = false;
+                info.is_open = false;
+                info.is_today = true;
+                info.price = lastPrice_;
+                info.qty = each_pos.qty;
+
+                addTrade(info);
+                info.is_open = true;
+                info.is_long = true;
+                addTrade(info);
+            }
+
+
+            for (auto& each_pos : longPositionYst_)
+            {
+                TradeInfo info;
+                info.is_long = false;
+                info.is_open = false;
+                info.is_today = false;
+                info.price = lastPrice_;
+                info.qty = each_pos.qty;
+
+                addTrade(info);
+                info.is_open = true;
+                info.is_long = true;
+                addTrade(info);
+            }
+
+            realizedPnL_ = 0;
+        }
 
         void setUintMultiplier(uint32_t multiplier) {unitMultiplier_ = multiplier;}
 
-  
+        CPosition::PositionItemContainer&  getPositions(PositionType postype) 
+        {
+            switch(postype)
+            {
+            case LongToday:
+                return longPosition_;
+            case ShortToday:
+                return shortPosition_;
+            case LongYst:
+                return longPositionYst_;
+            case ShortYst:
+                return shortPositionYst_;
+            }
+        }
+
+    private:
+        uint32_t instrumentID_;
+        double lastPrice_;
+        uint32_t updateTick_;
+        uint32_t unitMultiplier_;
+        double realizedPnL_;
+        uint32_t tradeCount_;
 
 
+        PositionItemContainer longPosition_;
+        PositionItemContainer longPositionYst_;
+        PositionItemContainer shortPosition_;
+        PositionItemContainer shortPositionYst_;
+
+    public:
         //=======================   impl for CPosition fun =================
         void addPosition(PositionItem& positionItem)
         {
@@ -83,6 +188,7 @@ namespace BluesTrading
 
         void  addTrade(const TradeInfo& trade)
         {
+            ++tradeCount_;
             if (trade.is_open)
             {
                 PositionItem item{trade.price, trade.qty, trade.is_long, trade.is_today};
@@ -172,31 +278,13 @@ namespace BluesTrading
             return realizedPnL_ + positionPnl;
         }
 
-        CPosition::PositionItemContainer&  getPositions(PositionType postype) 
-        {
-            switch(postype)
-            {
-            case LongToday:
-                return longPosition_;
-            case ShortToday:
-                return shortPosition_;
-            case LongYst:
-                return longPositionYst_;
-            case ShortYst:
-                return shortPositionYst_;
-            }
-        }
 
-        struct QryAmmount
-        {
-            uint32_t qty;
-            double totalAmmount;
-        };
+
         QryAmmount getTotalQtyAmmount(PositionType type)
         {
             QryAmmount sum {0, 0.0};
             auto& targetPos = getPositions(type);
-            for (auto each: targetPos)
+            for (auto& each: targetPos)
             {
                 sum.qty += each.qty;
                 sum.totalAmmount += each.price * sum.qty;
@@ -205,20 +293,11 @@ namespace BluesTrading
             return sum;
         }
 
-    private:
-        uint32_t instrumentID_;
-        double lastPrice_;
-        uint32_t updateTick_;
-        uint32_t unitMultiplier_;
-        double realizedPnL_;
 
-
-        PositionItemContainer longPosition_;
-        PositionItemContainer longPositionYst_;
-        PositionItemContainer shortPosition_;
-        PositionItemContainer shortPositionYst_;
 
     };
+
+
 
     struct AccountInfo
     {

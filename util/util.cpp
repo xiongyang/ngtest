@@ -25,7 +25,7 @@ namespace BluesTrading
     {
         of << boost::format("[SSEOrder OID:[%10% %1% Inst:%2% Price:%3% Qty:%4% Dir:%9% Traded:%5% LastTradePrice:%6% Status:%7$d ErrorCode:%8%]\n") 
             % order.orderID   % order.sse_order.instrumentID % order.sse_order.orderprice % order.sse_order.orderQty % order.sse_order.filledQty
-            % order.sse_order.tradeprice % int(order.sse_order.orderStatus) % int(order.sse_order.orderErrorCode) % order.sse_order.isbuy
+            % order.sse_order.tradeprice % int(order.sse_order.common.orderStatus) % int(order.sse_order.common.orderErrorCode) % order.sse_order.longshortflag
             % order.senderid.requestID ;
     }
 
@@ -62,14 +62,14 @@ namespace BluesTrading
         switch(order.exchangeType)
         {
 
-        case  SSE:
+        case  Exch_SSE:
             printSSEOrder(of, order);
             break;
-        case     SZE:
-        case     SHFE:
-        case     CZCE:
-        case    CFFEX:
-        case    DCE:
+        case     Exch_SZE:
+        case     Exch_SHFE:
+        case     Exch_CZCE:
+        case    Exch_CFFEX:
+        case    Exch_DCE:
             of << "Not Implement Yet Print OrderYet \n" ;
             break;
         default:

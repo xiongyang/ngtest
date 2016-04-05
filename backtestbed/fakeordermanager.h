@@ -41,7 +41,8 @@ namespace BluesTrading
          std::tuple<OrderErrorCode, ExchangeTypes> checkNewOrderRequestValid(const OrderRequest & request);
          void NotifyOrder(OrderDataDetail*);
          SenderID generateRequest();
-         OrderDataDetail* generateOrder(OrderRequest&);
+         OrderDataDetail* generateSecurityOrder(OrderRequest&);
+      //   TradeDataDetail* generateSecurityTrade(uint64_t inst, double price, uint32_t qty, bool isLong);
          std::vector<OrderDataDetail*>  generateFutureOrder(OrderRequest& req, std::tuple< OrderErrorCode,ExchangeTypes>& hint);
 
         
@@ -50,6 +51,7 @@ namespace BluesTrading
         std::map<uint64_t, OrderDataDetail*> orders_;
         uint32_t requestID_;
         uint64_t orderID_;
+        uint64_t tradeID_;
 
          testPositionManger*    posMgr_;
 

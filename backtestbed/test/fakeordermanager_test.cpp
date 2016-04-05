@@ -40,11 +40,11 @@ namespace BluesTrading
     {
         SSE_SecurityNewOrderRequest request;
         request.instrumentID = 1;
-        request.isBuy = true;
+        request.longshortflag = LongShortFlag_Long;
         request.orderqty = 100;
-        request.orderType = 0; //only limit order
+      //  request.orderType = 0; //only limit order
         request.price = 10.1;
-        request.priceType = 0; // only limit order
+     //   request.priceType = 0; // only limit order
 
 
         auto isfirstOrder = [=](OrderDataDetail* porder) 
@@ -52,7 +52,7 @@ namespace BluesTrading
             printOrder(std::cout , *porder);
             SSE_OrderDetail& sse_order =  porder->sse_order;
             EXPECT_EQ(sse_order.instrumentID , 1);
-            EXPECT_EQ(sse_order.isbuy , true);
+            EXPECT_EQ(sse_order.longshortflag , LongShortFlag_Long);
             EXPECT_EQ(sse_order.orderQty , 100);
 
             EXPECT_DOUBLE_EQ(10.1,sse_order.orderprice);
@@ -75,7 +75,7 @@ namespace BluesTrading
             printOrder(std::cout , *porder);
             SSE_OrderDetail& sse_order =  porder->sse_order;
             EXPECT_EQ(sse_order.instrumentID , 1);
-            EXPECT_EQ(sse_order.isbuy , true);
+            EXPECT_EQ(sse_order.longshortflag , LongShortFlag_Long);
             EXPECT_EQ(sse_order.orderQty , 100);
             EXPECT_DOUBLE_EQ(10.1 , sse_order.orderprice);
 

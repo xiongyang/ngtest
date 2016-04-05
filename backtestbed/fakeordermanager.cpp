@@ -1,4 +1,6 @@
 #include "fakeordermanager.h"
+#include "util.h"
+
 #include <future>
 #include <thread>
 #include <chrono>
@@ -22,8 +24,8 @@ namespace BluesTrading
         case SSE_SecurityModifyOrderRequest::RequestType:
             handleSSEModify(request);
             break;
-        case SSE_SecurityNewOrderRequest::RequestType:
-        case SZE_SecurityNewOrderRequest::RequestType:
+        case SSE_SecurityNewOrder:
+        case SZE_SecurityNewOrder:
             handleSecurityNew(request);
             break;
         case    CFFEX_IndexFutureNewOrder:
@@ -65,12 +67,12 @@ namespace BluesTrading
 
     std::vector<OrderDataDetail*> FakeOrderManager::getAllOrders()
     {
-         std::vector<OrderDataDetail*> ret;
-         for (auto each : orders_)
-         {
-               ret.push_back(each.second);
-         }
-         return ret;
+        std::vector<OrderDataDetail*> ret;
+        for (auto each : orders_)
+        {
+            ret.push_back(each.second);
+        }
+        return ret;
     }
 
     void FakeOrderManager::subscribeOrderUpdate(uint32_t updateMask, IOrderDataConsumer* consumer)
@@ -85,7 +87,7 @@ namespace BluesTrading
 
     void FakeOrderManager::handleSSECancel( OrderRequest&)
     {
-       // orders_[requset.requestID]
+        // orders_[requset.requestID]
     }
 
     void FakeOrderManager::handleSSEModify(OrderRequest&)
@@ -99,21 +101,28 @@ namespace BluesTrading
         SSE_OrderDetail& updateorder = order->sse_order;
         updateorder.filledQty = updateorder.orderQty;
         updateorder.tradeprice = updateorder.orderprice;
-        updateorder.orderStatus = OrderFilled;
+        updateorder.common.orderStatus = OrderFilled;
+    }
+
+    void fakeFutureTradeOrder(OrderDataDetail* order)
+    {
+        FutureOrderDetail& updateorder = order->cffex_order;
+        updateorder.filledQty = updateorder.orderqty;
+        updateorder.tradeprice = updateorder.price;
+        updateorder.common.orderStatus = OrderFilled;
     }
 
     void FakeOrderManager::handleSecurityNew(OrderRequest& requset)
     {
-        assert(posMgr_ != nullptr," Not Set PosMgr");
-        orders_[requset.requestID] =  generateOrder(requset);
+        assert(posMgr_ != nullptr);
+        // request.requestID == orderID;
+        orders_[requset.requestID] =  generateSecurityOrder(requset);
         OrderDataDetail* targetOrder =  orders_[requset.requestID];
         NotifyOrder(targetOrder);
-        if (targetOrder->sse_order.orderErrorCode != NoError)
+        if (targetOrder->sse_order.common.orderErrorCode != NoError)
         { 
-        
-            posMgr_->updateOrder(targetOrder);
             fakeTradeOrder(targetOrder);
-            posMgr_->updateOrder(targetOrder);
+            posMgr_->onUpdateOrder(targetOrder);
             NotifyOrder(targetOrder);
         }
     }
@@ -122,25 +131,21 @@ namespace BluesTrading
 
     void FakeOrderManager::handleFutureNew(OrderRequest& req)
     {
-          assert(posMgr_ != nullptr," Not Set PosMgr");
-          std::tuple< OrderErrorCode,ExchangeTypes> ret = checkNewOrderRequestValid(req);
-          auto orders =  generateFutureOrder(req);
-          for (auto& orederPtr : orders)
-          {
-              NotifyOrder(orederPtr);
-          }
+        assert(posMgr_ != nullptr);
+        std::tuple< OrderErrorCode,ExchangeTypes> ret = checkNewOrderRequestValid(req);
+        auto order_of_request =  generateFutureOrder(req, ret);
+        for (auto& orderPtr : order_of_request)
+        {
+            orders_[orderPtr->orderID] = orderPtr;
+            NotifyOrder(orderPtr);
 
-
-          if (ret != NoError)
-          {
-              for (auto& targetOrder : orders)
-              {
-                  posMgr_->updateOrder(targetOrder);
-                  fakeTradeOrder(targetOrder);
-                  posMgr_->updateOrder(targetOrder);
-                  NotifyOrder(targetOrder);
-              }
-          }
+            if (std::get<0>(ret) != NoError)
+            {
+                fakeFutureTradeOrder(orderPtr);
+                posMgr_->onUpdateOrder(orderPtr);
+                NotifyOrder(orderPtr);
+            }
+        }
     }
 
 
@@ -150,27 +155,27 @@ namespace BluesTrading
         ExchangeTypes ret_exch_type;
         if (order.requestType == SZE_SecurityNewOrder)
         {
-            ret_exch_type = SZE;
+            ret_exch_type = Exch_SZE;
         }
         else if(order.requestType == SSE_SecurityNewOrder)
         {
-            ret_exch_type = SSE;
+            ret_exch_type = Exch_SSE;
         }
         else if(order.requestType == CFFEX_IndexFutureNewOrder)
         {
-            ret_exch_type = CFFEX;
+            ret_exch_type = Exch_CFFEX;
         }
         else if(order.requestType == DCE_ProductFutureNewOrder)
         {
-            ret_exch_type = DCE;
+            ret_exch_type = Exch_DCE;
         }
         else if(order.requestType == SHFE_ProductFutureNewOrder)
         {
-            ret_exch_type = SHFE;
+            ret_exch_type = Exch_SHFE;
         }
         else if(order.requestType == CZCE_ProductFutureNewOrder)
         {
-            ret_exch_type = CZCE;
+            ret_exch_type = Exch_CZCE;
         }    
         return ret_exch_type;
     }
@@ -187,13 +192,13 @@ namespace BluesTrading
         switch(ret_exch_type)
         {
 
-        case SZE:
-        case SSE:
+        case Exch_SZE:
+        case Exch_SSE:
             {
 
-                SSE_SecurityNewOrderRequest& request = order.sse_securityNewOrder;
+                const SSE_SecurityNewOrderRequest& request = order.sse_securityNewOrder;
 
-                if(request.longshortFlag == Long)
+                if(request.longshortflag == LongShortFlag_Long)
                 {
                     double need_cash = request.orderqty * request.price;
                     //  std::cout << "current cash " << posMgr_->getAccountInfo().cash << " needed cash " <<need_cash << std::endl;
@@ -203,7 +208,7 @@ namespace BluesTrading
                     }
 
                 }
-                else if(request.longshortFlag == Short)
+                else if(request.longshortflag == LongShortFlag_Short)
                 {
                     CPosition::QryAmmount  qtyAmmount = posMgr_->getPosition(request.instrumentID).getTotalQtyAmmount(CPosition::LongYst);
                     if(request.orderqty > qtyAmmount.qty)
@@ -214,60 +219,61 @@ namespace BluesTrading
                 return std::make_tuple(NoError, ret_exch_type);
             }
             break;
-        case CFFEX:
-        case DCE:
-        case SHFE:
-        case CZCE:
+        case Exch_CFFEX:
+        case Exch_DCE:
+        case Exch_SHFE:
+        case Exch_CZCE:
             {
-                 CFFEX_NewOrderRequest& request = order.cffex_neworderrequest;
+                const CFFEX_NewOrderRequest& request = order.cffex_neworderrequest;
 
-                 //OpenCloseFlag openCloseType;
-                 //OrderPriceType priceType;
-                 //OrderTimeType timeType;
-                 //HedgeFlag hedgeType;
-                 //LongShortFlag longshortType;
+                //OpenCloseFlag openCloseType;
+                //OrderPriceType priceType;
+                //OrderTimeType timeType;
+                //HedgeFlag hedgeType;
+                //LongShortFlag longshortType;
 
-                 if (request.openCloseType == Open)
-                 {
-                       double need_cash = request.orderqty * request.price  * 
-                           InstrumentInfoFactory::getInstrumentUnitMultiplier(request.instrumentID) * 
-                           InstrumentInfoFactory::getInstrumentMarginRate(request.instrumentID);
+                if (request.openCloseType == OpenCloseFlag_Open)
+                {
+                    double need_cash = request.orderqty * request.price  * 
+                        InstrumentInfoFactory::getInstrumentUnitMultiplier(request.instrumentID) * 
+                        InstrumentInfoFactory::getInstrumentMarginRate(request.instrumentID);
 
-                       if(posMgr_->getAccountInfo().cash  < need_cash)
-                       {
-                           return std::make_tuple(OrderReject_NotEnoughCash, ret_exch_type);
-                       }
-                 }
-                 else 
-                 {
-                     if(request.longshortFlag == Long)
-                     {
-                           CPosition::QryAmmount  qtyAmmountYst =  posMgr_->getPosition(request.instrumentID).getTotalQtyAmmount(CPosition::ShortYst);
-                           CPosition::QryAmmount  qtyAmmount =  posMgr_->getPosition(request.instrumentID).getTotalQtyAmmount(CPosition::ShortToday);
+                    if(posMgr_->getAccountInfo().cash  < need_cash)
+                    {
+                        return std::make_tuple(OrderReject_NotEnoughCash, ret_exch_type);
+                    }
+                }
+                else 
+                {
+                    if(request.longshortflag == LongShortFlag_Long)
+                    {
+                        CPosition::QryAmmount  qtyAmmountYst =  posMgr_->getPosition(request.instrumentID).getTotalQtyAmmount(CPosition::ShortYst);
+                        CPosition::QryAmmount  qtyAmmount =  posMgr_->getPosition(request.instrumentID).getTotalQtyAmmount(CPosition::ShortToday);
 
-                           if (request.orderqty >  qtyAmmountYst.qty + qtyAmmount.qty)
-                           {
-                               return std::make_tuple(OrderReject_NotEnoughInventory, ret_exch_type);
-                           }
-                     }
-                     else if(request.longshortFlag == Short)
-                     {
-                         CPosition::QryAmmount  qtyAmmountYst =  posMgr_->getPosition(request.instrumentID).getTotalQtyAmmount(CPosition::LongYst);
-                         CPosition::QryAmmount  qtyAmmount =  posMgr_->getPosition(request.instrumentID).getTotalQtyAmmount(CPosition::LongToday);
+                        if (request.orderqty >  qtyAmmountYst.qty + qtyAmmount.qty)
+                        {
+                            return std::make_tuple(OrderReject_NotEnoughInventory, ret_exch_type);
+                        }
+                    }
+                    else if(request.longshortflag ==  LongShortFlag_Short)
+                    {
+                        CPosition::QryAmmount  qtyAmmountYst =  posMgr_->getPosition(request.instrumentID).getTotalQtyAmmount(CPosition::LongYst);
+                        CPosition::QryAmmount  qtyAmmount =  posMgr_->getPosition(request.instrumentID).getTotalQtyAmmount(CPosition::LongToday);
 
-                         if (request.orderqty >  qtyAmmountYst.qty + qtyAmmount.qty)
-                         {
-                             return std::make_tuple(OrderReject_NotEnoughInventory, ret_exch_type);
-                         }
-                     }
-                 }
+                        if (request.orderqty >  qtyAmmountYst.qty + qtyAmmount.qty)
+                        {
+                            return std::make_tuple(OrderReject_NotEnoughInventory, ret_exch_type);
+                        }
+                    }
+                }
 
- 
 
-                 return std::make_tuple(NoError, ret_exch_type);
+
+                return std::make_tuple(NoError, ret_exch_type);
             }
             break;
         default:
+            break;
         }
 
     }
@@ -276,7 +282,7 @@ namespace BluesTrading
     {
         for(auto& each_consumer : orderdataSubscribers_)
         {
-           // uint32_t& ordermask = order->senderid.updateMaskID;
+            // uint32_t& ordermask = order->senderid.updateMaskID;
 
             //TODO how to mask 
             if (true)
@@ -293,42 +299,45 @@ namespace BluesTrading
         id.updateMaskID = 0;
         //id.senderMachineID = senderMachineID_;
         //id.sendStrategyID = sendStrategyID_;
-        id.requestID = ++requestID_;
+        id.requestID =requestID_;
+        requestID_ += 2;  // because sometime on request gennrate 2 order
         return id;
     }
 
     void FakeOrderManager::MakeOrderTrade(uint64_t orderID)
     {
         OrderDataDetail* porder = getOrderDetailByOrderID(orderID);
-        if(porder->sse_order.orderStatus !=  OrderFilled)
+        if(porder->sse_order.common.orderStatus !=  OrderFilled)
         {
             fakeTradeOrder(porder);
         }
     }
 
-    BluesTrading::OrderDataDetail* FakeOrderManager::generateOrder(OrderRequest& request)
+    BluesTrading::OrderDataDetail* FakeOrderManager::generateSecurityOrder(OrderRequest& request)
     {
         OrderDataDetail* ret = new OrderDataDetail;
-  
 
-       std::tuple< OrderErrorCode,ExchangeTypes> ret = checkNewOrderRequestValid(request);
-       OrderErrorCode valid_code = ret.get<0>();
-       ExchangeTypes ex_type = ret.get<1>();
+
+        std::tuple< OrderErrorCode,ExchangeTypes> ret_check = checkNewOrderRequestValid(request);
+        OrderErrorCode valid_code = std::get<0>(ret_check);
+        ExchangeTypes ex_type = std::get<1>(ret_check);
+        SSE_SecurityNewOrderRequest& order = request.sse_securityNewOrder;
+
         if(valid_code == NoError)
         {
             ret->requestid = request.requestID;
             ret->orderID = request.requestID;
             ret->exchangeType = ex_type;
 
-            ret->sse_order.instrumentID = newOrderRequest.instrumentID;
-            ret->sse_order.orderQty = newOrderRequest.orderqty;
+            ret->sse_order.instrumentID = order.instrumentID;
+            ret->sse_order.orderQty = order.orderqty;
             ret->sse_order.filledQty = 0;
-            ret->sse_order.orderprice = newOrderRequest.price;
+            ret->sse_order.orderprice = order.price;
             ret->sse_order.tradeprice = 0;
 
-            ret->sse_order.longshortflag = newOrderRequest.longshortflag;
-            ret->sse_order.orderStatus = OrderNew;
-            ret->sse_order.orderErrorCode  = valid_code;
+            ret->sse_order.longshortflag = order.longshortflag;
+            ret->sse_order.common.orderStatus = OrderNew;
+            ret->sse_order.common.orderErrorCode  = valid_code;
             return ret;
         }
         else
@@ -337,15 +346,15 @@ namespace BluesTrading
             ret->orderID = request.requestID;
             ret->exchangeType = ex_type;
 
-            ret->sse_order.instrumentID = newOrderRequest.instrumentID;
-            ret->sse_order.orderQty = newOrderRequest.orderqty;
+            ret->sse_order.instrumentID = order.instrumentID;
+            ret->sse_order.orderQty = order.orderqty;
             ret->sse_order.filledQty = 0;
-            ret->sse_order.orderprice = newOrderRequest.price;
+            ret->sse_order.orderprice = order.price;
             ret->sse_order.tradeprice = 0;
 
-            ret->sse_order.longshortflag = newOrderRequest.longshortflag;
-            ret->sse_order.orderStatus = OrderRejected;
-            ret->sse_order.orderErrorCode  = valid_code;
+            ret->sse_order.longshortflag = order.longshortflag;
+            ret->sse_order.common.orderStatus = OrderRejected;
+            ret->sse_order.common.orderErrorCode  = valid_code;
             return ret;
         }
 
@@ -357,38 +366,131 @@ namespace BluesTrading
 
         CFFEX_NewOrderRequest& request = req.cffex_neworderrequest;
 
-        if (hint.get<0>() == != NoError)
+        if (std::get<0>(hint) != NoError)
         {
             OrderDataDetail* orderDetail = new OrderDataDetail;
             orderDetail->requestid = req.requestID;
             orderDetail->orderID = req.requestID;
-            orderDetail->exchangeType = hint.get<1>();
+            orderDetail->exchangeType = std::get<1>(hint);
 
             FutureOrderDetail& order  = orderDetail->cffex_order;
-
-            uint32_t instrumentID;
-            uint32_t orderqty; 
-            double price;
-
-            OpenCloseFlag openCloseType;
-            OrderPriceType priceType;
-            OrderTimeType timeType;
-            HedgeFlag hedgeType;
-            LongShortFlag longshortType;
-
-            OrderStatus  orderStatus;
-            OrderErrorCode  orderErrorCode;
-
             order.instrumentID = request.instrumentID;
             order.orderqty = request.orderqty;
+            order.price = request.price;
+            order.tradeprice  = 0;
             order.filledQty = 0;
-            order.orderprice = request.price;
-            order.tradeprice = 0;
+            order.openCloseType = request.openCloseType;
+            order.priceType = request.priceType;
+            order.timeType = request.timeType;
+            order.hedgeType = request.hedgeType;
+            order.longshortflag = request.longshortflag;
+            order.common.orderErrorCode = std::get<0>(hint);
+            order.common.orderStatus = OrderRejected;
 
-            ret->sse_order.longshortflag = newOrderRequest.longshortflag;
-            ret->sse_order.orderStatus = OrderRejected;
-            ret->sse_order.orderErrorCode  = valid_code;
-            
+            ret.push_back(orderDetail);
+
+        }
+        else
+        {
+            if (request.openCloseType != OpenCloseFlag_Open)
+            {
+                CPosition::PositionType ystPosType;
+                CPosition::PositionType todayPosType;
+                if (request.longshortflag == LongShortFlag_Long)
+                {
+                    ystPosType = CPosition::ShortYst;
+                    todayPosType = CPosition::ShortToday;
+                }
+                else
+                {
+                    ystPosType = CPosition::LongYst;
+                    todayPosType = CPosition::LongToday;
+                }
+                CPosition::QryAmmount  qtyAmmountYst =  posMgr_->getPosition(request.instrumentID).getTotalQtyAmmount(ystPosType);
+                CPosition::QryAmmount  qtyAmmount =  posMgr_->getPosition(request.instrumentID).getTotalQtyAmmount(todayPosType);
+                uint32_t yst_qty = qtyAmmountYst.qty;
+                uint32_t today_qty = qtyAmmount.qty;
+
+                if (today_qty > 0)
+                {
+                    uint32_t close_today_qty = std::min(today_qty, request.orderqty);
+
+                    OrderDataDetail* orderDetail = new OrderDataDetail;
+                    orderDetail->requestid = req.requestID;
+                    orderDetail->orderID = req.requestID;
+                    orderDetail->exchangeType = std::get<1>(hint);
+
+                    FutureOrderDetail& order  = orderDetail->cffex_order;
+                    order.instrumentID = request.instrumentID;
+                    order.orderqty = close_today_qty;
+                    order.price = request.price;
+                    order.tradeprice  = 0;
+                    order.filledQty = 0;
+                    order.openCloseType = OpenCloseFlag_CloseToday;
+                    order.priceType = request.priceType;
+                    order.timeType = request.timeType;
+                    order.hedgeType = request.hedgeType;
+                    order.longshortflag = request.longshortflag;
+                    order.common.orderErrorCode = std::get<0>(hint);
+                    order.common.orderStatus = OrderNew;
+                    ret.push_back(orderDetail);
+
+
+                    request.orderqty -= close_today_qty;
+                }
+
+                if (request.orderqty > 0)
+                {
+
+                    OrderDataDetail* orderDetail = new OrderDataDetail;
+                    orderDetail->requestid = req.requestID;
+                    orderDetail->orderID = req.requestID + 1;
+                    orderDetail->exchangeType =std::get<1>(hint);
+
+                    FutureOrderDetail& order  = orderDetail->cffex_order;
+                    order.instrumentID = request.instrumentID;
+                    order.orderqty = request.orderqty;
+                    order.price = request.price;
+                    order.tradeprice  = 0;
+                    order.filledQty = 0;
+                    order.openCloseType = OpenCloseFlag_CloseYst;
+                    order.priceType = request.priceType;
+                    order.timeType = request.timeType;
+                    order.hedgeType = request.hedgeType;
+                    order.longshortflag = request.longshortflag;
+                    order.common.orderErrorCode =std::get<0>(hint);
+                    order.common.orderStatus = OrderNew;
+                    ret.push_back(orderDetail);
+                }
+
+
+            }
+            else
+            {
+                // open
+
+                OrderDataDetail* orderDetail = new OrderDataDetail;
+                orderDetail->requestid = req.requestID;
+                orderDetail->orderID = req.requestID;
+                orderDetail->exchangeType =  std::get<1>(hint);
+
+                FutureOrderDetail& order  = orderDetail->cffex_order;
+                order.instrumentID = request.instrumentID;
+                order.orderqty = request.orderqty;
+                order.price = request.price;
+                order.tradeprice  = 0;
+                order.filledQty = 0;
+                order.openCloseType = request.openCloseType;
+                order.priceType = request.priceType;
+                order.timeType = request.timeType;
+                order.hedgeType = request.hedgeType;
+                order.longshortflag = request.longshortflag;
+                order.common.orderErrorCode = std::get<0>(hint);
+                order.common.orderStatus = OrderNew;
+                ret.push_back(orderDetail);
+            }
+
+
         }
         return ret;
     }

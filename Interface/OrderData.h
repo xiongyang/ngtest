@@ -47,42 +47,42 @@ namespace BluesTrading
 
     enum ExchangeTypes
     {
-        CFFEX,
-        DCE,
-        SSE,
-        SZE,
-        SHFE,
-        CZCE
+        Exch_CFFEX,
+        Exch_DCE,
+        Exch_SSE,
+        Exch_SZE,
+        Exch_SHFE,
+        Exch_CZCE
     };
 
     enum OrderPriceType
     {
-        None  = 0,
-        LimitOrder ,
-        MarketOrder,
+         OrderPriceType_None  = 0,
+         OrderPriceType_LimitOrder ,
+         OrderPriceType_MarketOrder,
     };
 
     enum OrderTimeType
     {
-        None = 0,
-        IOC,
+        OrderTimeType_None = 0,
+        OrderTimeType_IOC,
     };
 
     // our client can send order via Close. but OrderManager may select the actually Type
     enum OpenCloseFlag
     {
-        None = 0,
-        Open,
-        Close,
-        CloseToday,
-        CloseYst,
+        OpenCloseFlag_None = 0,
+        OpenCloseFlag_Open,
+        OpenCloseFlag_Close,
+        OpenCloseFlag_CloseToday,
+        OpenCloseFlag_CloseYst,
     };
 
     enum HedgeFlag
     {
-        None = 0,
-        Speculation,
-        Arbitrage,
+        HedgeFlag_None = 0,
+         HedgeFlag_Speculation,
+         HedgeFlag_Arbitrage,
         //OrderHedgeFlag_Hedge,
         //OrderHedgeFlag_CFFEX_MarketMaker,
         //OrderHedgeFlag_Unknown
@@ -90,9 +90,9 @@ namespace BluesTrading
 
     enum LongShortFlag
     {
-        None = 0,
-        Long ,
-        Short,
+        LongShortFlag_None = 0,
+        LongShortFlag_Long ,
+        LongShortFlag_Short,
     };
 
 
@@ -149,6 +149,21 @@ namespace BluesTrading
     typedef CancelRequest<CZCE_ProductFutureCancel> CZCE_CancelRequest;
 
     template<int RequestTypeValue>
+    struct SecurityNewOrderRequest
+    {
+        static const int RequestType = RequestTypeValue;
+        uint32_t instrumentID;
+        double price;
+        uint32_t orderqty; 
+
+        LongShortFlag longshortflag;
+
+    };
+
+    typedef SecurityNewOrderRequest<SSE_SecurityNewOrder> SSE_SecurityNewOrderRequest;
+    typedef SecurityNewOrderRequest<SZE_SecurityNewOrder> SZE_SecurityNewOrderRequest;
+
+    template<int RequestTypeValue>
     struct  SecurityModifyOrderRequest
     {
         static const int RequestType = RequestTypeValue;
@@ -159,21 +174,15 @@ namespace BluesTrading
     typedef SecurityModifyOrderRequest<SSE_SecurityModify> SSE_SecurityModifyOrderRequest;
     typedef SecurityModifyOrderRequest<SZE_SecurityModify> SZE_SecurityModifyOrderRequest;
 
-    template<int RequestTypeValue>
-    struct SecurityNewOrderRequest
+    struct CommonOrderStatusDetail
     {
-        static const int RequestType = RequestTypeValue;
-        uint32_t instrumentID;
-        double price;
-        uint32_t orderqty; 
+        OrderStatus  orderStatus;
+        OrderErrorCode  orderErrorCode;
+        //micro time from epoch
 
-        LongShortFlag longshortFlag;
-
+        uint64_t    submitTime;
+        uint64_t    updateTime;
     };
-
-    typedef SecurityNewOrderRequest<SSE_SecurityNewOrder> SSE_SecurityNewOrderRequest;
-    typedef SecurityNewOrderRequest<SZE_SecurityNewOrder> SZE_SecurityNewOrderRequest;
-
 
     struct SecurityOrderDetail
     {
@@ -182,10 +191,10 @@ namespace BluesTrading
         uint32_t filledQty;
         double orderprice;
         double tradeprice;
-
         LongShortFlag   longshortflag;
-        OrderStatus  orderStatus;
-        OrderErrorCode  orderErrorCode;
+
+
+        CommonOrderStatusDetail common;
     };
 
     typedef SecurityOrderDetail SSE_OrderDetail;
@@ -194,10 +203,10 @@ namespace BluesTrading
     template<int RequestTypeValue>
     struct Future_NewOrderRequest
     {
-        Future_NewOrderRequest()
-        {
-            memset(this, 0, sizeof(Future_NewOrderRequest<RequestTypeValue>));
-        }
+        //Future_NewOrderRequest()
+        //{
+        //    memset(this, 0, sizeof(Future_NewOrderRequest<RequestTypeValue>));
+        //}
 
 
         static const int RequestType = RequestTypeValue;
@@ -210,7 +219,7 @@ namespace BluesTrading
         OrderPriceType priceType;
         OrderTimeType timeType;
         HedgeFlag hedgeType;
-        LongShortFlag longshortType;
+        LongShortFlag longshortflag;
     };
 
 
@@ -225,7 +234,7 @@ namespace BluesTrading
         static const int RequestType = RequestTypeValue;
         Future_NewOrderRequest<RequestTypeValue>  newOrder;
         uint64_t blueOrderID;   
-    }
+    };
 
     typedef Future_ModifyOrderRequest<CFFEX_IndexFutureModify>  CFFEX_ModifyOrderRequest;
     typedef Future_ModifyOrderRequest<DCE_ProductFutureModify>  DCE_ModifyOrderRequest;
@@ -239,18 +248,13 @@ namespace BluesTrading
         double price;
         double tradeprice ;
         uint32_t filledQty;
-      
-       
-
 
         OpenCloseFlag openCloseType;
         OrderPriceType priceType;
         OrderTimeType timeType;
         HedgeFlag hedgeType;
-        LongShortFlag longshortType;
-
-        OrderStatus  orderStatus;
-        OrderErrorCode  orderErrorCode;
+        LongShortFlag longshortflag;
+        CommonOrderStatusDetail common;
     };
 
     typedef FutureOrderDetail CFFEX_OrderDetail;
@@ -351,34 +355,43 @@ namespace BluesTrading
         }
     };
 
+    
 
+    //struct SecurityTrade
+    //{
+    //    uint32_t instrumentID;
+    //    double tradeprice;
+    //    uint32_t tradeqty;
+    //  
+    //    uint64_t tradeTime;
+    //    LongShortFlag   longshortflag;
+    //};
 
-    struct SecurityTrade
-    {
-        uint32_t instrumentID;
+    //struct FutureTrade
+    //{
+    //    uint32_t instrumentID;
+    //    double tradeprice;
+    //    uint32_t tradeqty;
+    //    LongShortFlag   longshortflag;
+    //    OpenCloseFlag opencloseflag;
+    //    HedgeFlag       hedgeflag;
+    //};
 
-    };
+    //struct TradeDataDetail
+    //{
+    //    union
+    //    {
+    //        uint64_t requestid;
+    //        SenderID senderid;
+    //    };
 
-    struct FutureTrade
-    {
+    //    uint64_t  orderID;
+    //    uint16_t  exchangeType;
 
-    };
-
-    struct TradeDataDetail
-    {
-        union
-        {
-            uint64_t requestid;
-            SenderID senderid;
-        };
-
-        uint64_t  orderID;
-        uint16_t  exchangeType;
-
-        union 
-        {
-            SecurityTrade  sse_order;
-            FutureTrade sze_order;
-        };
-    };
+    //    union 
+    //    {
+    //        SecurityTrade  security_trade;
+    //        FutureTrade future_trade;
+    //    };
+    //};
 }

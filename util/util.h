@@ -38,6 +38,7 @@ namespace BluesTrading
 
     class InstrumentInfoFactory
     {
+    public:
         static uint32_t getInstrumentUnitMultiplier(uint32_t inst);
         static double   getInstrumentMarginRate(uint32_t inst);
     };

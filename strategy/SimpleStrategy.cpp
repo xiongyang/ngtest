@@ -45,11 +45,11 @@ namespace BluesTrading
         {
             SSE_SecurityNewOrderRequest request;
             request.instrumentID = 1;
-            request.isBuy = false;
+            request.longshortflag = LongShortFlag_Long;
             request.orderqty = 100;
-            request.orderType = 0; //only limit order
+          //  request.orderType = 0; //only limit order
             request.price = lastprice_;
-            request.priceType = 0; // only limit order
+          //  request.priceType = 0; // only limit order
             std::cout << "send order at time " <<lastprice_ << " currentTime:"  << currentTime << "\n";
             submitRequest(request, orderManager_);
             //  timerprovider_->setTimer(this, 3, 60000, true); // target time 
@@ -101,11 +101,11 @@ namespace BluesTrading
         {
             SSE_SecurityNewOrderRequest request;
             request.instrumentID = data.instIndex;
-            request.isBuy = true;
+            request.longshortflag = LongShortFlag_Long;
             request.orderqty = 100;
-            request.orderType = 0; //only limit order
+         //   request.orderType = 0; //only limit order
             request.price = data.last_price;
-            request.priceType = 0; // only limit order
+          //  request.priceType = 0; // only limit order
             std::cout << boost::format("SendOrder %1%, Time:%2% ") %  data.last_price % getTimeStr(timerprovider_->getCurrentTimeMsInDay());
 
            // std::cout << "send order " << data.last_price << " Time:" <<"\n";

@@ -9,7 +9,17 @@ namespace BluesTrading
 
     CPosition& testPositionManger::getPosition(uint32_t inst)
     {
-        return allPositions_[inst];
+        auto iter = allPositions_.find(inst);
+        if(iter != allPositions_.end())
+        {
+            return iter->second;
+        }
+        else
+        {
+              CPosition&  newPos = allPositions_[inst];
+              newPos.setUintMultiplier(InstrumentInfoFactory::getInstrumentUnitMultiplier(inst));
+              return newPos;
+        }
     }
 
     AccountInfo& testPositionManger::getAccountInfo()
@@ -22,39 +32,93 @@ namespace BluesTrading
         return allPositions_;
     }
 
-    void testPositionManger::updateOrder(const OrderDataDetail* order)
+    void testPositionManger::onUpdateOrder(const OrderDataDetail* order)
     {
-        const SSE_OrderDetail& sseOrder = order->sse_order;
-         CPosition&  pos = getPosition(sseOrder.instrumentID);
-         if (SSE_OrderDetail::SSE_OrderTraded == sseOrder.orderStatus)
-         {
-             if (order->sse_order.isbuy)
-             {
-                 TradeInfo trade;
-                 trade.is_open  = true;
-                 trade.is_long = true;
-                 trade.is_today = true;
-                 trade.price = sseOrder.tradeprice;
-                 trade.qty = sseOrder.filledQty;
-                 pos.addTrade(trade);
 
-                 accountInfo.cash -=   trade.price *   trade.qty;
-             }
-             else
-             {
-                 TradeInfo trade;
-                 trade.is_open  = false;
-                 trade.is_long = false;
-                 trade.is_today = false;        //SSE order only sell yst position
-                 trade.price = sseOrder.tradeprice;
-                 trade.qty = sseOrder.filledQty;
-                 pos.addTrade(trade);
-
-                 accountInfo.cash +=   trade.price *   trade.qty;
-             }
-         } 
+        if (order->exchangeType  ==  Exch_SSE || order->exchangeType  ==  Exch_SZE)
+        {
+            handleSecurityOrder(order);
+        }
+        else
+        {
+            handleFutureOrder(order);
+        }
     }
 
+
+
+
+    void testPositionManger::handleSecurityOrder(const OrderDataDetail* order)
+    {
+        const SSE_OrderDetail& sseOrder = order->sse_order;
+        CPosition&  pos = getPosition(sseOrder.instrumentID);
+        if (OrderFilled == sseOrder.common.orderStatus)
+        {
+            if (LongShortFlag_Long  == sseOrder.longshortflag)
+            {
+                TradeInfo trade;
+                trade.is_open  = true;
+                trade.is_long = true;
+                trade.is_today = true;
+                trade.price = sseOrder.tradeprice;
+                trade.qty = sseOrder.filledQty;
+                pos.addTrade(trade);
+              //  accountInfo.cash -=   trade.price *   trade.qty;
+            }
+            else
+            {
+                TradeInfo trade;
+                trade.is_open  = false;
+                trade.is_long = false;
+                trade.is_today = false;        //SSE order only sell yst position
+                trade.price = sseOrder.tradeprice;
+                trade.qty = sseOrder.filledQty;
+                pos.addTrade(trade);
+
+               // accountInfo.cash +=   trade.price *   trade.qty;
+            }
+        } 
+    }
+
+    void testPositionManger::handleFutureOrder(const OrderDataDetail* orderp)
+    {
+        const FutureOrderDetail& order = orderp->cffex_order;
+        CPosition&  pos = getPosition(order.instrumentID);
+        if (OrderFilled == order.common.orderStatus)
+        {
+
+            if(OpenCloseFlag_Open == order.openCloseType )
+            {
+                  TradeInfo trade;
+
+                  trade.is_open  =  true;
+                  trade.is_long =  (LongShortFlag_Long == order.longshortflag);
+                  trade.is_today = true;
+                  trade.price = order.tradeprice;
+                  trade.qty = order.filledQty;
+                  pos.addTrade(trade);
+                  //accountInfo.cash -=   trade.price *   trade.qty * 
+                  //    InstrumentInfoFactory::getInstrumentUnitMultiplier(order.instrumentID) * 
+                  //    InstrumentInfoFactory::getInstrumentMarginRate(order.instrumentID);
+            }
+            else
+            {
+                TradeInfo trade;
+
+                trade.is_open  =  false;
+                trade.is_long =  (LongShortFlag_Long == order.longshortflag);
+                trade.is_today =  (OpenCloseFlag_CloseToday  == order.openCloseType);
+                trade.price = order.tradeprice;
+                trade.qty = order.filledQty;
+                pos.addTrade(trade);
+                //accountInfo.cash -=   trade.price *   trade.qty * 
+                //    InstrumentInfoFactory::getInstrumentUnitMultiplier(order.instrumentID) * 
+                //    InstrumentInfoFactory::getInstrumentMarginRate(order.instrumentID);
+
+
+            }
+        } 
+    }
 
     void testPositionManger::resetPositionTodayToYst()
     {
@@ -80,7 +144,7 @@ namespace BluesTrading
 
     void testPositionManger::printPnl(uint32_t date)
     {
-        std::cout << "printPnl " << date << std::endl;
+      //  std::cout << "printPnl " << date << std::endl;
 
         for (auto& posPair : allPositions_)
         {
@@ -145,13 +209,17 @@ namespace BluesTrading
     {
         //std::cout << "PositionManager OnStart Day" << date << std::endl;
         resetPositionTodayToYst();
+        for (auto& each_pos : allPositions_)
+        {
+           accountInfo.cash += each_pos.second.getPositionPnl();
+           each_pos.second.resetPnl();
+           each_pos.second.resetTradeCount();
+        }
+
     }
 
     void testPositionManger::onEndDay(uint32_t date)
     {
-        //std::cout << "PositionManager onEndDay Day" << date << std::endl;
-        //printPnl(date);
-        //removeEmptyPosition();
     }
 
     void testPositionManger::removeEmptyPosition()

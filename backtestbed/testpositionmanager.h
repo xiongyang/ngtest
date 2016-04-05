@@ -18,7 +18,12 @@ namespace BluesTrading
 
         virtual PositionContainer& getAllPosition() override;
 
-        void updateOrder(const OrderDataDetail* order);
+         void onUpdateOrder(const OrderDataDetail* orderData) ;
+
+         void handleSecurityOrder(const OrderDataDetail* order);
+         void handleFutureOrder(const OrderDataDetail* order);
+     //   virtual void onUpdateTrade(TradeDataDetail* trade) override;
+
         void resetPositionTodayToYst();
         void updatePrice(const CTickData& data);
 
