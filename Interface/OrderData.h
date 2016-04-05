@@ -215,10 +215,10 @@ namespace BluesTrading
         double price;
         
 
-        OpenCloseFlag openCloseType;
-        OrderPriceType priceType;
-        OrderTimeType timeType;
-        HedgeFlag hedgeType;
+        OpenCloseFlag opencloseflag;
+        OrderPriceType pricetype;
+        OrderTimeType timetype;
+        HedgeFlag hedgeflag;
         LongShortFlag longshortflag;
     };
 
