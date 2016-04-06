@@ -188,7 +188,10 @@ namespace BluesTrading
 
         void  addTrade(const TradeInfo& trade)
         {
-            ++tradeCount_;
+            if (trade.is_open)
+            {
+                tradeCount_ += trade.qty;
+            }
             
             //boost::format fmt("add Position [OpenClose:%4%][Long:%3%]  [Price:%1%] [Qty:%2%] \n") ;
             //fmt % trade.is_long  %       trade.price % trade.qty % trade.is_open;
