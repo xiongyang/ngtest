@@ -19,6 +19,39 @@ extern "C"
 
 namespace BluesTrading
 {
+
+    template<typename InstrumentType, typename ValueType>
+    void setLegValue(InstrumentType* pInstrumentArray, int arraysize, const std::string& leg, const std::string& value, ValueType InstrumentType::*memberptr)
+    {
+        for (size_t i = 0; i < arraysize; ++i)
+        {
+            InstrumentType* p = &pInstrumentArray[i];
+            if (leg == p->instrument_)
+            {
+               // inst->*memberptr
+                p->*memberptr = boost::lexical_cast<ValueType>(value);
+                return;
+            }
+        }
+    }
+
+
+    template<typename InstrumentType, typename ValueType>
+    void setLegValue(InstrumentType* pInstrumentArray, int arraysize, const std::string& value, ValueType InstrumentType::*memberptr)
+    {
+        std::vector<std::string> legs;
+        boost::split(legs, value, boost::is_any_of("#"));
+        for(auto& inst : legs)
+        {
+            std::vector<std::string> leg_value;
+            boost::split(leg_value, inst, boost::is_any_of(":"));
+            setLegValue(pInstrumentArray,arraysize, leg_value[0],leg_value[1], memberptr);
+        }
+    }
+
+
+
+
     SingleStrategy::SingleStrategy(const char* name, ILogger* logger, IConfigureManager* configureManager, 
         IMarketDataProvider* dataProvider, ITimerProvider* timerProvider, IOrderManger* orderManager, IPositionManager* posmgr)
         :logger_(logger),
@@ -731,15 +764,7 @@ namespace BluesTrading
             }
 			else if (propName == "Weights")
             {
-				std::vector<std::string> legs;
-				boost::split(legs, propValue, boost::is_any_of("#"));
-				for(auto& inst : legs)
-				{
-					std::vector<std::string> leg_value;
-					boost::split(leg_value, inst, boost::is_any_of(":"));
-
-					SetWeights(leg_value[0], leg_value[1]);
-				}
+                setLegValue(pInstruments_, num_of_instr_, propValue, &Instrument::weight_);
             }
             else
             {
@@ -774,9 +799,9 @@ namespace BluesTrading
 			p.limit_ = 0.05;
 		}
 	}
-	void	SingleStrategy::SetWeights(const std::string& leg, const std::string& value)
-	{
-	}
+
+
+    
 
 }
 
