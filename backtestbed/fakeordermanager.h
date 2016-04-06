@@ -8,7 +8,7 @@
 
 namespace BluesTrading
 {
-    class FakeOrderManager :public IOrderManger
+    class FakeOrderManager :public IOrderManger, public ITimerConsumer
     {
     public:
         FakeOrderManager()
@@ -21,6 +21,9 @@ namespace BluesTrading
         virtual std::vector<OrderDataDetail*>   getAllOrders() override;
         virtual void subscribeOrderUpdate(uint32_t updateMask, IOrderDataConsumer* consumer) override;
         virtual void unSubscribeOrderUpdate(IOrderDataConsumer* listerner) override;
+
+        virtual void onStartDay(uint32_t date) override;
+        virtual void onEndDay(uint32_t date) override {};
     public:
 
         //void StartDay(uint32_t dayYYYYMMDD);

@@ -85,6 +85,15 @@ namespace BluesTrading
         if(listerner)  orderdataSubscribers_.erase(listerner);
     }
 
+    void FakeOrderManager::onStartDay(uint32_t date)
+    {
+        for (auto& each : orders_)
+        {
+            delete each->second;
+        }
+        orders_.clear();
+    }
+
     void FakeOrderManager::handleSSECancel( OrderRequest&)
     {
         // orders_[requset.requestID]
@@ -234,14 +243,14 @@ namespace BluesTrading
 
                 if (request.opencloseflag == OpenCloseFlag_Open)
                 {
-                    double need_cash = request.orderqty * request.price  * 
-                        InstrumentInfoFactory::getInstrumentUnitMultiplier(request.instrumentID) * 
-                        InstrumentInfoFactory::getInstrumentMarginRate(request.instrumentID);
+                    //double need_cash = request.orderqty * request.price  * 
+                    //    InstrumentInfoFactory::getInstrumentUnitMultiplier(request.instrumentID) * 
+                    //    InstrumentInfoFactory::getInstrumentMarginRate(request.instrumentID);
 
-                    if(posMgr_->getAccountInfo().cash  < need_cash)
-                    {
-                        return std::make_tuple(OrderReject_NotEnoughCash, ret_exch_type);
-                    }
+                    //if(posMgr_->getAccountInfo().cash  < need_cash)
+                    //{
+                    //    return std::make_tuple(OrderReject_NotEnoughCash, ret_exch_type);
+                    //}
                 }
                 else 
                 {
