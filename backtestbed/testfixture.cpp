@@ -65,8 +65,8 @@ namespace BluesTrading
 
 
  
-        std::string filename = dumpDllFile(request);
-        auto createStrategyFun = GetSharedLibFun<BluesTrading::StrategyFactoryFun>(filename.c_str(),"createStrategy");
+        dumpedfileName = dumpDllFile(request);
+        auto createStrategyFun = GetSharedLibFun<BluesTrading::StrategyFactoryFun>(dumpedfileName.c_str(),"createStrategy");
 
         if(!createStrategyFun)
         {
@@ -104,9 +104,18 @@ namespace BluesTrading
          std::cout << "Create Work Thread Group " << workerThreads.size() <<  std::endl;
     }
 
+    void TestFixture::clean()
+    {
+        boost::filesystem::remove(dumpedfileName);
+    }
+
     std::string TestFixture::dumpDllFile(TestRequest& request)
     {
-        std::string dllFile = "tempfile.dll";
+        srand(time(nullptr));
+        std::string dllFile =  boost::lexical_cast<std::string>(rand()) +  ".dll";
+    /*    dllFile +=;*/
+       // std::string dllFile = "tempfile.dll";
+        std::cout << "Dump Dll File to " << dllFile << std::endl;
         std::fstream dllfilestream(dllFile, std::ios_base::out | std::ios_base::binary);
         if (! dllfilestream)
         {

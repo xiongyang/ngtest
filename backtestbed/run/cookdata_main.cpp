@@ -10,7 +10,12 @@
 #include <string>
 #include <fstream>
 #include <thread>
+#include <cstdlib>
+#include <utility>
+#include <memory>
+#include <vector>
 
+#include <boost/asio.hpp>
 #include <boost/algorithm/string.hpp>
 
 using namespace BluesTrading;
@@ -54,6 +59,7 @@ void HandleTestRequest(TestRequest request, DataCache* datacache)
         std::cout << each << "\n";
     }
     std::cout << std::endl;
+    fixture.clean();
 }
 
 #include <array>
@@ -167,9 +173,6 @@ std::vector<DataSrcInfo> getDataSrcInfo(const std::vector< std::unordered_map<st
     return ret;
 }
 
-#include <memory>
-#include <vector>
-#include <thread>
 
 void TestThread(char ** argv)
 {
@@ -259,15 +262,15 @@ void TestThreadPost(char ** argv)
 }
 
 
-TestRequest CreateTestRequest(int argc, char**argv)
+TestRequest CreateTestRequest(const std::string& dllFile,  const std::string& configFile)
 {
-    std::string dllFile = argv[2];
+   // std::string dllFile = argv[2];
     std::string dllbytes = readFile(dllFile);
 
     TestRequest request;
     request.set_dllfile(dllbytes.data(), dllbytes.size());
 
-    std::string configFile = argv[3];
+   // = argv[3];
     std::ifstream configFileStream(configFile);
     std::vector< std::unordered_map<std::string, std::string> > allconfig = parserProps(configFileStream);
     //configFileStream.seekg(0);
@@ -314,6 +317,100 @@ TestRequest CreateTestRequest(int argc, char**argv)
     return request;
 }
 
+
+using boost::asio::ip::tcp;
+
+void session(tcp::socket sock, DataCache* datacache)
+{
+    try
+    {
+        boost::asio::streambuf buf;
+        for (;;)
+        {
+
+         
+            boost::asio::streambuf::mutable_buffers_type bufs = buf.prepare(1024);
+            boost::system::error_code error;
+            size_t n = sock.receive(bufs, 0 , error);
+            buf.commit(n);
+
+            
+          //  size_t length = sock.read_some(boost::asio::buffer(data), error);
+            
+            if (error == boost::asio::error::eof)
+                break; // Connection closed cleanly by peer.
+            else if (error)
+                throw boost::system::system_error(error); // Some other error.
+
+            //boost::asio::write(sock, boost::asio::buffer(data, length));
+        }
+
+        std::cout << "Receive buf size "  << buf.size() << std::endl;
+        std::istream remotestream(&buf);
+        TestRequest request;
+        bool  ret = request.ParseFromIstream(&remotestream);
+        std::cout << "Receive the TestMessage "  << ret << std::endl;
+
+
+      
+
+
+        HandleTestRequest(request, datacache);
+        std::cout << sock.remote_endpoint().address() <<":" <<  sock.remote_endpoint().port() << "  session complete \n";
+    }
+    catch (std::exception& e)
+    {
+        std::cerr << "Exception in thread: " << e.what() << "\n";
+    }
+}
+
+void server(boost::asio::io_service& io_service, unsigned short port,DataCache* datacache)
+{
+    tcp::acceptor a(io_service, tcp::endpoint(tcp::v4(), port));
+    for (;;)
+    {
+        tcp::socket sock(io_service);
+        a.accept(sock);
+        std::cout << "Client Connect In " << sock.remote_endpoint().address() <<":" <<  sock.remote_endpoint().port() << std::endl;
+        std::thread(session, std::move(sock), datacache).detach();
+    }
+}
+
+int startserver(const std::string& port, DataCache* datacache)
+{
+    try
+    {
+        boost::asio::io_service io_service;
+        server(io_service, std::atoi(port.c_str()), datacache);
+    }
+    catch (std::exception& e)
+    {
+        std::cerr << "exception: " << e.what() << "\n";
+    }
+
+    return 0;
+}
+
+void sendRequestToServer(const std::string& ip, const std::string& port, TestRequest& request)
+{
+
+    boost::asio::streambuf buf;
+    std::ostream outstream(&buf);
+    request.SerializeToOstream(&outstream);
+
+
+    boost::asio::io_service io_service;
+    tcp::socket sock(io_service);
+    tcp::resolver resolver(io_service);
+    std::cout << "try to connect to " << ip << ":" << port << std::endl;
+    boost::asio::connect(sock, resolver.resolve({ip, port}));
+
+
+    sock.send(buf.data());
+}
+
+
+
 // get the hardware info. and avgLoad current
 void getLocalHostRuningStatus()
 {
@@ -342,6 +439,15 @@ int main(int argc, char** argv)
         {
             cookData(argv[2]);
         }
+        else if(cmd == "server")
+        {
+            startserver( argv[2], &datacache);
+        }
+        else if(cmd == "client")
+        {
+           auto request =  CreateTestRequest(argv[2],argv[3]);
+           sendRequestToServer(argv[4], argv[5], request);
+        }
         else if(cmd == "post")
         {
             TestThreadPost(argv);
@@ -357,7 +463,7 @@ int main(int argc, char** argv)
         }
         else if(cmd == "tr")
         {
-           auto request =  CreateTestRequest(argc, argv);
+           auto request =  CreateTestRequest(argv[2], argv[3]);
            HandleTestRequest(request, &datacache);
         }
         else if (cmd == "usage")
