@@ -1,13 +1,13 @@
 #pragma once
 #include "IStrategy.h"
 
-extern "C"
+/*extern "C"
 {
     using namespace BluesTrading;
     IStrategy* createStrategy(const char* name, ILogger* logger, 
         IConfigureManager* configureManager, IMarketDataProvider* dataProvider, ITimerProvider* timerProvider, IOrderManger* orderManager,
         IPositionManager* posMgr);
-};
+};*/
 
 
 namespace BluesTrading

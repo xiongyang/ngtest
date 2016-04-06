@@ -70,7 +70,8 @@ namespace BluesTrading
         case     Exch_CZCE:
         case    Exch_CFFEX:
         case    Exch_DCE:
-            of << "Not Implement Yet Print OrderYet \n" ;
+			//of << order.cff
+           // of << "Not Implement Yet Print OrderYet \n" ;
             break;
         default:
             of << "Unknown OrderType \n" ;
@@ -646,14 +647,41 @@ namespace BluesTrading
 
     uint32_t InstrumentInfoFactory::getInstrumentUnitMultiplier(uint32_t inst)
     {
-        //TODO 
-        return 10;
+		if(inst == 5270000)
+			return 10;
+		else 
+			return 15;
     }
 
     double InstrumentInfoFactory::getInstrumentMarginRate(uint32_t inst)
     {
-        //TODO
-        return 0.1;
+        if(inst == 5270000)
+			return 0.1;
+		else 
+			return 0.1;
     }
+
+	double	InstrumentInfoFactory::getInstrumentTickSize(uint32_t inst)
+	{
+		if(inst == 5270000)
+			return 5;
+		else 
+			return 1;
+	}
+	double	InstrumentInfoFactory::getInstrumentCommision(uint32_t inst)
+	{
+		if(inst == 5270000)
+			return 30;
+		else 
+			return 5;
+	}
+	double	InstrumentInfoFactory::getInstrumentLimit(uint32_t inst)
+	{
+		if(inst == 5270000)
+			return 0.05;
+		else 
+			return 0.05;
+	}
+
 
 }

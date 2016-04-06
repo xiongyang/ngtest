@@ -65,10 +65,12 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\strategy\SimpleStrategy.cpp" />
+    <ClCompile Include="..\..\strategy\SingleStrategy.cpp" />
     <ClCompile Include="..\..\strategy\test\loadtest.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\strategy\SimpleStrategy.h" />
+    <ClInclude Include="..\..\strategy\SingleStrategy.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\strategy\test\wscript" />

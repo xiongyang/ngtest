@@ -3,14 +3,14 @@
 #include "bluemessage.pb.h"
 
 using namespace BluesTrading;
-extern "C"
+/*extern "C"
 {
     BluesTrading::IStrategy* createStrategy(const char* name, ILogger* logger, IConfigureManager* configureManager,
         IMarketDataProvider* dataProvider, ITimerProvider* timerProvider, IOrderManger* orderManager, IPositionManager* posMgr)
     {
         return new BluesTrading::SimpleStrategy(name, logger, configureManager, dataProvider, timerProvider, orderManager, posMgr);
     }
-};
+};*/
 
 
 
@@ -36,7 +36,7 @@ namespace BluesTrading
     void SimpleStrategy::onTimer(uint32_t eventID, uint32_t currentTime)
     {
         return;
-        std::cout << "EventID:" << eventID << " Time:" << currentTime << std::endl;
+        //std::cout << "EventID:" << eventID << " Time:" << currentTime << std::endl;
         if(eventID == 1)
         {
             timerprovider_->setTimer(this, 2, 60 * 1000 * 10, true); // target time 

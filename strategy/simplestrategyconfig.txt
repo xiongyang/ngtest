@@ -3,13 +3,13 @@
 
 // DataSrc_Type find info in bluemessage.proto	
 // Instrument 必须是每组DataSrc的第一行
-DataSrc_Instruments=ag#ru
-DataSrc_StartDate=20160201
-DataSrc_EndDate=20160228
+DataSrc_Instruments=ag
+DataSrc_StartDate=20160329
+DataSrc_EndDate=20160330
 
 // Type equal 2 mean MySql DataSrc  1 mean MS SQl
 DataSrc_Type=1
-DataSrc_Info=dl_level2#lfull_sunrain_shfe_test
+DataSrc_Info=dl_level2#VystSH20
 
 
 
@@ -23,9 +23,32 @@ DataSrc_Info=dl_level2#lfull_sunrain_shfe_test
 
 
 //=====================================
-prop1=value1
-prop2=value2
-prop3=value3
-prop4=[1,2,0.1]
-prop5={value51,value52,value53}
-prop6=[1,10,1]
+ADDInstrument=ag
+volMA=5
+OppStartTime=01:00:01
+OpeningTime=01:00:01
+PeeTime1=06:29:59
+PeeTimeEnd1=09:00:00
+PeeTime2=10:15:00
+PeeTimeEnd2=10:30:00
+ExitTime=12:59:30
+LiquidateTime=12:59:30
+ppl=1
+TradingIntervalInMsec=450
+IsUsingSizeContrast=0
+CapRatio=100
+VolMAWeight=0.000005
+volMultiplier=0.5
+MAWeight=0.01
+IsEquity=0
+IsVolAdj=1
+IsOverNight=1
+StopBp=20000
+IsCheckingSizeBeforeTrade=0
+ThresholdSelf=5
+IsCapControl=0
+IsMAOverNight=1
+EnterSignal=0.5
+Shape=0.5
+ThresholdSelfExit=200
+updateMAInterval=450

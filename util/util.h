@@ -41,6 +41,9 @@ namespace BluesTrading
     public:
         static uint32_t getInstrumentUnitMultiplier(uint32_t inst);
         static double   getInstrumentMarginRate(uint32_t inst);
+		static double	getInstrumentTickSize(uint32_t inst);
+		static double	getInstrumentCommision(uint32_t inst);
+		static double	getInstrumentLimit(uint32_t inst);
     };
 
 

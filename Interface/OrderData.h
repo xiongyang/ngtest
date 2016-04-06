@@ -108,7 +108,7 @@ namespace BluesTrading
 
     enum OrderErrorCode
     {
-         NoError,
+         NoError = 0,
          OrderReject_NotEnoughCash,
          OrderReject_NotEnoughInventory
     };
