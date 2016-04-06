@@ -89,7 +89,7 @@ namespace BluesTrading
     {
         for (auto& each : orders_)
         {
-            delete each->second;
+            delete each.second;
         }
         orders_.clear();
     }
