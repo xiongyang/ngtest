@@ -662,7 +662,7 @@ namespace BluesTrading
 			{
 				convert(propValue, globalParas_.is_zero_opp_exit_);
 			}
-			else if (propName == "IsStopBP")
+			else if (propName == "IsStopBp")
 			{
 				convert(propValue, globalParas_.is_stop_bp_);
 			}
@@ -710,7 +710,7 @@ namespace BluesTrading
 			{
 				convert(propValue, globalParas_.threshold_self_exit_);
 			}
-			else if (propName == "StopBP")
+			else if (propName == "StopBp")
 			{
 				convert(propValue, globalParas_.stop_bp_);
 			}
