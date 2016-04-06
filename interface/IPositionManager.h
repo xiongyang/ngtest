@@ -189,6 +189,11 @@ namespace BluesTrading
         void  addTrade(const TradeInfo& trade)
         {
             ++tradeCount_;
+            
+            //boost::format fmt("add Position [OpenClose:%4%][Long:%3%]  [Price:%1%] [Qty:%2%] \n") ;
+            //fmt % trade.is_long  %       trade.price % trade.qty % trade.is_open;
+            //std::cout << fmt ;
+
             if (trade.is_open)
             {
                 PositionItem item{trade.price, trade.qty, trade.is_long, trade.is_today};
@@ -197,8 +202,8 @@ namespace BluesTrading
             else
             {
 
-                auto shortCalcPrice = [](double tradePrice, double posPrice) {return posPrice - tradePrice;};
-                auto longCalcPrice = [] (double tradePrice, double posPrice){return tradePrice - posPrice;};
+                auto shortCalcPrice = [](double tradePrice, double posPrice) {return tradePrice - posPrice ;};
+                auto longCalcPrice = [] (double tradePrice, double posPrice){return posPrice - tradePrice;};
 
                 auto tradeMatchPos = [&] (TradeInfo trade, PositionItemContainer& posQueue, auto calc_diff)
                 {

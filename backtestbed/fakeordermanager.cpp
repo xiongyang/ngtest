@@ -128,7 +128,7 @@ namespace BluesTrading
         orders_[requset.requestID] =  generateSecurityOrder(requset);
         OrderDataDetail* targetOrder =  orders_[requset.requestID];
         NotifyOrder(targetOrder);
-        if (targetOrder->sse_order.common.orderErrorCode != NoError)
+        if (targetOrder->sse_order.common.orderErrorCode == NoError)
         { 
             fakeTradeOrder(targetOrder);
             posMgr_->onUpdateOrder(targetOrder);
@@ -148,7 +148,7 @@ namespace BluesTrading
             orders_[orderPtr->orderID] = orderPtr;
             NotifyOrder(orderPtr);
 
-            if (std::get<0>(ret) != NoError)
+            if (std::get<0>(ret) == NoError)
             {
                 fakeFutureTradeOrder(orderPtr);
                 posMgr_->onUpdateOrder(orderPtr);
@@ -261,6 +261,8 @@ namespace BluesTrading
 
                         if (request.orderqty >  qtyAmmountYst.qty + qtyAmmount.qty)
                         {
+                              boost::format fmt("Close Reject Close Long %1%  ShortPos [%2% / %3% ] \n");
+                             std::cout << fmt %  request.orderqty %   qtyAmmountYst.qty  % qtyAmmount.qty ;
                             return std::make_tuple(OrderReject_NotEnoughInventory, ret_exch_type);
                         }
                     }
@@ -271,6 +273,9 @@ namespace BluesTrading
 
                         if (request.orderqty >  qtyAmmountYst.qty + qtyAmmount.qty)
                         {
+                          
+                            boost::format fmt("Close Reject Close Short %1%  LongPos [%2% / %3% ] \n");
+                            std::cout << fmt %  request.orderqty %   qtyAmmountYst.qty  % qtyAmmount.qty ;
                             return std::make_tuple(OrderReject_NotEnoughInventory, ret_exch_type);
                         }
                     }
