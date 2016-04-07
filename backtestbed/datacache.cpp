@@ -14,7 +14,7 @@
 #define OTL_ODBC // Compile OTL 4/ODBC
 #include "otlv4.h" // include the OTL 4 header file
 
-#define DEBUG_LOG
+//#define DEBUG_LOG
 
 namespace BluesTrading
 {
