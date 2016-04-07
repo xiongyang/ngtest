@@ -216,8 +216,6 @@ size_t sendMessage(boost::asio::ip::tcp::socket& s,ProtoBufMessage& msg)
     return  write_buf(s, outbuf);
 }
 
-
-
 void session(tcp::socket sock, DataCache* datacache)
 {
     try
@@ -274,8 +272,6 @@ int startserver(const std::string& port, DataCache* datacache)
 
 void HandleRequestRemote(const std::string& ip, const std::string& port, TestRequest& request)
 {
-
-
     boost::asio::io_service io_service;
     tcp::socket sock(io_service);
     tcp::resolver resolver(io_service);
@@ -296,15 +292,20 @@ void HandleRequestRemote(const std::string& ip, const std::string& port, TestReq
 
 }
 
-
-
 // get the hardware info. and avgLoad current
-void getLocalHostRuningStatus()
+double getLocalHostRuningStatus()
 {
     auto ret = getCpuStatus();
     static double rttusage = ret;
     rttusage = rttusage * 0.9 + 0.1 * ret;
-    std::cout << "Cpu Usage " << rttusage << "\n";
+    return rttusage;
+}
+
+void broadcastStatus(const std::string& ip, const std::string port)
+{
+   std::this_thread::sleep_for(std::chrono::seconds(1));
+   
+   getLocalHostRuningStatus();
 }
 
 void testload(const char* argv)
@@ -381,11 +382,11 @@ int main(int argc, char** argv)
         {
             DataSrcInfo inst;
             inst.datasrcType = 1;
-            inst.instruments.push_back("ag");
-            inst.start_date = 20160201;
-            inst.end_date = 20160310;
-            inst.datasrcInfo.push_back("dl_level2");
-            inst.datasrcInfo.push_back("lfull_sunrain_shfe_test");
+            inst.instruments.push_back(argv[3]);
+            inst.start_date = atoi(argv[4]);
+            inst.end_date = atoi(argv[5]);
+            inst.datasrcInfo.push_back(argv[6]);
+            inst.datasrcInfo.push_back(argv[7]);
             datacache.addDataCacheRequest(inst);
         }
         else if (cmd == "testload")
