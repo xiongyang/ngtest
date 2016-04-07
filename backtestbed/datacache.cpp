@@ -14,6 +14,7 @@
 #define OTL_ODBC // Compile OTL 4/ODBC
 #include "otlv4.h" // include the OTL 4 header file
 
+#define DEBUG_LOG
 
 namespace BluesTrading
 {
@@ -111,6 +112,7 @@ namespace BluesTrading
         otl_connect::otl_initialize();
     }
 
+
     void DataCache::getDataFromMSSql(const std::vector<std::string>& instruments, const std::vector<std::string>& dateinfos, uint32_t date)
     {
         try
@@ -121,7 +123,9 @@ namespace BluesTrading
             otl_connect db;
             std::string loginstring = "DSN=" + mssql_dsn;
             db.rlogon(loginstring.c_str());
-
+#ifdef DEBUG_LOG
+            std::cout << "Login to " << loginstring << std::endl;
+#endif
             for (auto& inst : instruments)
             {
                 uint32_t inst_index = getInstrumentIndex(inst);
@@ -173,6 +177,11 @@ namespace BluesTrading
                         db // connect object
                         );
                     query_stream << startTime << endTime;
+
+#ifdef DEBUG_LOG
+                    std::cout << "Query: " << query_str << std::endl;
+#endif
+
                     while (!query_stream.eof())
                     {
                         tick.depths.clear();
