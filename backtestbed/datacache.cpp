@@ -201,7 +201,7 @@ namespace BluesTrading
                     query_str += " where instrument = '";
                     query_str += inst;
                     query_str += "' and fulltime >:startTime<timestamp>  and fulltime <:endTime<timestamp> ";
-                    otl_stream query_stream(50000, // buffer size
+                    otl_stream query_stream(30000 * 1000 * 1000 , // buffer size
                         query_str.c_str(),
                         // SELECT statement
                         db // connect object
