@@ -73,6 +73,13 @@ namespace BluesTrading
 
         for (auto date = start; date != end; date += one_day)
         {
+
+            auto dayofweek = date.day_of_week();
+            if(dayofweek ==  boost::date_time::Sunday || dayofweek ==  boost::date_time::Saturday)
+            {
+                continue;
+            }
+
             uint32_t dateint = getNumFromDate(date);
             getDataFromRemote(datarequest.instruments, datarequest.datasrcInfo, datarequest.datasrcType, dateint);
         }

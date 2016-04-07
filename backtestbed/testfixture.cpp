@@ -16,7 +16,7 @@
 #include <atomic>
 
 
-const int MaxDayInMemory = 5;
+const int MaxDayInMemory = 10;
 
 namespace BluesTrading
 {
@@ -90,7 +90,7 @@ namespace BluesTrading
         boost::asio::io_service::work* worker = new boost::asio::io_service::work(io_);
         std::thread buildDataReplayer([=](){prepareMarketDataReplayer(); delete worker;});
         buildDataReplayer.detach();
-       // buildDataReplayer.join();
+
 
 
         int cores = std::thread::hardware_concurrency();
@@ -174,8 +174,11 @@ namespace BluesTrading
         dayInMemoryCount = 0;
         for (auto date = start; date != end; date += one_day)
         {
-
-
+            auto dayofweek = date.day_of_week();
+            if(dayofweek ==  boost::date_time::Sunday || dayofweek ==   boost::date_time::Saturday)
+            {
+                continue;
+            }
            // waitforDataSlotAviale();
             while (dayInMemoryCount >= MaxDayInMemory)
             {
@@ -224,10 +227,6 @@ namespace BluesTrading
             }
         }
 
-         auto time_end = std::chrono::high_resolution_clock::now();
-         std::chrono::duration<double> diff  = time_end - timestart;
-
-         std::cout << "Load Data Using " << diff.count() << std::endl; 
    
     }
 

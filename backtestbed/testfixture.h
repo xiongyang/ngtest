@@ -46,7 +46,18 @@ namespace BluesTrading
                 if (*inst.current_date != 0)
                 {
                     auto current_end_day = getDateFromNum( *inst.current_date);
-                    current_end_day += boost::gregorian::days(1);
+
+                    auto dayofweek = current_end_day.day_of_week();
+                    if(dayofweek ==   boost::date_time::Friday )
+                    {
+                        current_end_day += boost::gregorian::days(3);
+                    }
+                    else
+                    {
+                        current_end_day += boost::gregorian::days(1);
+                    }
+
+                   
 
                     auto current_data_day = getDateFromNum(data->getDate());
 
