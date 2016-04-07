@@ -79,17 +79,20 @@ namespace BluesTrading
     }
 
 
-    std::string DataCache::getDataCache(uint32_t inst, uint32_t date)
+    std::string DataCache::getDataCache(uint32_t inst, uint32_t date, uint32_t maxLevels)
     {
         auto iter = cache_status[inst].cacheStatus_.find(date);
         if (iter != cache_status[inst].cacheStatus_.end())
         {
-            return iter->second;
+           auto& levels_path_map = iter->second;
+           auto iter_2 = levels_path_map.find(maxLevels);
+           if (iter_2 != levels_path_map.end())
+           {
+               return iter_2->second;
+           }
         }
-        else
-        {
-            return std::string();
-        }
+
+        return std::string();
     }
 
 
@@ -119,6 +122,11 @@ namespace BluesTrading
             std::call_once(init_db_flag, initDbSystem);
             const std::string& mssql_dsn = dateinfos.at(0);
             const std::string& mssql_table = dateinfos.at(1);
+            uint32_t max_levels = 10;
+            if (dateinfos.size() > 2)
+            {
+                max_levels = atoi(dateinfos.at(2).c_str());
+            }
             otl_connect db;
             std::string loginstring = "DSN=" + mssql_dsn;
             db.rlogon(loginstring.c_str());
@@ -128,7 +136,7 @@ namespace BluesTrading
             for (auto& inst : instruments)
             {
                 uint32_t inst_index = getInstrumentIndex(inst);
-                std::string cache_result = getDataCache(inst_index, date);
+                std::string cache_result = getDataCache(inst_index, date, max_levels);
 
                 otl_datetime startTime;
                 startTime.year = date / 10000;
@@ -150,10 +158,10 @@ namespace BluesTrading
 
                 if (cache_result.empty())
                 {
-                    std::string cache_file_name = getInstumentDataPath(inst_index, date);
+                    std::string cache_file_name = getInstumentDataPath(inst_index, date, max_levels);
                
            
-                    MarketDataStore storeforday(inst_index, date);
+                    MarketDataStore storeforday(inst_index, date, max_levels);
 
                     CTickData tick;
                     otl_datetime fulltime;
@@ -161,12 +169,35 @@ namespace BluesTrading
 
      
                    // endTime.set_non_null();
+                    const std::string depthQuery_1 = "bidprice,bidsize,askprice,asksize";
+                    const std::string depthQuery_5 =    "bidprice1,bidsize1,bidprice2,bidsize2,bidprice3,bidsize3,bidprice4,bidsize4,bidprice5,bidsize5,"
+                        "askprice1,asksize1,askprice2,asksize2,askprice3,asksize3,askprice4,asksize4,askprice5,asksize5";
+                    const std::string depthQuery_10 =   "bidprice1,bidsize1,bidprice2,bidsize2,bidprice3,bidsize3,bidprice4,bidsize4,bidprice5,bidsize5,bidprice6,bidsize6,bidprice7,bidsize7,bidprice8,bidsize8,bidprice9,bidsize9,bidprice10,bidsize10,"
+                        "askprice1,asksize1,askprice2,asksize2,askprice3,asksize3,askprice4,asksize4,askprice5,asksize5,askprice6,asksize6,askprice7,asksize7,askprice8,asksize8,askprice9,asksize9,askprice10,asksize10";
+                    const std::string depthQuery_20 =   "bidprice1,bidsize1,bidprice2,bidsize2,bidprice3,bidsize3,bidprice4,bidsize4,bidprice5,bidsize5,bidprice6,bidsize6,bidprice7,bidsize7,bidprice8,bidsize8,bidprice9,bidsize9,bidprice10,bidsize10,"
+                        "bidprice11,bidsize11,bidprice12,bidsize12,bidprice13,bidsize13,bidprice14,bidsize14,bidprice15,bidsize15,bidprice16,bidsize16,bidprice17,bidsize17,bidprice18,bidsize18,bidprice19,bidsize19,bidprice20,bidsize20,"
+                        "askprice1,asksize1,askprice2,asksize2,askprice3,asksize3,askprice4,asksize4,askprice5,asksize5,askprice6,asksize6,askprice7,asksize7,askprice8,asksize8,askprice9,asksize9,askprice10,asksize10,"
+                        "askprice11,asksize11,askprice12,asksize12,askprice13,asksize13,askprice14,asksize14,askprice15,asksize15,askprice16,asksize16,askprice17,asksize17,askprice18,asksize18,askprice19,asksize19,askprice20,asksize20";
 
+                    std::string query_depth_string;
+                    switch(max_levels)
+                    {
+                    case 1:
+                        query_depth_string = depthQuery_1;
+                        break;
+                    case 5:
+                        query_depth_string  = depthQuery_5;
+                        break;
+                    case 10:
+                        query_depth_string  = depthQuery_10;
+                        break;
+                    case 20:
+                        query_depth_string  = depthQuery_20;
+                        break;
+                    }
+                    
                     tick.instIndex = inst_index;
-                    std::string query_str = "select fulltime,totalvol,openinterest,tradeprice,turnover,"
-                        "bidprice1,bidsize1,bidprice2,bidsize2,bidprice3,bidsize3,bidprice4,bidsize4,bidprice5,bidsize5,bidprice6,bidsize6,bidprice7,bidsize7,bidprice8,bidsize8,bidprice9,bidsize9,bidprice10,bidsize10,"
-                        "askprice1,asksize1,askprice2,asksize2,askprice3,asksize3,askprice4,asksize4,askprice5,asksize5,askprice6,asksize6,askprice7,asksize7,askprice8,asksize8,askprice9,asksize9,askprice10,asksize10"
-                       " from " + mssql_table;
+                    std::string query_str = "select fulltime,totalvol,openinterest,tradeprice,turnover," + query_depth_string +   " from " + mssql_table;
                     query_str += " where instrument = '";
                     query_str += inst;
                     query_str += "' and fulltime >:startTime<timestamp>  and fulltime <:endTime<timestamp> ";
@@ -188,7 +219,7 @@ namespace BluesTrading
                         tick.timeInMS = fulltime.hour * 3600 * 1000 + fulltime.minute * 60 * 1000 + fulltime.second * 1000 + fulltime.fraction;
 
                         int valid_biddepth = 0;
-                        for (int i = 0; i != 10; ++i)
+                        for (int i = 0; i != max_levels; ++i)
                         {
                             CTickData::Depth depth;
                 
@@ -204,7 +235,7 @@ namespace BluesTrading
                         tick.bidLevels = valid_biddepth;
 
                         int valid_askdepth = 0;
-                        for (int i = 0; i != 10; ++i)
+                        for (int i = 0; i != max_levels; ++i)
                         {
                             CTickData::Depth depth;
 
@@ -224,9 +255,9 @@ namespace BluesTrading
 
                     storeforday.sort();
                     storeforday.saveToBinFile(cache_file_name);
-                    boost::filesystem::file_size(cache_file_name);
-                    cache_status[inst_index].cacheStatus_[date] = cache_file_name;
-                    std::cout << "Load Data  " << inst << "  Date:" << date << " SaveTo " << cache_file_name << std::endl;
+                   // boost::filesystem::file_size(cache_file_name);
+                    cache_status[inst_index].cacheStatus_[date][max_levels] = cache_file_name;
+                    std::cout << "Load Data  " << inst << "  Date:" << date << " MaxLevels:" << max_levels <<  " SaveTo " << cache_file_name << std::endl;
                 }
             }
 
@@ -253,8 +284,10 @@ namespace BluesTrading
                 boost::split(filename_parts, fileName, boost::is_any_of("_"));
                 uint32_t date = boost::lexical_cast<uint32_t>(filename_parts[1]);
                 uint32_t inst = boost::lexical_cast<uint32_t>(filename_parts[0]);
-                cache_status[inst].cacheStatus_[date] = x.path().string();
-                std::cout <<  "LoadCache File for Inst " << inst << " date" << date << " File:" << x.path().string() << "\n";
+                uint32_t maxLevels = boost::lexical_cast<uint32_t>(filename_parts[2]);
+
+                cache_status[inst].cacheStatus_[date][maxLevels] = x.path().string();
+                std::cout <<  "LoadCache File for Inst " << inst << " date" << date << " MaxLevel:" << maxLevels << " File:" << x.path().string() << "\n";
             }
             else
             {
@@ -271,7 +304,7 @@ namespace BluesTrading
     }
 
 
-    std::string DataCache::getInstumentDataPath(uint32_t inst, uint32_t date)
+    std::string DataCache::getInstumentDataPath(uint32_t inst, uint32_t date, uint32_t maxLevels)
     {
         boost::filesystem::path instrumentdir(getInstrumentDir(inst));
         if (!boost::filesystem::exists(instrumentdir))
@@ -281,6 +314,9 @@ namespace BluesTrading
         std::string cache_file_name = boost::lexical_cast<std::string>(inst);
         cache_file_name += "_";
         cache_file_name += boost::lexical_cast<std::string>(date);
+
+        cache_file_name += "_";
+        cache_file_name += boost::lexical_cast<std::string>(maxLevels);
         cache_file_name += ".bin";
 
         instrumentdir.append(cache_file_name);

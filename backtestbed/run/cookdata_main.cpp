@@ -387,18 +387,19 @@ int main(int argc, char** argv)
             inst.end_date = atoi(argv[4]);
             inst.datasrcInfo.push_back(argv[5]);
             inst.datasrcInfo.push_back(argv[6]);
+            inst.datasrcInfo.push_back(argv[7]);
             datacache.addDataCacheRequest(inst);
         }
-        else if (cmd == "testload")
-        {
-            testload(argv[2]);
-        }
-        else if (cmd == "testload2")
-        {
-            std::string filename = datacache.getDataCache(5200000,20160201);
-            std::cout << "DataCache Find Cache File Name " << filename << std::endl;
-            testload(filename.c_str());
-        }
+        //else if (cmd == "testload")
+        //{
+        //    testload(argv[2]);
+        //}
+        //else if (cmd == "testload2")
+        //{
+        //    std::string filename = datacache.getDataCache(5200000,20160201);
+        //    std::cout << "DataCache Find Cache File Name " << filename << std::endl;
+        //    testload(filename.c_str());
+        //}
     }
     catch (std::exception& ex)
     {

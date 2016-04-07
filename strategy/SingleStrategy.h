@@ -106,6 +106,7 @@ namespace BluesTrading
 
 			//used to remember last index;
 			const CTickData*			pre_tick;
+            CTickData tickFromLastDay;
 			int			numTickUpdates_;
 
 			//real time vars
@@ -163,6 +164,7 @@ namespace BluesTrading
 			uint32_t inst_index_;
 			Instrument()
 			{
+
 				inst_index_ = 0;
 				pre_settlement_ = 0;
 				weight_ = 0;
