@@ -67,7 +67,6 @@ namespace BluesTrading
 
     void DataCache::addDataCacheRequest(const DataSrcInfo& datarequest)
     {
-        return;
         boost::gregorian::date start = getDateFromNum(datarequest.start_date);
         boost::gregorian::date end = getDateFromNum(datarequest.end_date); 
         boost::gregorian::days one_day(1);
