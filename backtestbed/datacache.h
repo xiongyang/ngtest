@@ -18,7 +18,7 @@ namespace BluesTrading
         void addDataCacheRequest(const DataSrcInfo& datarequest);
 
         //get the DataCached File path. if not cached. return empty string
-        std::string getDataCache(uint32_t inst, uint32_t date);
+        std::string getDataCache(uint32_t inst, uint32_t date, uint32_t maxLevels);
        
 
     private:
@@ -27,10 +27,12 @@ namespace BluesTrading
         void CheckCacheForInst(const boost::filesystem::path& checkpath);
       
         std::string getInstrumentDir(uint32_t inst);
-        std::string getInstumentDataPath(uint32_t inst, uint32_t date);
+        std::string getInstumentDataPath(uint32_t inst, uint32_t date, uint32_t maxLevels);
         struct InstCacheInfo 
         {
-            std::map<uint32_t, std::string> cacheStatus_;      // Every Date Cache Status
+            // key is date
+            // value -> key is maxLevels
+            std::map<uint32_t, std::map<uint32_t,std::string> > cacheStatus_;      // Every Date Cache Status
         };
 
         std::unordered_map<uint32_t, InstCacheInfo>  cache_status;

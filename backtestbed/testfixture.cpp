@@ -170,7 +170,7 @@ namespace BluesTrading
         boost::gregorian::days one_day(1);
         auto timestart = std::chrono::high_resolution_clock::now();
 
-      
+        uint32_t maxLevels = boost::lexical_cast<uint32_t>(target.datasrcInfo[2]);
         dayInMemoryCount = 0;
         for (auto date = start; date != end; date += one_day)
         {
@@ -191,7 +191,7 @@ namespace BluesTrading
                 std::string cache_path;
                 do 
                 {
-                    cache_path =  data_->getDataCache(date_instrument, dateint);
+                    cache_path =  data_->getDataCache(date_instrument, dateint, maxLevels);
                     if (cache_path.empty())
                     {
                         std::this_thread::sleep_for(std::chrono::seconds(1));

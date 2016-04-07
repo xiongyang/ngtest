@@ -13,10 +13,11 @@ namespace BluesTrading
     {
         uint32_t instIndex;
         uint32_t date;  //YYYYMMDD
+        uint32_t maxLevels; // store the maxLevels
         std::vector<CTickData> tickDataVec;
 
         MarketDataStore() = default;
-        MarketDataStore(uint32_t inst, uint32_t pdate): instIndex(inst), date(pdate) {}
+        MarketDataStore(uint32_t inst, uint32_t pdate, uint32_t a_maxLevels =  20): instIndex(inst), date(pdate) , maxLevels(a_maxLevels){ }
         explicit MarketDataStore(const std::string& filename)
         {
             loadDataFromFile(filename);
@@ -35,6 +36,7 @@ namespace BluesTrading
         {
             ar & instIndex;
             ar & date;
+            ar & maxLevels;
             ar & tickDataVec;
         }
     };
