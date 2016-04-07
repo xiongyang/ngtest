@@ -387,6 +387,7 @@ int main(int argc, char** argv)
             inst.end_date = atoi(argv[4]);
             inst.datasrcInfo.push_back(argv[5]);
             inst.datasrcInfo.push_back(argv[6]);
+            inst.datasrcInfo.push_back(argv[7]);
             datacache.addDataCacheRequest(inst);
         }
         //else if (cmd == "testload")
