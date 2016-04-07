@@ -96,7 +96,6 @@ namespace BluesTrading
 			double		enter_sig_;
 			double		enter_protection_;
 			double		shape_factor_;
-			double		shape_factor1_;
 			double		volume_protection_;
 			double		limit_;
 
@@ -173,7 +172,6 @@ namespace BluesTrading
 				enter_sig_ = 1;
 				enter_protection_ = 0;
 				shape_factor_ = 1;
-				shape_factor1_ = 1;
 				volume_protection_ = 0.5;
 				limit_ = 0.06;
 

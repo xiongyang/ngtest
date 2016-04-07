@@ -313,8 +313,8 @@ namespace BluesTrading
     void SingleStrategy::onUpdateOrder(OrderDataDetail* orderData)
     {
        // printOrder(std::cout, *orderData);
-		std::cout <<orderData->orderID <<  " orderStatus " << orderData->cffex_order.common.orderStatus   << " ErrorCode " << orderData->cffex_order.common.orderErrorCode 
-			<< " Price " << orderData->cffex_order.price << "\n";
+		/*std::cout <<orderData->orderID <<  " orderStatus " << orderData->cffex_order.common.orderStatus   << " ErrorCode " << orderData->cffex_order.common.orderErrorCode 
+			<< " Price " << orderData->cffex_order.price << "\n";*/
     }
 	
 	void SingleStrategy::doEnter(const CTickData &data, uint32_t TradingIntvlInMS)
@@ -459,8 +459,8 @@ namespace BluesTrading
 		{
 			double avgPx = instrument.cum_long_price_/instrument.longOpenPositionQty_;
 			pnl = exitSize * (exitPx - avgPx )/instrument.tick_size_*instrument.tick_price_;
-			std::cout<<"calcPNL:"<<instrument.tick_size_<<","<<instrument.tick_price_<<","<<instrument.cum_long_price_<<","<<instrument.longOpenPositionQty_<<","<<avgPx
-				<<","<<exitPx<<","<<exitSize<<","<<pnl<<std::endl;
+			/*std::cout<<"calcPNL:"<<instrument.tick_size_<<","<<instrument.tick_price_<<","<<instrument.cum_long_price_<<","<<instrument.longOpenPositionQty_<<","<<avgPx
+				<<","<<exitPx<<","<<exitSize<<","<<pnl<<std::endl;*/
 			instrument.pnl_ += pnl;
 			if(globalParas_.is_equity_)
 				instrument.net_pnl_ += pnl - exitSize * instrument.mid_price_ * 1.8/1000;
@@ -755,6 +755,10 @@ namespace BluesTrading
 			{
 				convert(propValue, globalParas_.trading_interval_in_MSec_);
 			}
+			else if (propName == "IsCapControl")
+			{
+				convert(propValue, globalParas_.Is_Cap_Control_);
+			}
 			else if (propName == "ADDInstrument")
             {
 				std::vector<std::string> legs;
@@ -765,6 +769,26 @@ namespace BluesTrading
 			else if (propName == "Weights")
             {
                 setLegValue(pInstruments_, num_of_instr_, propValue, &Instrument::weight_);
+            }
+			else if (propName == "EnterSignal")
+            {
+				setLegValue(pInstruments_, num_of_instr_, propValue, &Instrument::enter_sig_);
+            }
+			else if (propName == "ppl")
+            {
+				setLegValue(pInstruments_, num_of_instr_, propValue, &Instrument::ppl_);
+            }
+			else if (propName == "Shape")
+            {
+				setLegValue(pInstruments_, num_of_instr_, propValue, &Instrument::shape_factor_);
+            }
+			else if (propName == "VolMultiplier")
+            {
+				setLegValue(pInstruments_, num_of_instr_, propValue, &Instrument::volMultiplier_);
+            }
+			else if (propName == "VolatilityMA")
+            {
+				setLegValue(pInstruments_, num_of_instr_, propValue, &Instrument::volatility_MA_);
             }
             else
             {
