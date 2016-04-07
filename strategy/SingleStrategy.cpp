@@ -182,6 +182,11 @@ namespace BluesTrading
 
         //void setUintMultiplier(uint32_t multiplier) {unitMultiplier_ = multiplier;}
 			Instrument& instrument = pInstruments_[i];
+            if( instrument.pre_tick)
+            {
+               instrument.tickFromLastDay =  *instrument.pre_tick;
+               instrument.pre_tick = &instrument.tickFromLastDay;
+            }
 			boost::format fmt("%1%,%2%,%3%,%4%,%5%,%6%");
 			double pnl = positionManager_->getPosition( instrument.inst_index_).getPositionPnl();
 			int trade = positionManager_->getPosition( instrument.inst_index_).getTradeCount();
