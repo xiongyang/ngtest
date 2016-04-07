@@ -44,7 +44,7 @@ void testBedRun(const std::string& dir, const std::string& strategy, const std::
     return ;
 }
 
-void HandleTestRequest(TestRequest request, DataCache* datacache)
+TestResult HandleTestRequest(TestRequest request, DataCache* datacache)
 {
     TestFixture fixture;
     fixture.Init(request, datacache);
@@ -52,14 +52,16 @@ void HandleTestRequest(TestRequest request, DataCache* datacache)
     fixture.run();
 
     std::vector<std::string> allResult = fixture.getResult();
-
+    TestResult ret;
     std::cout << "=========== End Run getResult ========" << std::endl;
     for (auto& each : allResult)
     {
+        ret.add_resultitem(each);
         std::cout << each << "\n";
     }
     std::cout << std::endl;
     fixture.clean();
+    return ret;
 }
 
 #include <array>
@@ -128,7 +130,7 @@ std::vector<DataSrcInfo> getDataSrcInfo(const std::vector< std::unordered_map<st
     //return ret;
 
     // now only support one datasrc
-    
+
     for (auto& each_pair : *config.begin())
     {
         const std::string& key_value = each_pair.first;
@@ -143,7 +145,7 @@ std::vector<DataSrcInfo> getDataSrcInfo(const std::vector< std::unordered_map<st
                 //    ret.push_back(currentDataSrc);
                 //    currentDataSrc.clear();
                 //}
-              
+
                 boost::split(currentDataSrc.instruments, value, boost::algorithm::is_any_of("#"));
             }
             else if (subkey.find("StartDate") != std::string::npos)
@@ -187,17 +189,17 @@ void TestThread(char ** argv)
             start /= i;
         }
 
-         std::cout << "print our sum " << start << "   \n" ;
+        std::cout << "print our sum " << start << "   \n" ;
     };
     int theradNUm = atoi(argv[2]);
-     std::cout << "Test Thread Num " <<  theradNUm << std::endl;
-     std::vector<std::shared_ptr<std::thread> > workthread;
+    std::cout << "Test Thread Num " <<  theradNUm << std::endl;
+    std::vector<std::shared_ptr<std::thread> > workthread;
     for (int i = 0; i != theradNUm; ++i)
     {
         workthread.push_back(std::make_shared<std::thread>(workfun, 100000000));
     }
 
-     std::cout << "Create All thread Don"     << std::endl;
+    std::cout << "Create All thread Don"     << std::endl;
 
     for (auto& each : workthread)
     {
@@ -228,7 +230,7 @@ void TestPostFun2(double startVal)
         start *= i;
         start /= i;
     }
-     io.post([=]{TestPostFun1(start);});
+    io.post([=]{TestPostFun1(start);});
 }
 
 void TestThreadPost(char ** argv)
@@ -240,7 +242,7 @@ void TestThreadPost(char ** argv)
 
     for (int i = 0; i != theradNUm; ++i)
     {
-       io.post([=]{TestPostFun1(100.0);});
+        io.post([=]{TestPostFun1(100.0);});
     }
 
     for (int i = 0; i != theradNUm; ++i)
@@ -264,35 +266,35 @@ void TestThreadPost(char ** argv)
 
 TestRequest CreateTestRequest(const std::string& dllFile,  const std::string& configFile)
 {
-   // std::string dllFile = argv[2];
+    // std::string dllFile = argv[2];
     std::string dllbytes = readFile(dllFile);
 
     TestRequest request;
     request.set_dllfile(dllbytes.data(), dllbytes.size());
 
-   // = argv[3];
+    // = argv[3];
     std::ifstream configFileStream(configFile);
     std::vector< std::unordered_map<std::string, std::string> > allconfig = parserProps(configFileStream);
     //configFileStream.seekg(0);
-     std::vector<DataSrcInfo>  datasrcInfo = getDataSrcInfo(allconfig);
+    std::vector<DataSrcInfo>  datasrcInfo = getDataSrcInfo(allconfig);
 
-     for (auto& eachDataSrc: datasrcInfo)
-     {
-         DataSrc* datasrcMsg = request.add_datasrc();
+    for (auto& eachDataSrc: datasrcInfo)
+    {
+        DataSrc* datasrcMsg = request.add_datasrc();
 
-         for (auto& each : eachDataSrc.instruments)
-         {
-             datasrcMsg->add_instrument(each);
-         }
-         for (auto& each : eachDataSrc.datasrcInfo)
-         {
-             datasrcMsg->add_datasrcinfo(each);
-         }
+        for (auto& each : eachDataSrc.instruments)
+        {
+            datasrcMsg->add_instrument(each);
+        }
+        for (auto& each : eachDataSrc.datasrcInfo)
+        {
+            datasrcMsg->add_datasrcinfo(each);
+        }
 
-         datasrcMsg->set_start_date(eachDataSrc.start_date);
-         datasrcMsg->set_end_date(eachDataSrc.end_date);
-         datasrcMsg->set_datasrctype(eachDataSrc.datasrcType);
-     }
+        datasrcMsg->set_start_date(eachDataSrc.start_date);
+        datasrcMsg->set_end_date(eachDataSrc.end_date);
+        datasrcMsg->set_datasrctype(eachDataSrc.datasrcType);
+    }
 
     for (auto& each_config : allconfig)
     {
@@ -318,45 +320,76 @@ TestRequest CreateTestRequest(const std::string& dllFile,  const std::string& co
 }
 
 
+
 using boost::asio::ip::tcp;
+
+
+size_t read_buf(boost::asio::ip::tcp::socket& s, boost::asio::streambuf& buf)
+{
+    int size = 0;
+    boost::asio::read(s, boost::asio::buffer(&size, sizeof(int)));
+    if (size == 0)
+    {
+        std::cout << "No data...." << std::endl;
+        return 0 ;
+    }
+    return boost::asio::read(s, buf, boost::asio::transfer_exactly(size));
+}
+
+size_t write_buf(boost::asio::ip::tcp::socket& s, boost::asio::streambuf& buf)
+{
+    int size = buf.size();
+    boost::asio::write(s, boost::asio::buffer(&size, sizeof(int)));
+    return boost::asio::write(s, buf, boost::asio::transfer_exactly(size));
+}
+
+template<typename ProtoBufMessage>
+size_t recvMessage(boost::asio::ip::tcp::socket& s,ProtoBufMessage& msg)
+{
+    boost::asio::streambuf buf;
+    size_t readsize = read_buf(s ,buf);
+
+    std::istream remotestream(&buf);
+
+    if(! msg.ParseFromIstream(&remotestream))
+    {
+        std::cout << "Receive the Message  Error"  << std::endl;
+    }
+    return readsize;
+}
+
+
+template<typename ProtoBufMessage>
+size_t sendMessage(boost::asio::ip::tcp::socket& s,ProtoBufMessage& msg)
+{
+    boost::asio::streambuf outbuf;
+    std::ostream ostreambuf(&outbuf);
+    msg.SerializeToOstream(&ostreambuf);
+    return  write_buf(s, outbuf);
+}
+
+
 
 void session(tcp::socket sock, DataCache* datacache)
 {
     try
     {
-        boost::asio::streambuf buf;
-        for (;;)
-        {
-
-         
-            boost::asio::streambuf::mutable_buffers_type bufs = buf.prepare(1024);
-            boost::system::error_code error;
-            size_t n = sock.receive(bufs, 0 , error);
-            buf.commit(n);
-
-            
-          //  size_t length = sock.read_some(boost::asio::buffer(data), error);
-            
-            if (error == boost::asio::error::eof)
-                break; // Connection closed cleanly by peer.
-            else if (error)
-                throw boost::system::system_error(error); // Some other error.
-
-            //boost::asio::write(sock, boost::asio::buffer(data, length));
-        }
-
-        std::cout << "Receive buf size "  << buf.size() << std::endl;
-        std::istream remotestream(&buf);
         TestRequest request;
-        bool  ret = request.ParseFromIstream(&remotestream);
-        std::cout << "Receive the TestMessage "  << ret << std::endl;
+        size_t read_size = recvMessage(sock, request);
+        std::cout << "Receive buf size "  << read_size << std::endl;
 
+        TestResult ret = HandleTestRequest(request, datacache);
 
-      
+        std::cout << "Finish Run TestRquest \n";
 
+        size_t result_size = sendMessage(sock, ret);
 
-        HandleTestRequest(request, datacache);
+    
+ 
         std::cout << sock.remote_endpoint().address() <<":" <<  sock.remote_endpoint().port() << "  session complete \n";
+        std::cout << "Result size " <<   ret.resultitem_size() << " Send Buff Size " << result_size << "\n";
+        sock.close();
+
     }
     catch (std::exception& e)
     {
@@ -391,12 +424,8 @@ int startserver(const std::string& port, DataCache* datacache)
     return 0;
 }
 
-void sendRequestToServer(const std::string& ip, const std::string& port, TestRequest& request)
+void HandleRequestRemote(const std::string& ip, const std::string& port, TestRequest& request)
 {
-
-    boost::asio::streambuf buf;
-    std::ostream outstream(&buf);
-    request.SerializeToOstream(&outstream);
 
 
     boost::asio::io_service io_service;
@@ -405,8 +434,18 @@ void sendRequestToServer(const std::string& ip, const std::string& port, TestReq
     std::cout << "try to connect to " << ip << ":" << port << std::endl;
     boost::asio::connect(sock, resolver.resolve({ip, port}));
 
+    sendMessage(sock, request);
 
-    sock.send(buf.data());
+    TestResult result;
+    size_t recv_bytes = recvMessage(sock, result);
+    std::cout << "recv " << recv_bytes<< " bytes \n";
+
+    std::cout << "remote result  size " << result.resultitem_size() << "================ \n" ;
+    for (auto& result_item: result.resultitem())
+    {
+        std::cout << result_item << "\n";
+    }
+
 }
 
 
@@ -422,8 +461,8 @@ void getLocalHostRuningStatus()
 
 void testload(const char* argv)
 {
-	MarketDataStore inst;
-	inst.loadFromBinFile(argv);
+    MarketDataStore inst;
+    inst.loadFromBinFile(argv);
 }
 
 int main(int argc, char** argv)
@@ -445,8 +484,9 @@ int main(int argc, char** argv)
         }
         else if(cmd == "client")
         {
-           auto request =  CreateTestRequest(argv[2],argv[3]);
-           sendRequestToServer(argv[4], argv[5], request);
+            auto request =  CreateTestRequest(argv[2],argv[3]);
+            HandleRequestRemote(argv[4], argv[5], request);
+
         }
         else if(cmd == "post")
         {
@@ -463,8 +503,8 @@ int main(int argc, char** argv)
         }
         else if(cmd == "tr")
         {
-           auto request =  CreateTestRequest(argv[2], argv[3]);
-           HandleTestRequest(request, &datacache);
+            auto request =  CreateTestRequest(argv[2], argv[3]);
+            HandleTestRequest(request, &datacache);
         }
         else if (cmd == "usage")
         {
@@ -513,18 +553,18 @@ int main(int argc, char** argv)
             // 
 
             //}
-           
+
         }
-		else if (cmd == "testload")
-		{
-			testload(argv[2]);
-		}
-		else if (cmd == "testload2")
-		{
-			std::string filename = datacache.getDataCache(5200000,20160201);
-			std::cout << "DataCache Find Cache File Name " << filename << std::endl;
-			testload(filename.c_str());
-		}
+        else if (cmd == "testload")
+        {
+            testload(argv[2]);
+        }
+        else if (cmd == "testload2")
+        {
+            std::string filename = datacache.getDataCache(5200000,20160201);
+            std::cout << "DataCache Find Cache File Name " << filename << std::endl;
+            testload(filename.c_str());
+        }
     }
     catch (std::exception& ex)
     {
