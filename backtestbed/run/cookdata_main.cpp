@@ -382,11 +382,11 @@ int main(int argc, char** argv)
         {
             DataSrcInfo inst;
             inst.datasrcType = 1;
-            inst.instruments.push_back(argv[3]);
-            inst.start_date = atoi(argv[4]);
-            inst.end_date = atoi(argv[5]);
+            inst.instruments.push_back(argv[2]);
+            inst.start_date = atoi(argv[3]);
+            inst.end_date = atoi(argv[4]);
+            inst.datasrcInfo.push_back(argv[5]);
             inst.datasrcInfo.push_back(argv[6]);
-            inst.datasrcInfo.push_back(argv[7]);
             datacache.addDataCacheRequest(inst);
         }
         else if (cmd == "testload")
