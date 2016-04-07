@@ -112,95 +112,6 @@ std::vector<DataSrcInfo> getDataSrcInfo(const std::vector< std::map<std::string,
     return ret;
 }
 
-
-void TestThread(char ** argv)
-{
-    std::vector<std::string>  ourstrings;
-
-    auto workfun = [&](int target)
-    {
-        double start = target;
-        for (int i = 0; i != target ; ++ i)
-        {
-            start *= i;
-            start /= i;
-        }
-
-        std::cout << "print our sum " << start << "   \n" ;
-    };
-    int theradNUm = atoi(argv[2]);
-    std::cout << "Test Thread Num " <<  theradNUm << std::endl;
-    std::vector<std::shared_ptr<std::thread> > workthread;
-    for (int i = 0; i != theradNUm; ++i)
-    {
-        workthread.push_back(std::make_shared<std::thread>(workfun, 100000000));
-    }
-
-    std::cout << "Create All thread Don"     << std::endl;
-
-    for (auto& each : workthread)
-    {
-        if(each->joinable()) each->join();
-        //std::vector<std::shared_ptr<std::thread> > workthread = std::make_shared<std::thread>(workfun, 100000);
-        //workthread.insert(workthread);
-    }
-}
-
-boost::asio::io_service io;
-void TestPostFun2(double startVal);
-void TestPostFun1(double startVal)
-{
-    double start = startVal;
-    for (int i = 0; i != 1000000 ; ++ i)
-    {
-        start *= i;
-        start /= i;
-    }
-    io.post([=]{TestPostFun2(start);});
-}
-
-void TestPostFun2(double startVal)
-{
-    double start = startVal;
-    for (int i = 0; i != 1000000 ; ++ i)
-    {
-        start *= i;
-        start /= i;
-    }
-    io.post([=]{TestPostFun1(start);});
-}
-
-void TestThreadPost(char ** argv)
-{
-
-    int theradNUm = atoi(argv[2]);
-    std::cout << "Test Thread Num " <<  theradNUm << std::endl;
-    std::vector<std::shared_ptr<std::thread> > workthread;
-
-    for (int i = 0; i != theradNUm; ++i)
-    {
-        io.post([=]{TestPostFun1(100.0);});
-    }
-
-    for (int i = 0; i != theradNUm; ++i)
-    {
-        workthread.push_back(std::make_shared<std::thread>([&](){
-            std::cout<< "thread Create " << std::this_thread::get_id() << std::endl;
-            io.run();
-            std::cout << "Thread Quit "<< std::this_thread::get_id() << std::endl ;}));
-    }
-
-    std::cout << "Create All thread Don"     << std::endl;
-
-    for (auto& each : workthread)
-    {
-        if(each->joinable()) each->join();
-        //std::vector<std::shared_ptr<std::thread> > workthread = std::make_shared<std::thread>(workfun, 100000);
-        //workthread.insert(workthread);
-    }
-}
-
-
 TestRequest CreateTestRequest(const std::string& dllFile,  const std::string& configFile)
 {
     // std::string dllFile = argv[2];
@@ -425,15 +336,6 @@ int main(int argc, char** argv)
             HandleRequestRemote(argv[4], argv[5], request);
 
         }
-        else if(cmd == "post")
-        {
-            TestThreadPost(argv);
-        }
-        else if (cmd == "thread")
-        {
-
-            TestThread(argv);
-        }
         else if(cmd == "backend")
         {
             testBedRun(argv[2],argv[3], argv[4] , argv[5]);
@@ -485,12 +387,6 @@ int main(int argc, char** argv)
             inst.datasrcInfo.push_back("dl_level2");
             inst.datasrcInfo.push_back("lfull_sunrain_shfe_test");
             datacache.addDataCacheRequest(inst);
-            //for (auto& datasrc : request.datasrc())
-            //{
-            // 
-
-            //}
-
         }
         else if (cmd == "testload")
         {
@@ -511,11 +407,6 @@ int main(int argc, char** argv)
     {
         std::cout << "Test Catch " << std::endl;
     }
-    //else if (cmd == "dumpfile")
-    //{
-
-    //    testdumpfile(argc, argv);
-    //}
 
     return 0;
 }
