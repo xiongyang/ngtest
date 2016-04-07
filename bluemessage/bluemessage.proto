@@ -43,7 +43,7 @@ message TestResult
 message NodeStatus
 {
     optional string address = 1;
-    optional uint32 port = 2;
+    optional string port = 2;
     optional uint32 cores = 3;
     optional float  usage = 4;
 }

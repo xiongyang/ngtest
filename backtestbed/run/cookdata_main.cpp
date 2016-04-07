@@ -170,9 +170,9 @@ TestRequest CreateTestRequest(const std::string& dllFile,  const std::string& co
 
 
 using boost::asio::ip::tcp;
+using boost::asio::ip::udp;
 
-
-size_t read_buf(boost::asio::ip::tcp::socket& s, boost::asio::streambuf& buf)
+size_t read_buf(tcp::socket& s, boost::asio::streambuf& buf)
 {
     int size = 0;
     boost::asio::read(s, boost::asio::buffer(&size, sizeof(int)));
@@ -184,15 +184,29 @@ size_t read_buf(boost::asio::ip::tcp::socket& s, boost::asio::streambuf& buf)
     return boost::asio::read(s, buf, boost::asio::transfer_exactly(size));
 }
 
-size_t write_buf(boost::asio::ip::tcp::socket& s, boost::asio::streambuf& buf)
+size_t write_buf(tcp::socket& s, boost::asio::streambuf& buf)
 {
     int size = buf.size();
     boost::asio::write(s, boost::asio::buffer(&size, sizeof(int)));
     return boost::asio::write(s, buf, boost::asio::transfer_exactly(size));
 }
 
-template<typename ProtoBufMessage>
-size_t recvMessage(boost::asio::ip::tcp::socket& s,ProtoBufMessage& msg)
+size_t read_buf(udp::socket& s, boost::asio::streambuf& buf)
+{
+    auto max_upd_trans_buff = buf.prepare(1500);
+    auto size =  s.receive(max_upd_trans_buff);
+    buf.commit(size);
+    return size;
+}
+
+size_t write_buf(udp::socket& s, boost::asio::streambuf& buf)
+{
+   return  s.send(boost::asio::buffer(buf.data(), buf.size()));
+}
+
+
+template<typename SockType, typename ProtoBufMessage>
+size_t recvMessage(SockType& s,ProtoBufMessage& msg)
 {
     boost::asio::streambuf buf;
     size_t readsize = read_buf(s ,buf);
@@ -207,8 +221,8 @@ size_t recvMessage(boost::asio::ip::tcp::socket& s,ProtoBufMessage& msg)
 }
 
 
-template<typename ProtoBufMessage>
-size_t sendMessage(boost::asio::ip::tcp::socket& s,ProtoBufMessage& msg)
+template<typename SockType, typename ProtoBufMessage>
+size_t sendMessage(SockType& s,ProtoBufMessage& msg)
 {
     boost::asio::streambuf outbuf;
     std::ostream ostreambuf(&outbuf);
@@ -301,11 +315,60 @@ double getLocalHostRuningStatus()
     return rttusage;
 }
 
-void broadcastStatus(const std::string& ip, const std::string port)
+void broadcastStatus(const std::string& ip, const std::string& port)
 {
-   std::this_thread::sleep_for(std::chrono::seconds(1));
-   
-   getLocalHostRuningStatus();
+   NodeStatus msg;
+   msg.set_address(ip);
+   msg.set_port(port);
+   msg.set_cores(std::thread::hardware_concurrency());
+
+   boost::asio::io_service io_service;
+   udp::socket sock(io_service, udp::endpoint(udp::v4(),10000));
+   //udp::resolver resolver(io_service);
+   //auto ep =  resolver.resolve({broadcast_ip, broadcast_port});
+   //boost::asio::connect(sock,ep);
+
+   boost::asio::socket_base::broadcast option(true);
+   sock.set_option(option);
+   udp::endpoint destination(boost::asio::ip::address::from_string("255.255.255.255"), 5000);
+
+   sock.connect(destination);
+  // sock.send(boost::asio::buffer(buf, 10));
+
+    while (true)
+    {
+        std::this_thread::sleep_for(std::chrono::seconds(1));
+        double usage = getLocalHostRuningStatus();
+        msg.set_usage(usage);
+        sendMessage(sock, msg);
+    }
+}
+
+void recvbroadcastStatus()
+{
+    boost::asio::io_service io_service;
+    udp::socket sock(io_service, udp::endpoint(udp::v4(), 5000));
+    // udp::socket sock(io_service);
+    boost::asio::socket_base::broadcast option(true);
+    sock.set_option(option);
+    //  socket.receive_from(boost::asio::buffer(buf), sender_endpoint);
+   // udp::endpoint destination(boost::asio::ip::address::from_string("255.255.255.255"), 5000);
+
+    // udp::endpoint destination;
+    //sock.connect(destination);
+
+
+    while(true)
+    {
+
+        //recvbuf.resize(size);
+        //std::cout << "recv"
+        NodeStatus msg;
+    /*    msg.par*/
+        auto size = recvMessage(sock, msg);
+
+        std::cout << "RecvMessage " << msg.address() << " : " << msg.port() << "   CpuUsage "<< msg.usage() << " Cores " << msg.cores() << "\n";
+    }
 }
 
 void testload(const char* argv)
@@ -326,6 +389,14 @@ int main(int argc, char** argv)
         if(cmd == "cook")
         {
             cookData(argv[2]);
+        }
+        else if(cmd == "bo1")
+        {
+            broadcastStatus(argv[2], argv[3]);
+        }
+        else if(cmd == "bo2")
+        {
+            recvbroadcastStatus();
         }
         else if(cmd == "server")
         {
