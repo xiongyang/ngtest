@@ -17,7 +17,7 @@ TEST(parserProps, parsString)
    ss << "prop4=[1,2,0.1]     " << "\n";
    ss << "prop5={value51,value52,value53}    " << "\n";
    ss << "prop6=[1,10,1]     " << "\n";
-   std::vector< std::unordered_map<std::string, std::string> >  ret =  parserProps(ss);
+   std::vector< std::map<std::string, std::string> >  ret =  parserProps(ss);
    EXPECT_EQ(ret.size(),  11 * 3 * 10);
 
    for (auto& eachParaSet : ret)

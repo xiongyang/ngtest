@@ -65,7 +65,7 @@ TestResult HandleTestRequest(TestRequest request, DataCache* datacache)
 }
 
 #include <array>
-std::vector<DataSrcInfo> getDataSrcInfo(const std::vector< std::unordered_map<std::string, std::string> >& config)
+std::vector<DataSrcInfo> getDataSrcInfo(const std::vector< std::map<std::string, std::string> >& config)
 {
 
 
@@ -73,63 +73,6 @@ std::vector<DataSrcInfo> getDataSrcInfo(const std::vector< std::unordered_map<st
 
     std::vector<DataSrcInfo> ret;
     DataSrcInfo currentDataSrc;
-
-    //for (std::array<char, 256> a; steram.getline(a.data(), a.size());)
-    //{
-    //    std::string line(a.data());
-    //    if (line.find("DataSrc_") == std::string::npos)
-    //    {
-    //        continue;
-    //    }
-    //    if (line.find("//") != 0)
-    //    {
-    //        continue;
-    //    }
-
-    //    auto equalindex = line.find("=");
-    //    if (equalindex == std::string::npos)
-    //    {
-    //        continue;
-    //    }
-    //    const std::string key_value = line.substr(0, equalindex);
-    //    const std::string value = line.substr(equalindex + 1);
-
-    //    std::cout << "key_value  " << key_value << " " << value << std::endl;
-
-    //    std::string subkey = key_value.substr(substr_off);
-    //    if (subkey.find("Instruments") != std::string::npos)
-    //    {
-    //        if (currentDataSrc.instruments.size() != 0)
-    //        {
-    //            ret.push_back(currentDataSrc);
-    //        }
-    //        currentDataSrc.clear();
-    //        boost::split(currentDataSrc.instruments, value, boost::algorithm::is_any_of("#"));
-    //    }
-    //    else if (subkey.find("StartDate") != std::string::npos)
-    //    {
-    //        currentDataSrc.start_date = atoi(value.c_str());
-    //    }
-    //    else if (subkey.find("EndDate") != std::string::npos)
-    //    {
-    //        currentDataSrc.end_date = atoi(value.c_str());
-    //    }
-    //    else if (subkey.find("Type") != std::string::npos)
-    //    {
-    //        currentDataSrc.datasrcType = atoi(value.c_str());
-    //    }
-    //    else if (subkey.find("Info") != std::string::npos)
-    //    {
-    //        boost::split(currentDataSrc.datasrcInfo, value, boost::algorithm::is_any_of("#"));
-    //    }
-    //}
-    //if (currentDataSrc.instruments.size() > 0)
-    //{
-    //    ret.push_back(currentDataSrc);
-    //}
-    //return ret;
-
-    // now only support one datasrc
 
     for (auto& each_pair : *config.begin())
     {
@@ -140,12 +83,6 @@ std::vector<DataSrcInfo> getDataSrcInfo(const std::vector< std::unordered_map<st
             std::string subkey = key_value.substr(substr_off);
             if (subkey.find("Instruments") != std::string::npos)
             {
-                //if (currentDataSrc.instruments.size() != 0)
-                //{
-                //    ret.push_back(currentDataSrc);
-                //    currentDataSrc.clear();
-                //}
-
                 boost::split(currentDataSrc.instruments, value, boost::algorithm::is_any_of("#"));
             }
             else if (subkey.find("StartDate") != std::string::npos)
@@ -274,7 +211,7 @@ TestRequest CreateTestRequest(const std::string& dllFile,  const std::string& co
 
     // = argv[3];
     std::ifstream configFileStream(configFile);
-    std::vector< std::unordered_map<std::string, std::string> > allconfig = parserProps(configFileStream);
+    auto allconfig = parserProps(configFileStream);
     //configFileStream.seekg(0);
     std::vector<DataSrcInfo>  datasrcInfo = getDataSrcInfo(allconfig);
 
