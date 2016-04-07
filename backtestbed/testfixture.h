@@ -52,6 +52,10 @@ namespace BluesTrading
                     {
                         current_end_day += boost::gregorian::days(3);
                     }
+                    else if(dayofweek ==   boost::date_time::Saturday)
+                    {
+                          current_end_day += boost::gregorian::days(2);
+                    }
                     else
                     {
                         current_end_day += boost::gregorian::days(1);
@@ -63,6 +67,10 @@ namespace BluesTrading
 
                     if (current_end_day != current_data_day)
                     {
+                        static std::mutex lock;
+                        lock.lock();
+                        std::cout << "Not Ready For Date " <<  data->getDate() << " Last Ready Date:" <<  *inst.current_date << " RePost \n" ;
+                        lock.unlock();
                         // not ready for pre day. re post this work;
                         postRunWork(inst, data);
                         return;

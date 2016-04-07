@@ -75,6 +75,7 @@
     <ClCompile Include="..\..\backtestbed\testbed.cpp" />
     <ClCompile Include="..\..\backtestbed\testConfigureManager.cpp" />
     <ClCompile Include="..\..\backtestbed\testfixture.cpp" />
+    <ClCompile Include="..\..\backtestbed\testpositionmanager.cpp" />
     <ClCompile Include="..\..\backtestbed\testpositionmanager.h" />
     <ClCompile Include="..\..\backtestbed\test\fakeordermanager_test.cpp" />
     <ClCompile Include="..\..\backtestbed\test\faketimerprovider_test.cpp" />
