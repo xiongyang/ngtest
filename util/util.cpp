@@ -649,15 +649,23 @@ namespace BluesTrading
     {
 		if(inst == 5270000)
 			return 10;
-		else 
+		else if(inst == 5200000)
 			return 15;
+		else if(inst == 5340000)
+			return 60;
+		else if(inst == 5350000)
+			return 10;
     }
 
     double InstrumentInfoFactory::getInstrumentMarginRate(uint32_t inst)
     {
         if(inst == 5270000)
 			return 0.1;
-		else 
+		else if(inst == 5200000)
+			return 0.1;
+		else if(inst == 5340000)
+			return 0.1;
+		else if(inst == 5250000)
 			return 0.1;
     }
 
@@ -665,21 +673,33 @@ namespace BluesTrading
 	{
 		if(inst == 5270000)
 			return 5;
-		else 
+		else if(inst == 5200000)
+			return 1;
+		else if(inst == 5340000)
+			return 0.5;
+		else if(inst == 5250000)
 			return 1;
 	}
 	double	InstrumentInfoFactory::getInstrumentCommision(uint32_t inst)
 	{
 		if(inst == 5270000)
 			return 30;
-		else 
+		else if(inst == 5200000)
 			return 5;
+		else if(inst == 5340000)
+			return 9;
+		else if(inst == 5250000)
+			return 5.4;
 	}
 	double	InstrumentInfoFactory::getInstrumentLimit(uint32_t inst)
 	{
 		if(inst == 5270000)
 			return 0.05;
-		else 
+		else if(inst == 5200000)
+			return 1;
+		else if(inst == 5340000)
+			return 0.04;
+		else if(inst == 5250000)
 			return 0.05;
 	}
 
