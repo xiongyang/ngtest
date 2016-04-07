@@ -37,6 +37,7 @@ namespace BluesTrading
         };
     public:
         void Init(TestRequest& request, DataCache* data);
+        void clean();
 
         void postRunWork(TestInstGroup inst, std::shared_ptr<MarketDataReplayerMultiThread> data)
         {
@@ -108,5 +109,6 @@ namespace BluesTrading
         std::vector<DataSrcInfo> datasrc;
         DataSrcInfo             singleDataSrcInfo;
         //int postCount;
+        std::string dumpedfileName;
     };
 }

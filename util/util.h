@@ -76,8 +76,8 @@ namespace BluesTrading
     template<typename MapType, typename pred>
     void remove_if_map(MapType&& c, pred&& predfun);
 
-    std::vector< std::unordered_map<std::string, std::string> >  parserProps(std::istream& inputStr);
-    std::unordered_map<std::string, std::vector<std::string>>    parserPropsSpace(std::istream& inputstream);
+    std::vector< std::map<std::string, std::string> >  parserProps(std::istream& inputStr);
+    std::map<std::string, std::vector<std::string>>    parserPropsSpace(std::istream& inputstream);
     std::string readFile(const std::string& file);
 
     double getCpuStatus();

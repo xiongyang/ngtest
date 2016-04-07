@@ -80,10 +80,10 @@ namespace BluesTrading
     }
 
 
-    std::vector< std::unordered_map<std::string, std::string> > parserProps(std::istream& inputStr)
+    std::vector< std::map<std::string, std::string> > parserProps(std::istream& inputStr)
     {
-        std::vector< std::unordered_map<std::string, std::string> > ret;
-        std::unordered_map<std::string, std::vector<std::string>> space = parserPropsSpace(inputStr);
+        std::vector< std::map<std::string, std::string> > ret;
+        std::map<std::string, std::vector<std::string>> space = parserPropsSpace(inputStr);
         uint32_t totalSpace = 1;
         for (auto& each_pair : space)
         {
@@ -121,12 +121,12 @@ namespace BluesTrading
         return ret;
     };
 
-    std::unordered_map<std::string, std::vector<std::string>> parserPropsSpace(std::istream& inputStr)
+    std::map<std::string, std::vector<std::string>> parserPropsSpace(std::istream& inputStr)
     {
 
         //std::vector< std::unordered_map<std::string, std::string> > ret;
 
-        std::unordered_map<std::string, std::vector<std::string>> paras_for_every_prop;
+        std::map<std::string, std::vector<std::string>> paras_for_every_prop;
 
         for (std::string line; getline(inputStr, line);)
         {
