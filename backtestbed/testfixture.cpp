@@ -83,8 +83,10 @@ namespace BluesTrading
 
              auto startday = getDateFromNum(singleDataSrcInfo.start_date);
              auto preday_of_start_day = startday - boost::gregorian::days(1);
+           
 
-            *inst.current_date == getNumFromDate(preday_of_start_day);
+            *inst.current_date = getNumFromDate(preday_of_start_day);
+           //   std::cout << "StartDay " << startday << " PreDay " << preday_of_start_day << " num :" << *inst.current_date << std::endl;
             allStrInst.push_back(inst);
         }
 
@@ -216,7 +218,7 @@ namespace BluesTrading
                 auto deleteofDataReplayer = [&](MarketDataReplayerMultiThread* p)
                 {
                     dayInMemoryCount -- ;
-                    std::cout << "Free Date For Date " << p->getDate() << "\n";
+                    std::cout << "Free Data For Date " << p->getDate() << "\n";
                     delete p;
                 };
 
@@ -225,9 +227,10 @@ namespace BluesTrading
 
 
 
-                for (auto& each : allStrInst)
+                for (auto inst : allStrInst)
                 {
-                    postRunWork(each, data);
+                    std::function<void()> runDonday=  std::bind( &TestFixture::runDataOnDay, this, inst, data );
+                    io_.post(runDonday);
                 }
             }
         }
