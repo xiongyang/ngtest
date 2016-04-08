@@ -15,6 +15,8 @@
 #include <vector>
 #include <thread>
 #include <mutex>
+#include <functional>
+#include <iostream>
 
 #include <boost/asio/io_service.hpp>
 
@@ -39,36 +41,43 @@ namespace BluesTrading
         void Init(TestRequest& request, DataCache* data);
         void clean();
 
-        void postRunWork(TestInstGroup inst, std::shared_ptr<MarketDataReplayerMultiThread> data)
+        uint32_t getNextWorkingDay(uint32_t current_day)
         {
-            auto runDataOnDay = [=]()
+            auto current_end_day = getDateFromNum( current_day);
+
+            auto dayofweek = current_end_day.day_of_week();
+            if(dayofweek ==   boost::date_time::Friday )
             {
-                if (*inst.current_date != 0)
-                {
-                    auto current_end_day = getDateFromNum( *inst.current_date);
-                    current_end_day += boost::gregorian::days(1);
+                current_end_day += boost::gregorian::days(3);
+            }
+            else if(dayofweek ==   boost::date_time::Saturday)
+            {
+                current_end_day += boost::gregorian::days(2);
+            }
+            else
+            {
+                current_end_day += boost::gregorian::days(1);
+            }
+            return getNumFromDate(current_end_day);
+        }
 
-                    auto current_data_day = getDateFromNum(data->getDate());
 
-                    if (current_end_day != current_data_day)
-                    {
-                        // not ready for pre day. re post this work;
-                        postRunWork(inst, data);
-                        return;
-                    }
-                }
-
-  
-
+        void runDataOnDay(TestInstGroup inst,  std::shared_ptr<MarketDataReplayerMultiThread> data)
+        {
+            uint32_t targetDate = getNextWorkingDay(*inst.current_date);
+            if(targetDate == data->getDate())
+            {
                 std::set<ITickDataConsumer*> consumer;
                 consumer.insert(inst.testStrategy.get());
                 consumer.insert(inst.posManager.get());
-
                 data->StartReplay(consumer, inst.timerProvider.get());
                 *inst.current_date = data->getDate();
-            };
-
-            io_.post([=](){runDataOnDay();});
+            }
+            else
+            {
+                std::function<void()> runDonday=  std::bind( &TestFixture::runDataOnDay, this, inst, data );
+                io_.post(runDonday);
+            }
         }
 
         void run();

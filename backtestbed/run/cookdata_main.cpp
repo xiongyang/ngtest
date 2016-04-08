@@ -14,6 +14,7 @@
 #include <utility>
 #include <memory>
 #include <vector>
+#include <future>
 
 #include <boost/asio.hpp>
 #include <boost/algorithm/string.hpp>
@@ -168,11 +169,20 @@ TestRequest CreateTestRequest(const std::string& dllFile,  const std::string& co
 }
 
 
+// get the hardware info. and avgLoad current
+double getLocalHostRuningStatus()
+{
+    auto ret = getCpuStatus();
+    static double rttusage = ret;
+    rttusage = rttusage * 0.9 + 0.1 * ret;
+    return rttusage;
+}
+
 
 using boost::asio::ip::tcp;
+using boost::asio::ip::udp;
 
-
-size_t read_buf(boost::asio::ip::tcp::socket& s, boost::asio::streambuf& buf)
+size_t read_buf(tcp::socket& s, boost::asio::streambuf& buf)
 {
     int size = 0;
     boost::asio::read(s, boost::asio::buffer(&size, sizeof(int)));
@@ -184,15 +194,29 @@ size_t read_buf(boost::asio::ip::tcp::socket& s, boost::asio::streambuf& buf)
     return boost::asio::read(s, buf, boost::asio::transfer_exactly(size));
 }
 
-size_t write_buf(boost::asio::ip::tcp::socket& s, boost::asio::streambuf& buf)
+size_t write_buf(tcp::socket& s, boost::asio::streambuf& buf)
 {
     int size = buf.size();
     boost::asio::write(s, boost::asio::buffer(&size, sizeof(int)));
     return boost::asio::write(s, buf, boost::asio::transfer_exactly(size));
 }
 
-template<typename ProtoBufMessage>
-size_t recvMessage(boost::asio::ip::tcp::socket& s,ProtoBufMessage& msg)
+size_t read_buf(udp::socket& s, boost::asio::streambuf& buf)
+{
+    auto max_upd_trans_buff = buf.prepare(1500);
+    auto size =  s.receive(max_upd_trans_buff);
+    buf.commit(size);
+    return size;
+}
+
+size_t write_buf(udp::socket& s, boost::asio::streambuf& buf)
+{
+   return  s.send(boost::asio::buffer(buf.data(), buf.size()));
+}
+
+
+template<typename SockType, typename ProtoBufMessage>
+size_t recvMessage(SockType& s,ProtoBufMessage& msg)
 {
     boost::asio::streambuf buf;
     size_t readsize = read_buf(s ,buf);
@@ -207,14 +231,72 @@ size_t recvMessage(boost::asio::ip::tcp::socket& s,ProtoBufMessage& msg)
 }
 
 
-template<typename ProtoBufMessage>
-size_t sendMessage(boost::asio::ip::tcp::socket& s,ProtoBufMessage& msg)
+template<typename SockType, typename ProtoBufMessage>
+size_t sendMessage(SockType& s,ProtoBufMessage& msg)
 {
     boost::asio::streambuf outbuf;
     std::ostream ostreambuf(&outbuf);
     msg.SerializeToOstream(&ostreambuf);
     return  write_buf(s, outbuf);
 }
+
+void broadcastStatus(const std::string& ip, const std::string& port)
+{
+    NodeStatus msg;
+    msg.set_address(ip);
+    msg.set_port(port);
+    msg.set_cores(std::thread::hardware_concurrency());
+
+    boost::asio::io_service io_service;
+    udp::socket sock(io_service, udp::endpoint(udp::v4(),10000));
+    //udp::resolver resolver(io_service);
+    //auto ep =  resolver.resolve({broadcast_ip, broadcast_port});
+    //boost::asio::connect(sock,ep);
+
+    boost::asio::socket_base::broadcast option(true);
+    sock.set_option(option);
+    udp::endpoint destination(boost::asio::ip::address::from_string("255.255.255.255"), 5000);
+
+    sock.connect(destination);
+    // sock.send(boost::asio::buffer(buf, 10));
+
+    while (true)
+    {
+        std::this_thread::sleep_for(std::chrono::seconds(1));
+        double usage = getLocalHostRuningStatus();
+        msg.set_usage(usage);
+        sendMessage(sock, msg);
+    }
+}
+
+
+
+void recvbroadcastStatus(std::map<std::string, NodeStatus>& statusmap, bool& stop)
+{
+    boost::asio::io_service io_service;
+    udp::socket sock(io_service, udp::endpoint(udp::v4(), 5000));
+    // udp::socket sock(io_service);
+    boost::asio::socket_base::broadcast option(true);
+    sock.set_option(option);
+    //  socket.receive_from(boost::asio::buffer(buf), sender_endpoint);
+    // udp::endpoint destination(boost::asio::ip::address::from_string("255.255.255.255"), 5000);
+
+    // udp::endpoint destination;
+    //sock.connect(destination);
+
+
+    while(!stop)
+    {
+        //recvbuf.resize(size);
+        //std::cout << "recv"
+        NodeStatus msg;
+        /*    msg.par*/
+        auto size = recvMessage(sock, msg);
+        statusmap[ msg.address()] = msg;
+        std::cout << "RecvMessage " << msg.address() << " : " << msg.port() << "   CpuUsage "<< msg.usage() << " Cores " << msg.cores() << "\n";
+    }
+}
+
 
 void session(tcp::socket sock, DataCache* datacache)
 {
@@ -255,8 +337,11 @@ void server(boost::asio::io_service& io_service, unsigned short port,DataCache* 
     }
 }
 
-int startserver(const std::string& port, DataCache* datacache)
+int startserver(const std::string& ip, const std::string& port, DataCache* datacache)
 {
+
+    std::thread broadthread(broadcastStatus, ip, port);
+
     try
     {
         boost::asio::io_service io_service;
@@ -270,7 +355,100 @@ int startserver(const std::string& port, DataCache* datacache)
     return 0;
 }
 
-void HandleRequestRemote(const std::string& ip, const std::string& port, TestRequest& request)
+TestRequest splitRequest(TestRequest& request, uint32_t num)
+{
+    TestRequest ret(request);
+    if (num >= request.configspace_size())
+    {
+        request.clear_configspace();
+        return ret;
+    }
+    else
+    {
+        ret.clear_configspace();
+        for (int i = 0; i != num ; ++i)
+        {
+            auto* config = ret.add_configspace();
+            *config = *request.configspace().rbegin();
+            request.mutable_configspace()->RemoveLast();
+        }
+        return ret;
+    } 
+}
+
+void mergerResult(TestResult& left, TestResult& right)
+{
+    for (auto& item : right.resultitem())
+    {
+        left.add_resultitem(item);
+    }
+}
+
+TestResult HandleRequestRemote(const std::string& ip, const std::string& port, TestRequest& request);
+TestResult asyncwork( std::set< NodeStatus*>&  working_node, NodeStatus* p_work_node, TestRequest req) 
+{
+    std::cout << "Send Work " << req.configspace_size() << " To " << p_work_node->address() << std::endl;
+    TestResult nodeResult = HandleRequestRemote(p_work_node->address(), p_work_node->port(), req);
+    working_node.erase(p_work_node);
+     std::cout << "Finish Work " << req.configspace_size() << " From " << p_work_node->address() << std::endl;
+    return nodeResult;
+};
+
+TestResult HandleRequestNetwrok(TestRequest& request, std::map<std::string, NodeStatus>& status)
+{
+    std::this_thread::sleep_for(std::chrono::seconds(3));  // first wait 3 second for receive the network info
+
+    std::set< NodeStatus*> allready_working_node;
+    NodeStatus* pNextNode = nullptr;
+
+
+    std::vector<std::future<TestResult>> resultfutures;
+
+    while (request.configspace_size() > 0)
+    {
+          std::this_thread::sleep_for(std::chrono::seconds(2));
+          double powerIndex  = 0;
+          for (auto& statusItme : status)
+          {
+              if (allready_working_node.find(&statusItme.second) != allready_working_node.end())
+              {
+                  // This Node Already get work form me
+                  continue;
+              }
+
+              double current_powerIndex =  statusItme.second.cores() * statusItme.second.usage()  /  100.0;
+              if (current_powerIndex > powerIndex)
+              {
+                  powerIndex = current_powerIndex;
+                  pNextNode =   &statusItme.second;
+              }
+          }
+
+          if(pNextNode)
+          {
+              uint32_t request_cores = pNextNode->cores() * 1.5;
+              TestRequest newrequest = splitRequest(request, request_cores);
+              allready_working_node.insert(pNextNode);
+          
+             auto future_result = std::async(asyncwork, std::ref(allready_working_node), pNextNode, newrequest);
+             //auto future_result =  std::async(asyncwor2k, stdallready_working_node, newrequest);
+              resultfutures.push_back(std::move(future_result));
+          }
+    }
+
+
+    TestResult result;
+    for (auto& futurework : resultfutures)
+    { 
+        TestResult thisresult= futurework.get();
+        mergerResult(result, thisresult);
+    }
+
+    return result;
+}
+
+
+TestResult HandleRequestRemote(const std::string& ip, const std::string& port, TestRequest& request)
 {
     boost::asio::io_service io_service;
     tcp::socket sock(io_service);
@@ -289,24 +467,10 @@ void HandleRequestRemote(const std::string& ip, const std::string& port, TestReq
     {
         std::cout << result_item << "\n";
     }
-
+    return result;
 }
 
-// get the hardware info. and avgLoad current
-double getLocalHostRuningStatus()
-{
-    auto ret = getCpuStatus();
-    static double rttusage = ret;
-    rttusage = rttusage * 0.9 + 0.1 * ret;
-    return rttusage;
-}
 
-void broadcastStatus(const std::string& ip, const std::string port)
-{
-   std::this_thread::sleep_for(std::chrono::seconds(1));
-   
-   getLocalHostRuningStatus();
-}
 
 void testload(const char* argv)
 {
@@ -327,14 +491,32 @@ int main(int argc, char** argv)
         {
             cookData(argv[2]);
         }
+        else if(cmd == "bo1")
+        {
+            broadcastStatus(argv[2], argv[3]);
+        }
         else if(cmd == "server")
         {
-            startserver( argv[2], &datacache);
+            startserver( argv[2], argv[3], &datacache);
         }
         else if(cmd == "client")
         {
             auto request =  CreateTestRequest(argv[2],argv[3]);
             HandleRequestRemote(argv[4], argv[5], request);
+        }
+        else if (cmd == "client_net")
+        {
+            auto request = CreateTestRequest(argv[2],argv[3]);
+            std::map<std::string, NodeStatus> Nodestatus;
+            bool stop_recv = false;
+            std::thread recvNodeStatus(recvbroadcastStatus, std::ref(Nodestatus), std::ref(stop_recv));
+            auto result = HandleRequestNetwrok(request, Nodestatus);
+           
+            std::cout << "Finished Network" << std::endl;
+            stop_recv = true;
+            if(recvNodeStatus.joinable())   recvNodeStatus.join();
+          
+            return 0;
 
         }
         else if(cmd == "backend")

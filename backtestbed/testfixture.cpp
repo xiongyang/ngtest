@@ -16,7 +16,7 @@
 #include <atomic>
 
 
-const int MaxDayInMemory = 5;
+const int MaxDayInMemory = 10;
 
 namespace BluesTrading
 {
@@ -50,21 +50,21 @@ namespace BluesTrading
 
     void TestFixture::Init(TestRequest& request, DataCache* data)
     {
-      //  postCount = 0;
+        //  postCount = 0;
         data_ = data;
         datasrc = getDataSrcInfoFromRequest(request);
         singleDataSrcInfo = datasrc[0];
-       
+
         for (auto& singleData : datasrc)
         {
-             std::thread  fetchThread ( [&](){prepareDataCache(singleData);} );
-             fetchThread.detach();
+            std::thread  fetchThread ( [&](){prepareDataCache(singleData);} );
+            fetchThread.detach();
         }
 
-   
 
 
- 
+
+
         dumpedfileName = dumpDllFile(request);
         auto createStrategyFun = GetSharedLibFun<BluesTrading::StrategyFactoryFun>(dumpedfileName.c_str(),"createStrategy");
 
@@ -80,9 +80,16 @@ namespace BluesTrading
             std::string configstring ;
             configMessage.SerializeToString(&configstring);
             inst.testStrategy->onMessage(configstring);
+
+             auto startday = getDateFromNum(singleDataSrcInfo.start_date);
+             auto preday_of_start_day = startday - boost::gregorian::days(1);
+           
+
+            *inst.current_date = getNumFromDate(preday_of_start_day);
+           //   std::cout << "StartDay " << startday << " PreDay " << preday_of_start_day << " num :" << *inst.current_date << std::endl;
             allStrInst.push_back(inst);
         }
-   
+
         std::cout << "create TestInst " << allStrInst.size()  <<std::endl;
 
 
@@ -90,18 +97,18 @@ namespace BluesTrading
         boost::asio::io_service::work* worker = new boost::asio::io_service::work(io_);
         std::thread buildDataReplayer([=](){prepareMarketDataReplayer(); delete worker;});
         buildDataReplayer.detach();
-       // buildDataReplayer.join();
+
 
 
         int cores = std::thread::hardware_concurrency();
         //int thread_num  = std::min(cores + 4,  int(cores * 1.5));
         //thread_num = std::min(int(allStrInst.size()), thread_num);
-        for (int i = 0; i != cores * 3; ++i)
+        for (int i = 0; i != cores * 2; ++i)
         {
             auto workThread = std::make_shared<std::thread>([&](){io_.run();});
             workerThreads.push_back(workThread);
         }
-         std::cout << "Create Work Thread Group " << workerThreads.size() <<  std::endl;
+        std::cout << "Create Work Thread Group " << workerThreads.size() <<  std::endl;
     }
 
     void TestFixture::clean()
@@ -113,8 +120,8 @@ namespace BluesTrading
     {
         srand(time(nullptr));
         std::string dllFile =  boost::lexical_cast<std::string>(rand()) +  ".dll";
-    /*    dllFile +=;*/
-       // std::string dllFile = "tempfile.dll";
+        /*    dllFile +=;*/
+        // std::string dllFile = "tempfile.dll";
         std::cout << "Dump Dll File to " << dllFile << std::endl;
         std::fstream dllfilestream(dllFile, std::ios_base::out | std::ios_base::binary);
         if (! dllfilestream)
@@ -138,7 +145,7 @@ namespace BluesTrading
         ret.posManager.reset(new testPositionManger);
         ret.timerProvider.reset(new FakeTimerProvider);
         ret.current_date = std::make_shared<uint32_t>(0);
-         ret.logger = std::make_shared<nullLogger>();
+        ret.logger = std::make_shared<nullLogger>();
 
         BluesTrading::IStrategy* strp  = createFun("teststr",  ret.logger.get(), &configureManager,  &nullDataReplayer,  
             ret.timerProvider.get(),  ret.orderManager.get(), ret.posManager.get());
@@ -174,12 +181,15 @@ namespace BluesTrading
         dayInMemoryCount = 0;
         for (auto date = start; date != end; date += one_day)
         {
-
-
-           // waitforDataSlotAviale();
+            auto dayofweek = date.day_of_week();
+            if(dayofweek ==  boost::date_time::Sunday || dayofweek ==   boost::date_time::Saturday)
+            {
+                continue;
+            }
+            // waitforDataSlotAviale();
             while (dayInMemoryCount >= MaxDayInMemory)
             {
-                 std::this_thread::sleep_for(std::chrono::seconds(1));
+                std::this_thread::sleep_for(std::chrono::seconds(1));
             }
 
 
@@ -201,34 +211,31 @@ namespace BluesTrading
 
                 alldata.emplace_back(cache_path);   
             }
-          
+
             {
-             
-               std::cout << "Load   date:" << dateint << "  in Memory" <<"\n";
-               auto deleteofDataReplayer = [&](MarketDataReplayerMultiThread* p)
-               {
-                   dayInMemoryCount -- ;
-                   std::cout << "Free Date For Date " << p->getDate() << "\n";
-                   delete p;
-               };
 
-               dayInMemoryCount++;
-               std::shared_ptr<MarketDataReplayerMultiThread> data( new MarketDataReplayerMultiThread(alldata, dateint),  deleteofDataReplayer);
-
-
-             
-                for (auto& each : allStrInst)
+                std::cout << "Load   date:" << dateint << "  in Memory" <<"\n";
+                auto deleteofDataReplayer = [&](MarketDataReplayerMultiThread* p)
                 {
-                    postRunWork(each, data);
+                    dayInMemoryCount -- ;
+                    std::cout << "Free Data For Date " << p->getDate() << "\n";
+                    delete p;
+                };
+
+                dayInMemoryCount++;
+                std::shared_ptr<MarketDataReplayerMultiThread> data( new MarketDataReplayerMultiThread(alldata, dateint),  deleteofDataReplayer);
+
+
+
+                for (auto inst : allStrInst)
+                {
+                    std::function<void()> runDonday=  std::bind( &TestFixture::runDataOnDay, this, inst, data );
+                    io_.post(runDonday);
                 }
             }
         }
 
-         auto time_end = std::chrono::high_resolution_clock::now();
-         std::chrono::duration<double> diff  = time_end - timestart;
 
-         std::cout << "Load Data Using " << diff.count() << std::endl; 
-   
     }
 
     //void TestFixture::waitforDataSlotAviale()
@@ -351,7 +358,7 @@ namespace BluesTrading
         {
             if(worker->joinable()) worker->join();
         }
-       // std::cout << "PostCount " << postCount << "\n";
+        // std::cout << "PostCount " << postCount << "\n";
     }
 
     std::vector<std::string> TestFixture::getResult()
