@@ -164,11 +164,12 @@ TestRequest CreateTestRequest(const std::string& dllFile,  const std::string& co
 // get the hardware info. and avgLoad current
 double getLocalHostRuningStatus()
 {
+    
     //auto ret = getCpuStatus();
     //static double rttusage = ret;
     //rttusage = rttusage * 0.9 + 0.1 * ret;
     //return rttusage;
-    return ret;
+    return getCpuStatus();
 }
 
 
