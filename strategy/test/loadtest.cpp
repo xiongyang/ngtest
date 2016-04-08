@@ -13,8 +13,8 @@ int main(int argc, char** argv)
         std::cout<< "[  FAILED  ] LoadDllTest \n\n";
         return -1;
     }
-
-    auto funptr = GetSharedLibFun<BluesTrading::StrategyFactoryFun>(argv[1],"createStrategy");
+    auto library = std::make_shared<CDynamicLibrary>(argv[1]);
+    auto funptr = GetSharedLibFun<BluesTrading::StrategyFactoryFun>(library.get(),"createStrategy");
     //CDynamicLibrary dll;
     //dll.Open(argv[1]);
     //auto funptr = reinterpret_cast<BluesTrading::StrategyFactoryFun*>(dll.GetProc("createStrategy"));

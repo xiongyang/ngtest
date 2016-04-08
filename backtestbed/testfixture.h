@@ -20,6 +20,7 @@
 
 #include <boost/asio/io_service.hpp>
 
+class CDynamicLibrary;
 
 namespace BluesTrading
 {
@@ -119,5 +120,8 @@ namespace BluesTrading
         DataSrcInfo             singleDataSrcInfo;
         //int postCount;
         std::string dumpedfileName;
+        CDynamicLibrary* strLibrary;
+        std::thread remote_IOthread;
+        std::thread local_IOthread;
     };
 }

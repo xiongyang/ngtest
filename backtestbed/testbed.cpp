@@ -30,7 +30,8 @@ namespace BluesTrading
 
     void TestBed::LoadTestStrategy(const std::string& dynamicLib)
     {
-        auto funptr = GetSharedLibFun<BluesTrading::StrategyFactoryFun>(dynamicLib.c_str(),"createStrategy");
+         auto library = std::make_shared<CDynamicLibrary>(dynamicLib);
+        auto funptr = GetSharedLibFun<BluesTrading::StrategyFactoryFun>(library.get(),"createStrategy");
  
         BluesTrading::IStrategy* strp  = funptr("teststr", 
             &logger, &configureManager,  dataReplayer.get(), dataReplayer->getTimerProvider(), orderManager.get(),

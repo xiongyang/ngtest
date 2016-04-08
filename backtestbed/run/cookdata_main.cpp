@@ -211,7 +211,7 @@ size_t read_buf(udp::socket& s, boost::asio::streambuf& buf)
 
 size_t write_buf(udp::socket& s, boost::asio::streambuf& buf)
 {
-   return  s.send(boost::asio::buffer(buf.data(), buf.size()));
+    return  s.send(boost::asio::buffer(buf.data(), buf.size()));
 }
 
 
@@ -240,7 +240,7 @@ size_t sendMessage(SockType& s,ProtoBufMessage& msg)
     return  write_buf(s, outbuf);
 }
 
-void broadcastStatus(const std::string& ip, const std::string& port)
+void broadcastStatus(const std::string& ip, const std::string& port, bool& stop)
 {
     NodeStatus msg;
     msg.set_address(ip);
@@ -260,7 +260,7 @@ void broadcastStatus(const std::string& ip, const std::string& port)
     sock.connect(destination);
     // sock.send(boost::asio::buffer(buf, 10));
 
-    while (true)
+    while (!stop)
     {
         std::this_thread::sleep_for(std::chrono::seconds(1));
         double usage = getLocalHostRuningStatus();
@@ -304,16 +304,21 @@ void session(tcp::socket sock, DataCache* datacache)
     {
         TestRequest request;
         size_t read_size = recvMessage(sock, request);
-        std::cout << "Receive buf size "  << read_size << std::endl;
+        std::cout << "Receive buf size "  << read_size <<"\n";
 
+        // TestResult ret;
+        //for (int i = 0 ; i != 1000; ++i)
+        //{
+        //    ret = HandleTestRequest(request, datacache);
+        //}
         TestResult ret = HandleTestRequest(request, datacache);
 
         std::cout << "Finish Run TestRquest \n";
 
         size_t result_size = sendMessage(sock, ret);
 
-    
- 
+
+
         std::cout << sock.remote_endpoint().address() <<":" <<  sock.remote_endpoint().port() << "  session complete \n";
         std::cout << "Result size " <<   ret.resultitem_size() << " Send Buff Size " << result_size << "\n";
         sock.close();
@@ -333,14 +338,15 @@ void server(boost::asio::io_service& io_service, unsigned short port,DataCache* 
         tcp::socket sock(io_service);
         a.accept(sock);
         std::cout << "Client Connect In " << sock.remote_endpoint().address() <<":" <<  sock.remote_endpoint().port() << std::endl;
-        std::thread(session, std::move(sock), datacache).detach();
+        //std::thread(session, std::move(sock), datacache).detach();
+        session(std::move(sock), datacache);
     }
 }
 
 int startserver(const std::string& ip, const std::string& port, DataCache* datacache)
 {
-
-    std::thread broadthread(broadcastStatus, ip, port);
+    bool stop = false;
+    std::thread broadthread(broadcastStatus, ip, port, std::ref(stop));
 
     try
     {
@@ -349,7 +355,9 @@ int startserver(const std::string& ip, const std::string& port, DataCache* datac
     }
     catch (std::exception& e)
     {
-        std::cerr << "exception: " << e.what() << "\n";
+        std::cerr << "exception: " << e.what() << "\n" << std::endl;
+        stop = true;
+        broadthread.join();
     }
 
     return 0;
@@ -368,8 +376,8 @@ TestRequest splitRequest(TestRequest& request, uint32_t num)
         ret.clear_configspace();
         for (int i = 0; i != num ; ++i)
         {
-            auto* config = ret.add_configspace();
-            *config = *request.configspace().rbegin();
+            StrategyConfig* configMessasge = ret.add_configspace();
+            configMessasge->CopyFrom ((*request.configspace().rbegin()));
             request.mutable_configspace()->RemoveLast();
         }
         return ret;
@@ -390,7 +398,7 @@ TestResult asyncwork( std::set< NodeStatus*>&  working_node, NodeStatus* p_work_
     std::cout << "Send Work " << req.configspace_size() << " To " << p_work_node->address() << std::endl;
     TestResult nodeResult = HandleRequestRemote(p_work_node->address(), p_work_node->port(), req);
     working_node.erase(p_work_node);
-     std::cout << "Finish Work " << req.configspace_size() << " From " << p_work_node->address() << std::endl;
+    std::cout << "Finish Work " << req.configspace_size() << " From " << p_work_node->address() << std::endl;
     return nodeResult;
 };
 
@@ -406,34 +414,34 @@ TestResult HandleRequestNetwrok(TestRequest& request, std::map<std::string, Node
 
     while (request.configspace_size() > 0)
     {
-          std::this_thread::sleep_for(std::chrono::seconds(2));
-          double powerIndex  = 0;
-          for (auto& statusItme : status)
-          {
-              if (allready_working_node.find(&statusItme.second) != allready_working_node.end())
-              {
-                  // This Node Already get work form me
-                  continue;
-              }
+        std::this_thread::sleep_for(std::chrono::seconds(2));
+        double powerIndex  = 0;
+        for (auto& statusItme : status)
+        {
+            if (allready_working_node.find(&statusItme.second) != allready_working_node.end())
+            {
+                // This Node Already get work form me
+                continue;
+            }
 
-              double current_powerIndex =  statusItme.second.cores() * statusItme.second.usage()  /  100.0;
-              if (current_powerIndex > powerIndex)
-              {
-                  powerIndex = current_powerIndex;
-                  pNextNode =   &statusItme.second;
-              }
-          }
+            double current_powerIndex =  statusItme.second.cores() * statusItme.second.usage()  /  100.0;
+            if (current_powerIndex > powerIndex)
+            {
+                powerIndex = current_powerIndex;
+                pNextNode =   &statusItme.second;
+            }
+        }
 
-          if(pNextNode)
-          {
-              uint32_t request_cores = pNextNode->cores() * 1.5;
-              TestRequest newrequest = splitRequest(request, request_cores);
-              allready_working_node.insert(pNextNode);
-          
-             auto future_result = std::async(asyncwork, std::ref(allready_working_node), pNextNode, newrequest);
-             //auto future_result =  std::async(asyncwor2k, stdallready_working_node, newrequest);
-              resultfutures.push_back(std::move(future_result));
-          }
+        if(pNextNode)
+        {
+            uint32_t request_cores = pNextNode->cores() * 1.5;
+            TestRequest newrequest = splitRequest(request, request_cores);
+            allready_working_node.insert(pNextNode);
+            std::cout << "Dispatch " << std::endl;
+            auto future_result = std::async(std::launch::async ,asyncwork, std::ref(allready_working_node), pNextNode, newrequest);
+            //auto future_result =  std::async(asyncwor2k, stdallready_working_node, newrequest);
+            resultfutures.push_back(std::move(future_result));
+        }
     }
 
 
@@ -493,7 +501,8 @@ int main(int argc, char** argv)
         }
         else if(cmd == "bo1")
         {
-            broadcastStatus(argv[2], argv[3]);
+            bool stop = false;
+            broadcastStatus(argv[2], argv[3], stop);
         }
         else if(cmd == "server")
         {
@@ -504,18 +513,18 @@ int main(int argc, char** argv)
             auto request =  CreateTestRequest(argv[2],argv[3]);
             HandleRequestRemote(argv[4], argv[5], request);
         }
-        else if (cmd == "client_net")
+        else if (cmd == "net")
         {
             auto request = CreateTestRequest(argv[2],argv[3]);
             std::map<std::string, NodeStatus> Nodestatus;
             bool stop_recv = false;
             std::thread recvNodeStatus(recvbroadcastStatus, std::ref(Nodestatus), std::ref(stop_recv));
             auto result = HandleRequestNetwrok(request, Nodestatus);
-           
+
             std::cout << "Finished Network" << std::endl;
             stop_recv = true;
             if(recvNodeStatus.joinable())   recvNodeStatus.join();
-          
+
             return 0;
 
         }
@@ -527,6 +536,16 @@ int main(int argc, char** argv)
         {
             auto request =  CreateTestRequest(argv[2], argv[3]);
             HandleTestRequest(request, &datacache);
+
+            if (argc == 5)
+            {
+                int loop = boost::lexical_cast<int>(argv[4]);
+                for (int i = 0; i != loop; ++i)
+                {
+                    std::thread xxx(HandleTestRequest,request ,&datacache);
+                    xxx.join();
+                }
+            }
         }
         else if (cmd == "usage")
         {

@@ -54,10 +54,10 @@ void gdl_GetLastErrorMsg(char *p, int size)
 }
 
 
-CDynamicLibrary::CDynamicLibrary()
+CDynamicLibrary::CDynamicLibrary(const std::string& lpname)
 {
-
     m_hModule = NULL;
+    Open(lpname.c_str());
 }
 
 CDynamicLibrary::~CDynamicLibrary()

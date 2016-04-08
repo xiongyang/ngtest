@@ -1,9 +1,6 @@
 #pragma once
 #include <string>
-
-
-template<typename FunT>
-FunT* GetSharedLibFun(const char* libraray, const char* fun);
+#include <memory>
 
 
 #if defined(_BL_WIN32_PLATFROM_)
@@ -16,16 +13,11 @@ typedef HMODULE  MODULE_HANDLE;
 typedef void *  MODULE_HANDLE;
 #endif
 
-
-MODULE_HANDLE gdl_Open(const char *plname);
-void gdl_Close(MODULE_HANDLE h);
-void *gdl_GetProc(MODULE_HANDLE h, const char *pfname);
-void gdl_GetLastErrorMsg(char *p, int size);
-
 class CDynamicLibrary
 {
 public:
-    CDynamicLibrary();
+    //  explicit CDynamicLibrary(const char *lpname);
+    explicit CDynamicLibrary(const std::string& lpname);
     ~CDynamicLibrary();
     bool Open(const char *lpname);
     void *GetProc(const char *pfname);
@@ -38,11 +30,19 @@ private:
     MODULE_HANDLE m_hModule;
 };
 
+
 template<typename FunT>
-FunT* GetSharedLibFun(const char* libraray, const char* fun)
+FunT* GetSharedLibFun(CDynamicLibrary* dllloader, const char* fun);
+
+
+MODULE_HANDLE gdl_Open(const char *plname);
+void gdl_Close(MODULE_HANDLE h);
+void *gdl_GetProc(MODULE_HANDLE h, const char *pfname);
+void gdl_GetLastErrorMsg(char *p, int size);
+
+
+template<typename FunT>
+FunT* GetSharedLibFun(CDynamicLibrary* dllloader, const char* fun)
 {
-    // let it leak.
-    CDynamicLibrary* dllloader =  new CDynamicLibrary;
-    dllloader->Open(libraray);
     return reinterpret_cast<FunT*>(dllloader->GetProc(fun));
 }

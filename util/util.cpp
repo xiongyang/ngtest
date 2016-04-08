@@ -244,12 +244,14 @@ namespace BluesTrading
     HANDLE Event;
     std::once_flag flag1;
 
+    CDynamicLibrary* g_pdh_library;
     void InitCpuUsage()
     {
+        g_pdh_library = new CDynamicLibrary("Pdh.dll");  
+       //let it leak. because it only once
+        auto PdhOpenQueryfun =  GetSharedLibFun<decltype(PdhOpenQuery)>(g_pdh_library, "PdhOpenQuery");
 
-        auto PdhOpenQueryfun =  GetSharedLibFun<decltype(PdhOpenQuery)>("Pdh.dll", "PdhOpenQuery");
-
-        auto PdhAddCounterfun = GetSharedLibFun< decltype(PdhAddCounterA) >("Pdh.dll", "PdhAddCounterA");
+        auto PdhAddCounterfun = GetSharedLibFun< decltype(PdhAddCounterA) >(g_pdh_library, "PdhAddCounterA");
 
         PdhOpenQueryfun(NULL, 0, &query);
         if (status != ERROR_SUCCESS)
@@ -267,6 +269,8 @@ namespace BluesTrading
         {
             std::cout << "PdhAddCounterfun Fail " << std::endl;
         }
+
+        return;
     }
 
 
@@ -275,8 +279,8 @@ namespace BluesTrading
 
         std::call_once(flag1, InitCpuUsage);
 
-        auto PdhCollectQueryDatafun =   GetSharedLibFun<decltype(PdhCollectQueryDataEx)>("Pdh.dll", "PdhCollectQueryDataEx");
-        auto PdhGetFormattedCounterValuefun = GetSharedLibFun<decltype(PdhGetFormattedCounterValue)>("Pdh.dll", "PdhGetFormattedCounterValue");
+        auto PdhCollectQueryDatafun =   GetSharedLibFun<decltype(PdhCollectQueryDataEx)>(g_pdh_library, "PdhCollectQueryDataEx");
+        auto PdhGetFormattedCounterValuefun = GetSharedLibFun<decltype(PdhGetFormattedCounterValue)>(g_pdh_library, "PdhGetFormattedCounterValue");
 
 
 

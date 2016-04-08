@@ -57,8 +57,8 @@ namespace BluesTrading
 
         for (auto& singleData : datasrc)
         {
-            std::thread  fetchThread ( [&](){prepareDataCache(singleData);} );
-            fetchThread.detach();
+            std::thread  fetchThread ( [&](){prepareDataCache(singleData);std::cout << "Finish prepareDataCache \n";} );
+            remote_IOthread.swap(fetchThread);
         }
 
 
@@ -66,7 +66,11 @@ namespace BluesTrading
 
 
         dumpedfileName = dumpDllFile(request);
-        auto createStrategyFun = GetSharedLibFun<BluesTrading::StrategyFactoryFun>(dumpedfileName.c_str(),"createStrategy");
+
+        strLibrary = new CDynamicLibrary(dumpedfileName);
+    
+
+        auto createStrategyFun = GetSharedLibFun<BluesTrading::StrategyFactoryFun>(strLibrary,"createStrategy");
 
         if(!createStrategyFun)
         {
@@ -95,10 +99,8 @@ namespace BluesTrading
 
 
         boost::asio::io_service::work* worker = new boost::asio::io_service::work(io_);
-        std::thread buildDataReplayer([=](){prepareMarketDataReplayer(); delete worker;});
-        buildDataReplayer.detach();
-
-
+        std::thread buildDataReplayer([=](){prepareMarketDataReplayer(); delete worker; std::cout << "Finish all MarketDataReplayer Build\n"; });
+        local_IOthread.swap(buildDataReplayer);
 
         int cores = std::thread::hardware_concurrency();
         //int thread_num  = std::min(cores + 4,  int(cores * 1.5));
@@ -109,10 +111,14 @@ namespace BluesTrading
             workerThreads.push_back(workThread);
         }
         std::cout << "Create Work Thread Group " << workerThreads.size() <<  std::endl;
+
+
     }
 
     void TestFixture::clean()
     {
+        allStrInst.clear();
+        delete strLibrary;
         boost::filesystem::remove(dumpedfileName);
     }
 
@@ -179,7 +185,7 @@ namespace BluesTrading
 
         uint32_t maxLevels = boost::lexical_cast<uint32_t>(target.datasrcInfo[2]);
         dayInMemoryCount = 0;
-        for (auto date = start; date != end; date += one_day)
+        for (auto date = start; date < end; date += one_day)
         {
             auto dayofweek = date.day_of_week();
             if(dayofweek ==  boost::date_time::Sunday || dayofweek ==   boost::date_time::Saturday)
@@ -223,7 +229,7 @@ namespace BluesTrading
                 };
 
                 dayInMemoryCount++;
-                std::shared_ptr<MarketDataReplayerMultiThread> data( new MarketDataReplayerMultiThread(alldata, dateint),  deleteofDataReplayer);
+                std::shared_ptr<MarketDataReplayerMultiThread> data(new MarketDataReplayerMultiThread(alldata, dateint),  deleteofDataReplayer);
 
 
 
@@ -358,6 +364,8 @@ namespace BluesTrading
         {
             if(worker->joinable()) worker->join();
         }
+        if(remote_IOthread.joinable()) remote_IOthread.join();
+        if(local_IOthread.joinable()) local_IOthread.join();
         // std::cout << "PostCount " << postCount << "\n";
     }
 
