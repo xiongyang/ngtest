@@ -511,11 +511,15 @@ namespace BluesTrading
 
      uint32_t getInstrumentIndex(const std::string& instrument)
     {
-        if (instrument == "ag")
+        if (instrument == "a")
+        {
+            return 10200000;
+        }
+        else if (instrument == "ag")
         {
             return 5200000;
         }
-        else if (instrument == "rb")
+        else if (instrument == "al")
         {
             return 5210000;
         }
@@ -527,101 +531,97 @@ namespace BluesTrading
         {
             return 5230000;
         }
+        else if (instrument == "c")
+        {
+            return 10230000;
+        }
+        else if (instrument == "CF")
+        {
+            return 15200000;
+        }
+        else if (instrument == "cs")
+        {
+            return 10340000;
+        }
         else if (instrument == "cu")
         {
             return 5240000;
         }
+        else if (instrument == "FG")
+        {
+            return 15210000;
+        }
         else if (instrument == "hc")
-        {
-            return 5250000;
-        }
-        else if (instrument == "ni")
-        {
-            return 5260000;
-        }
-        else if (instrument == "ru")
-        {
-            return 5270000;
-        }
-        else if (instrument == "zn")
-        {
-            return 5280000;
-        }
-        else if (instrument == "a")
-        {
-            return 5290000;
-        }
-        else if (instrument == "c")
-        {
-            return 5300000;
-        }
-        else if (instrument == "cs")
         {
             return 5310000;
         }
         else if (instrument == "i")
         {
-            return 5320000;
+            return 10250000;
         }
         else if (instrument == "j")
         {
-            return 5330000;
-        }
-        else if (instrument == "jm")
-        {
-            return 5340000;
+            return 10260000;
         }
         else if (instrument == "jd")
         {
-            return 5350000;
+            return 10270000;
+        }
+        else if (instrument == "jm")
+        {
+            return 10280000;
         }
         else if (instrument == "l")
         {
-            return 5360000;
+            return 10290000;
         }
         else if (instrument == "m")
         {
-            return 5370000;
-        }
-        else if (instrument == "p")
-        {
-            return 5380000;
-        }
-        else if (instrument == "pp")
-        {
-            return 5390000;
-        }
-        else if (instrument == "y")
-        {
-            return 5400000;
-        }
-        else if (instrument == "CF")
-        {
-            return 5410000;
-        }
-        else if (instrument == "TA")
-        {
-            return 5420000;
-        }
-        else if (instrument == "TA")
-        {
-            return 5430000;
-        }
-        else if (instrument == "SR")
-        {
-            return 5440000;
-        }
-        else if (instrument == "FG")
-        {
-            return 5450000;
-        }
-        else if (instrument == "RM")
-        {
-            return 5460000;
+            return 10300000;
         }
         else if (instrument == "MA")
         {
-            return 5470000;
+            return 15240000;
+        }
+        else if (instrument == "ni")
+        {
+            return 5320000;
+        }
+        else if (instrument == "p")
+        {
+            return 10310000;
+        }
+        else if (instrument == "pp")
+        {
+            return 10350000;
+        }
+        else if (instrument == "rb")
+        {
+            return 5270000;
+        }
+        else if (instrument == "RM")
+        {
+            return 15280000;
+        }
+        else if (instrument == "ru")
+        {
+            return 5280000;
+        }
+        else if (instrument == "SR")
+        {
+            return 15320000;
+        }
+        else if (instrument == "TA")
+        {
+            return 15330000;
+        }
+        else if (instrument == "y")
+        {
+            return 10330000;
+        }
+        else if (instrument == "zn")
+        {
+            return 5300000;
         }
         else
         {
@@ -651,60 +651,409 @@ namespace BluesTrading
 
     uint32_t InstrumentInfoFactory::getInstrumentUnitMultiplier(uint32_t inst)
     {
-		if(inst == 5270000)
+		//ni sn
+		if(inst == 5320000)
+		{
+			return 1;
+		}
+		//pp,l,al,CF,cu,TA,zn
+		else if(inst == 10350000 || inst == 10290000 || inst == 5210000 || inst == 15200000 || inst == 5240000 || inst == 15330000 || inst == 5300000)
+		{
+			return 5;
+		}
+		//y,hc,cs,c,bu,a,m,MA,jd,p,rb,SR,RM,ru
+		else if(inst == 10330000 || inst == 5310000 || inst == 10340000 || inst == 10230000 || inst == 5230000 || inst == 10200000 || inst == 10300000 || inst == 15240000 
+			|| inst == 10270000 || inst == 10310000 || inst == 5270000 || inst == 15320000 || inst == 15280000 || inst == 5280000)
+		{
 			return 10;
+		}
+		//ag
 		else if(inst == 5200000)
+		{
 			return 15;
-		else if(inst == 5340000)
+		}
+		//FG
+		else if(inst == 15210000)
+		{
+			return 20;
+		}
+		//jm
+		else if(inst == 10280000)
+		{
 			return 60;
-		else if(inst == 5350000)
-			return 10;
+		}
+		//i
+		else if(inst == 10250000)
+		{
+			return 100;
+		}
+		else
+		{
+			return 100;
+		}
     }
 
     double InstrumentInfoFactory::getInstrumentMarginRate(uint32_t inst)
     {
-        if(inst == 5270000)
-			return 0.1;
-		else if(inst == 5200000)
-			return 0.1;
-		else if(inst == 5340000)
-			return 0.1;
-		else if(inst == 5250000)
 			return 0.1;
     }
 
 	double	InstrumentInfoFactory::getInstrumentTickSize(uint32_t inst)
 	{
-		if(inst == 5270000)
-			return 5;
-		else if(inst == 5200000)
-			return 1;
-		else if(inst == 5340000)
-			return 0.5;
-		else if(inst == 5250000)
-			return 1;
+		if (inst == 10200000)
+        {
+            return 1;
+        }
+        else if (inst == 5200000)
+        {
+            return 1;
+        }
+        else if (inst == 5210000)
+        {
+            return 5;
+        }
+        else if (inst == 5220000)
+        {
+            return 0.05;
+        }
+        else if (inst == 5230000)
+        {
+            return 2;
+        }
+        else if (inst == 10230000)
+        {
+            return 1;
+        }
+        else if (inst == 15200000)
+        {
+            return 5;
+        }
+        else if (inst == 10340000)
+        {
+            return 1;
+        }
+        else if (inst == 5240000)
+        {
+            return 10;
+        }
+        else if (inst == 15210000)
+        {
+            return 1;
+        }
+        else if (inst == 5310000)
+        {
+            return 2;
+        }
+        else if (inst == 10250000)
+        {
+            return 0.5;
+        }
+        else if (inst == 10260000)
+        {
+            return 0.5;
+        }
+        else if (inst == 10270000)
+        {
+            return 1;
+        }
+        else if (inst == 10280000)
+        {
+            return 0.5;
+        }
+        else if (inst == 10290000)
+        {
+            return 5;
+        }
+        else if (inst == 10300000)
+        {
+            return 1;
+        }
+        else if (inst == 15240000)
+        {
+            return 1;
+        }
+        else if (inst == 5320000)
+        {
+            return 10;
+        }
+        else if (inst == 10310000)
+        {
+            return 2;
+        }
+        else if (inst == 10350000)
+        {
+            return 1;
+        }
+        else if (inst == 5270000)
+        {
+            return 1;
+        }
+        else if (inst == 15280000)
+        {
+            return 1;
+        }
+        else if (inst == 5280000)
+        {
+            return 5;
+        }
+        else if (inst == 15320000)
+        {
+            return 1;
+        }
+        else if (inst == 15330000)
+        {
+            return 2;
+        }
+        else if (inst == 10330000)
+        {
+            return 2;
+        }
+        else if (inst == 5300000)
+        {
+            return 5;
+        }
+        else
+        {
+            return 0.01;
+        }
 	}
 	double	InstrumentInfoFactory::getInstrumentCommision(uint32_t inst)
 	{
-		if(inst == 5270000)
-			return 30;
-		else if(inst == 5200000)
-			return 5;
-		else if(inst == 5340000)
-			return 9;
-		else if(inst == 5250000)
-			return 5.4;
+		if (inst == 10200000)
+        {
+            return 5;
+        }
+        else if (inst == 5200000)
+        {
+            return 5;
+        }
+        else if (inst == 5210000)
+        {
+            return 8;
+        }
+        else if (inst == 5220000)
+        {
+            return 15;
+        }
+        else if (inst == 5230000)
+        {
+            return 7.5;
+        }
+        else if (inst == 10230000)
+        {
+            return 1.88;
+        }
+        else if (inst == 15200000)
+        {
+            return 11;
+        }
+        else if (inst == 10340000)
+        {
+            return 2;
+        }
+        else if (inst == 5240000)
+        {
+            return 35;
+        }
+        else if (inst == 15210000)
+        {
+            return 7.5;
+        }
+        else if (inst == 5310000)
+        {
+            return 10;
+        }
+        else if (inst == 10250000)
+        {
+            return 8;
+        }
+        else if (inst == 10260000)
+        {
+            return 15;
+        }
+        else if (inst == 10270000)
+        {
+            return 5.4;
+        }
+        else if (inst == 10280000)
+        {
+            return 9;
+        }
+        else if (inst == 10290000)
+        {
+            return 6.76;
+        }
+        else if (inst == 10300000)
+        {
+            return 5;
+        }
+        else if (inst == 15240000)
+        {
+            return 10;
+        }
+        else if (inst == 5320000)
+        {
+            return 6;
+        }
+        else if (inst == 10310000)
+        {
+            return 6.76;
+        }
+        else if (inst == 10350000)
+        {
+            return 6;
+        }
+        else if (inst == 5270000)
+        {
+            return 5;
+        }
+        else if (inst == 15280000)
+        {
+            return 1.88;
+        }
+        else if (inst == 5280000)
+        {
+            return 30;
+        }
+        else if (inst == 15320000)
+        {
+            return 3.8;
+        }
+        else if (inst == 15330000)
+        {
+            return 7.6;
+        }
+        else if (inst == 10330000)
+        {
+            return 3.38;
+        }
+        else if (inst == 5300000)
+        {
+            return 18;
+        }
+        else
+        {
+            return 0;
+        }
 	}
 	double	InstrumentInfoFactory::getInstrumentLimit(uint32_t inst)
 	{
-		if(inst == 5270000)
-			return 0.05;
-		else if(inst == 5200000)
-			return 1;
-		else if(inst == 5340000)
-			return 0.04;
-		else if(inst == 5250000)
-			return 0.05;
+		if (inst == 10200000)
+        {
+            return 0.04;
+        }
+        else if (inst == 5200000)
+        {
+            return 0.05;
+        }
+        else if (inst == 5210000)
+        {
+            return 0.04;
+        }
+        else if (inst == 5220000)
+        {
+            return 0.05;
+        }
+        else if (inst == 5230000)
+        {
+            return 0.04;
+        }
+        else if (inst == 10230000)
+        {
+            return 0.04;
+        }
+        else if (inst == 15200000)
+        {
+            return 0.04;
+        }
+        else if (inst == 10340000)
+        {
+            return 0.04;
+        }
+        else if (inst == 5240000)
+        {
+            return 0.05;
+        }
+        else if (inst == 15210000)
+        {
+            return 0.04;
+        }
+        else if (inst == 5310000)
+        {
+            return 0.04;
+        }
+        else if (inst == 10250000)
+        {
+            return 0.04;
+        }
+        else if (inst == 10260000)
+        {
+            return 0.04;
+        }
+        else if (inst == 10270000)
+        {
+            return 0.05;
+        }
+        else if (inst == 10280000)
+        {
+            return 0.04;
+        }
+        else if (inst == 10290000)
+        {
+            return 0.04;
+        }
+        else if (inst == 10300000)
+        {
+            return 0.04;
+        }
+        else if (inst == 15240000)
+        {
+            return 0.04;
+        }
+        else if (inst == 5320000)
+        {
+            return 0.05;
+        }
+        else if (inst == 10310000)
+        {
+            return 0.04;
+        }
+        else if (inst == 10350000)
+        {
+            return 0.04;
+        }
+        else if (inst == 5270000)
+        {
+            return 0.04;
+        }
+        else if (inst == 15280000)
+        {
+            return 0.04;
+        }
+        else if (inst == 5280000)
+        {
+            return 0.05;
+        }
+        else if (inst == 15320000)
+        {
+            return 0.04;
+        }
+        else if (inst == 15330000)
+        {
+            return 0.04;
+        }
+        else if (inst == 10330000)
+        {
+            return 0.04;
+        }
+        else if (inst == 5300000)
+        {
+            return 0.05;
+        }
+        else
+        {
+            return 0.1;
+        }
 	}
 
 
