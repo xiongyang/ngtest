@@ -170,7 +170,8 @@ namespace BluesTrading
            
                     MarketDataStore storeforday(inst_index, date, max_levels);
 
-                    CTickData tick;
+                    auto tick_p = std::make_unique<CTickData>();
+                    CTickData& tick = *tick_p;
                     otl_datetime fulltime;
                     fulltime.frac_precision = 3;
 
@@ -257,7 +258,7 @@ namespace BluesTrading
 
                         tick.askLevels = valid_askdepth;
 
-                        storeforday.tickDataVec.push_back(tick);
+                        storeforday.tickDataVec.emplace_back(std::move(tick_p));
                     }
 
                     storeforday.sort();

@@ -14,9 +14,7 @@
 #include <algorithm> 
 #include <thread>
 #include <atomic>
-
-
-const int MaxDayInMemory = 10;
+#include <future>
 
 namespace BluesTrading
 {
@@ -200,48 +198,54 @@ namespace BluesTrading
 
 
             uint32_t dateint = boost::lexical_cast<uint32_t>( boost::gregorian::to_iso_string(date));
-            std::vector<MarketDataStore> alldata;
+          //  std::vector<MarketDataStore> alldata;
+
+            auto deleteofDataReplayer = [&](MarketDataReplayerMultiThread* p)
+            {
+                dayInMemoryCount -- ;
+                std::cout << "Free Data For Date " << p->getDate() << "\n";
+                delete p;
+            };
+
+            std::shared_ptr<MarketDataReplayerMultiThread> data(new MarketDataReplayerMultiThread( dateint),  deleteofDataReplayer);
+
+            std::vector<std::future<void>> retVec;
+
             for (auto& instrument :    datasrc[0].instruments)
             {
-                uint32_t date_instrument = getInstrumentIndex(instrument);
-                std::string cache_path;
-                do 
+                auto loadDataStore = [=]( )
                 {
-                    cache_path =  data_->getDataCache(date_instrument, dateint, maxLevels);
-                    if (cache_path.empty())
+                    uint32_t date_instrument = getInstrumentIndex(instrument);
+                    std::string cache_path;
+                    do 
                     {
-                        std::this_thread::sleep_for(std::chrono::seconds(1));
-                        std::cout << "data not ready  Inst:"  << date_instrument << " date:" << dateint << "\n";
-                    }
-                } while (cache_path.empty());
+                        cache_path =  data_->getDataCache(date_instrument, dateint, maxLevels);
+                        if (cache_path.empty())
+                        {
+                            std::this_thread::sleep_for(std::chrono::seconds(1));
+                            std::cout << "data not ready  Inst:"  << date_instrument << " date:" << dateint << "\n";
+                        }
+                    } while (cache_path.empty());
 
-                alldata.emplace_back(cache_path);   
-            }
-
-            {
-
-                std::cout << "Load   date:" << dateint << "  in Memory" <<"\n";
-                auto deleteofDataReplayer = [&](MarketDataReplayerMultiThread* p)
-                {
-                    dayInMemoryCount -- ;
-                    std::cout << "Free Data For Date " << p->getDate() << "\n";
-                    delete p;
+                    data->addDataStore(std::move( MarketDataStore(cache_path)));
                 };
 
-                dayInMemoryCount++;
-                std::shared_ptr<MarketDataReplayerMultiThread> data(new MarketDataReplayerMultiThread(alldata, dateint),  deleteofDataReplayer);
-
-
-
-                for (auto inst : allStrInst)
-                {
-                    std::function<void()> runDonday=  std::bind( &TestFixture::runDataOnDay, this, inst, data );
-                    io_.post(runDonday);
-                }
+               loadDataStore();
+            //  retVec.emplace_back( std::async(std::launch::async, loadDataStore));
             }
+
+  /*          for (auto& eachret : retVec)
+            {
+                eachret.get();
+            }*/
+            dayInMemoryCount++;
+            for (auto inst : allStrInst)
+            {
+                std::function<void()> runDonday=  std::bind( &TestFixture::runDataOnDay, this, inst, data );
+                io_.post(runDonday);
+            }
+            
         }
-
-
     }
 
     //void TestFixture::waitforDataSlotAviale()
@@ -369,13 +373,17 @@ namespace BluesTrading
         // std::cout << "PostCount " << postCount << "\n";
     }
 
-    std::vector<std::string> TestFixture::getResult()
+    std::pair<std::string, std::vector<std::string>> TestFixture::getResult()
     {
-        std::vector<std::string>  ret;
+        std::pair<std::string, std::vector<std::string>>  ret;
         for (auto& eachinst : allStrInst)
         {
             auto each_ret = eachinst.logger->getResult();
-            ret.insert(ret.end(), each_ret.begin(), each_ret.end());
+            for (auto& line : each_ret.second)
+            {
+                ret.second.emplace_back(std::move(line));
+            }
+            ret.first.swap(each_ret.first);
         }
 
         return ret;

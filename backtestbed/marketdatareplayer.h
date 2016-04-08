@@ -8,39 +8,12 @@
 #include <vector>
 #include <set>
 #include <unordered_map> 
+#include <mutex>
 
 namespace BluesTrading
 {
     struct MarketDataStore;
     class FakeTimerProvider;
-
-    class MarketDataReplayer :public IMarketDataProvider
-    {
-    public:
-        explicit MarketDataReplayer(std::vector<MarketDataStore> datestore);
-        virtual void subscribeInstrument(uint32_t instrumentID,ITickDataConsumer* handler ) override;
-        virtual void unSubscribeInstrument(uint32_t instrumentID, ITickDataConsumer* handler) override;
-        virtual void subscribeAllInstrument(ITickDataConsumer* handler) override;
-        virtual void unSubscribeAllInstrument(ITickDataConsumer* handler) override;
-
-
-    public:
-        ITimerProvider* getTimerProvider() {return &timerProvider;}
-
-
-    public:
-        //    [startdate , enddate)  startdate is include but enddate is not
-        void startReplayAllData();
-        void startReplay(uint32_t startdate, uint32_t enddate);
-    private:
-         std::set<ITickDataConsumer*> getAllSubscriber();
-    private:
-        std::set<ITickDataConsumer*>    alldateSubscriber;
-        std::unordered_map<uint32_t, std::set<ITickDataConsumer*> > subscribeByInst;
-        std::map<uint32_t, std::vector<CTickData> >   dataByDateSorted;
-        std::set<ITickDataConsumer*>    allSubscribe_;
-        FakeTimerProvider   timerProvider;
-    };
 
     class NullMarketDataProvider : public IMarketDataProvider
     {
@@ -57,7 +30,7 @@ namespace BluesTrading
     public:
         //MarketDataReplayerMultiThread(){};
         //virtual ~MarketDataReplayerMultiThread(){}
-        MarketDataReplayerMultiThread(std::vector<MarketDataStore> datestore, uint32_t date);
+        explicit MarketDataReplayerMultiThread(uint32_t date);
         virtual void subscribeInstrument(uint32_t instrumentID,ITickDataConsumer* handler ) override {};
         virtual void unSubscribeInstrument(uint32_t instrumentID, ITickDataConsumer* handler) override {};
         virtual void subscribeAllInstrument(ITickDataConsumer* handler) override {};
@@ -66,9 +39,12 @@ namespace BluesTrading
     public:
         void StartReplay(std::set<ITickDataConsumer*>  consumer, FakeTimerProvider* timerProvider) const;
         uint32_t getDate() {return date_;}
+
+        void addDataStore(MarketDataStore&& datastore);
     private:
         uint32_t date_;
-        std::vector<CTickData> allTicks_;
+        std::vector<std::unique_ptr<CTickData>> allTicks_;
+        std::mutex addmutex;
     };
 
 

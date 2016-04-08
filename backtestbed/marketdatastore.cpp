@@ -9,15 +9,18 @@
 #include <iostream>
 #include <cstdio>
 #include <array>
+#include <memory>
+
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
 //#include <cassert>
 namespace BluesTrading
 {
 
-    CTickData ExtractTick(const std::string& tickstr, uint32_t instrumentIndex, uint64_t& tot_vol, uint64_t& openinterest, double& trunover)
+    std::unique_ptr<CTickData> ExtractTick(const std::string& tickstr, uint32_t instrumentIndex, uint64_t& tot_vol, uint64_t& openinterest, double& trunover)
     {
-        CTickData tick;
+        std::unique_ptr<CTickData> ret = std::make_unique<CTickData>();
+        CTickData& tick = *ret;
 
         std::vector<std::string> fields;
         boost::split(fields, tickstr, boost::is_any_of(","));
@@ -67,14 +70,14 @@ namespace BluesTrading
 
         tick.last_price = last_px;
         tick.turnover = trunover;
-        return tick;
+        return std::move(ret);
     }
 
     void MarketDataStore::sort()
     {
-        auto sortfunForTick = [](const CTickData& lr, const CTickData& rr)
+        auto sortfunForTick = [](const std::unique_ptr<CTickData>& lr, const std::unique_ptr<CTickData>& rr)
         {
-            return lr.timeInMS < rr.timeInMS;
+            return lr->timeInMS < rr->timeInMS;
         };
         std::sort(tickDataVec.begin(), tickDataVec.end(), sortfunForTick);
     }
@@ -90,7 +93,6 @@ namespace BluesTrading
         {
             loadFromBinFile(fileName);
         }
- 
     }
 
     void MarketDataStore::loadFromRawFile(const std::string& fileName)
@@ -119,6 +121,7 @@ namespace BluesTrading
         for(std::string line; std::getline(file, line); )
         {
             // std::cout << line << std::endl;
+            
             tickDataVec.emplace_back(ExtractTick(line, instIndex, tot_vol, openinterest, trunover));
         }
         file.close();
@@ -143,10 +146,6 @@ namespace BluesTrading
         file.close();
     }
 
-    void MarketDataStore::loadDataFromDB(const std::string& db, const std::string& query)
-    {
-
-    }
 
 }
 

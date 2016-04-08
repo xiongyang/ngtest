@@ -36,6 +36,7 @@ message TestRequest
 
 message TestResult
 {
+    optional string headline = 2;
     repeated string resultitem = 1;
 }
 

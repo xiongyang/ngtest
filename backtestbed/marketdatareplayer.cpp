@@ -7,131 +7,31 @@
 namespace BluesTrading 
 {
 
-MarketDataReplayer::MarketDataReplayer(std::vector<MarketDataStore> datestore)
-{
-    std::cout << "create MarketDataReplayer store size:" <<  datestore.size() << std::endl;
-    for (std::vector<MarketDataStore>::iterator iter = datestore.begin(); iter != datestore.end(); ++iter)
-    {
-        uint32_t date = iter->date;
-        std::vector<CTickData>& targetDate = dataByDateSorted[date];
-        targetDate.insert(targetDate.end(), iter->tickDataVec.begin(),  iter->tickDataVec.end());
-    }
-
-
-    auto sortfunForTick = [](const CTickData& lr , const CTickData& rr)
-    {
-        return lr.timeInMS < rr.timeInMS;
-    };
-
-    for (auto iter = dataByDateSorted.begin(); iter != dataByDateSorted.end(); ++iter)
-    {
-        std::vector<CTickData>& vec = iter->second;
-        std::sort(vec.begin(), vec.end(), sortfunForTick);
-       // std::cout << "date:"<< iter->first << " tickcount:" << vec.size();
-    }
-}
-
-void MarketDataReplayer::subscribeInstrument(uint32_t instrumentID,ITickDataConsumer* handler)
-{
-    std::cout << "handler:"<< handler << " subscribe inst:" << instrumentID <<  " onDataSrc:"<< this << std::endl;
-    subscribeByInst[instrumentID].insert(handler);
-}
-
-void MarketDataReplayer::unSubscribeInstrument(uint32_t instrumentID, ITickDataConsumer* handler)
-{
-    subscribeByInst[instrumentID].erase(handler);
-}
-
-void MarketDataReplayer::subscribeAllInstrument(ITickDataConsumer* handler)
-{
-    allSubscribe_.insert(handler);
-}
-
-void MarketDataReplayer::unSubscribeAllInstrument(ITickDataConsumer* handler)
-{
-    allSubscribe_.erase(handler);
-}
-
-
-void MarketDataReplayer::startReplayAllData()
-{
-    uint32_t  startdate = dataByDateSorted.begin()->first;
-    uint32_t  enddate = dataByDateSorted.rbegin()->first;
-    startReplay(startdate, enddate + 1);
-}
-
-void MarketDataReplayer::startReplay(uint32_t startdate, uint32_t enddate)
-{
-    std::cout << "start Date " << startdate  << "  to "  << enddate << std::endl;
-    for(auto iter = dataByDateSorted.begin(); iter != dataByDateSorted.end(); ++iter)
-    {
-        if (iter->first < startdate )
-        {
-            continue;
-        }
-        if(iter->first >= enddate)
-        {
-            break;
-        }
-        timerProvider.startDate(iter->first);
-
-        std::vector<CTickData>& tickForDay = iter->second;
-
-        for(auto& tick : tickForDay)
-        {
-            timerProvider.setNextTickTime(tick.timeInMS);
-            auto& subscribeVec = subscribeByInst[tick.instIndex];
-            for (auto eachsubscribe : subscribeVec)
-            {
-                eachsubscribe->onMarketData(tick);
-            }
-
-            for (auto eachAllSubscribe : allSubscribe_)
-            {
-                  eachAllSubscribe->onMarketData(tick);
-            }
-        }
-
-        timerProvider.endDate(iter->first);
-    }
-}
-
-std::set<ITickDataConsumer*> MarketDataReplayer::getAllSubscriber()
-{
-    std::set<ITickDataConsumer*> ret;
-    for (auto each : subscribeByInst)
-    {
-        ret.insert(each.second.begin(), each.second.end());
-    }
-
-    return ret;
-}
-
-MarketDataReplayerMultiThread::MarketDataReplayerMultiThread(std::vector<MarketDataStore> datestore, uint32_t date)
+MarketDataReplayerMultiThread::MarketDataReplayerMultiThread(uint32_t date)
     : date_(date)
 {
-    std::cout << "create MarketDataReplayerMultiThread store size:" <<  datestore.size() << " date:" <<  date << "\n";
+   // std::cout << "create MarketDataReplayerMultiThread store size:" <<  datestore.size() << " date:" <<  date << "\n";
 
 
-    auto sortfunForTick = [](const CTickData& lr , const CTickData& rr)
-    {
-        return lr.timeInMS < rr.timeInMS;
-    };
+    //auto sortfunForTick = [](const CTickData& lr , const CTickData& rr)
+    //{
+    //    return lr.timeInMS < rr.timeInMS;
+    //};
 
-    //std::vector<CTickData> tempret;
+    ////std::vector<CTickData> tempret;
+    ////for (std::vector<MarketDataStore>::iterator iter = datestore.begin(); iter != datestore.end(); ++iter)
+    ////{
+    ////    tempret.clear();
+    ////    std::merge(allTicks_.begin(), allTicks_.end(), iter->tickDataVec.begin(), iter->tickDataVec.end(), tempret.begin(), sortfunForTick);
+    ////    allTicks_.swap(tempret);
+    ////}
+
     //for (std::vector<MarketDataStore>::iterator iter = datestore.begin(); iter != datestore.end(); ++iter)
     //{
-    //    tempret.clear();
-    //    std::merge(allTicks_.begin(), allTicks_.end(), iter->tickDataVec.begin(), iter->tickDataVec.end(), tempret.begin(), sortfunForTick);
-    //    allTicks_.swap(tempret);
+    //    allTicks_.insert(allTicks_.end(), iter->tickDataVec.begin(), iter->tickDataVec.end());
+    //    std::sort(allTicks_.begin(), allTicks_.end(), sortfunForTick);
+    //    //    std::sort(vec.begin(), vec.end(), sortfunForTick);
     //}
-
-    for (std::vector<MarketDataStore>::iterator iter = datestore.begin(); iter != datestore.end(); ++iter)
-    {
-        allTicks_.insert(allTicks_.end(), iter->tickDataVec.begin(), iter->tickDataVec.end());
-        std::sort(allTicks_.begin(), allTicks_.end(), sortfunForTick);
-        //    std::sort(vec.begin(), vec.end(), sortfunForTick);
-    }
 
    // std::cout << "1 create MarketDataReplayerMultiThread store size:" <<  datestore.size() << " date:" <<  date << "\n";
 }
@@ -144,14 +44,53 @@ void MarketDataReplayerMultiThread::StartReplay(std::set<ITickDataConsumer*> con
 
     for(auto& tick : allTicks_)
     {
-        timerProvider->setNextTickTime(tick.timeInMS);
+        timerProvider->setNextTickTime(tick->timeInMS);
         for (auto& eachConsumer : consumer)
         {
-            eachConsumer->onMarketData(tick);
+            eachConsumer->onMarketData(*tick);
         }
     }
 
     timerProvider->endDate(date_);
+}
+
+void MarketDataReplayerMultiThread::addDataStore(MarketDataStore&& datastore)
+{    
+    std::lock_guard<std::mutex> lk(addmutex);
+
+    auto iter1 = allTicks_.begin();
+    auto iter2 = datastore.tickDataVec.begin();
+    std::vector<std::unique_ptr<CTickData>> result;
+    for (;iter1 != allTicks_.end() && iter2 != datastore.tickDataVec.end();)
+    {
+
+        std::unique_ptr<CTickData>& ref1 = *iter1;
+        std::unique_ptr<CTickData>& ref2 = *iter2;
+        if (ref1->timeInMS < ref2->timeInMS)
+        {
+            result.emplace_back(std::move(*iter1));
+            iter1 ++;
+        }
+        else
+        {
+             result.emplace_back(std::move(*iter2));
+             iter2 ++;
+        }
+    }
+
+  
+    for (;iter1 != allTicks_.end(); ++iter1)
+    {
+         result.emplace_back(std::move(*iter1));
+    }
+
+
+    for (;iter2 != datastore.tickDataVec.end(); ++iter2)
+    {
+        result.emplace_back(std::move(*iter2));
+    }
+
+    allTicks_.swap(result);
 }
 
 }

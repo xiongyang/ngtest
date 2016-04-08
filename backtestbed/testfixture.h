@@ -82,21 +82,18 @@ namespace BluesTrading
         }
 
         void run();
-        std::vector<std::string> getResult();
+         std::pair<std::string, std::vector<std::string>> getResult();
 
     private:
         //// dir or file
         //void LoadData(TestRequest& request);
+      
         std::string dumpDllFile(TestRequest& request);
         TestInstGroup LoadTestInstGroup(BluesTrading::StrategyFactoryFun createFun);
 
-
+        static const int MaxDayInMemory = 15;
         void prepareDataCache(DataSrcInfo& request);
         void prepareMarketDataReplayer();
-        //void waitforDataSlotAviale();
-        //void cleanFinishedDataReplyer();
-        //void runForDay(TestInstGroup inst);
-        //std::shared_ptr<MarketDataReplayerMultiThread> getMarketReplayer(uint32_t date);
 
       
     public:

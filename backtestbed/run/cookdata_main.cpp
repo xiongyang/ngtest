@@ -1,5 +1,4 @@
 
-#include "testbed.h"
 #include "marketdatastore.h"
 #include "util.h"
 #include "bluemessage.pb.h"
@@ -36,14 +35,6 @@ void cookData(const std::string& dirName)
     traverseDir(dirName, cookDataOne);
 }
 
-void testBedRun(const std::string& dir, const std::string& strategy, const std::string& startday, const std::string& endDay)
-{
-    TestBed inst;
-    inst.Init(dir, strategy);
-    inst.run(atoi(startday.c_str()), atoi(endDay.c_str()));
-    std::cout << std::endl;
-    return ;
-}
 
 TestResult HandleTestRequest(TestRequest request, DataCache* datacache)
 {
@@ -52,14 +43,15 @@ TestResult HandleTestRequest(TestRequest request, DataCache* datacache)
     std::cout << "========  Start Run ====================" << std::endl;
     fixture.run();
 
-    std::vector<std::string> allResult = fixture.getResult();
+    auto allResult = fixture.getResult();
     TestResult ret;
     std::cout << "=========== End Run getResult ========" << std::endl;
-    for (auto& each : allResult)
+    for (auto& each : allResult.second)
     {
         ret.add_resultitem(each);
         std::cout << each << "\n";
     }
+    ret.set_headline(allResult.first);
     std::cout << std::endl;
     fixture.clean();
     return ret;
@@ -386,6 +378,7 @@ TestRequest splitRequest(TestRequest& request, uint32_t num)
 
 void mergerResult(TestResult& left, TestResult& right)
 {
+    left.set_headline(right.headline());
     for (auto& item : right.resultitem())
     {
         left.add_resultitem(item);
@@ -402,7 +395,7 @@ TestResult asyncwork( std::set< NodeStatus*>&  working_node, NodeStatus* p_work_
     return nodeResult;
 };
 
-TestResult HandleRequestNetwrok(TestRequest& request, std::map<std::string, NodeStatus>& status)
+TestResult HandleRequestNetwrok(TestRequest& request, std::map<std::string, NodeStatus>& status, double task_factor)
 {
     std::this_thread::sleep_for(std::chrono::seconds(3));  // first wait 3 second for receive the network info
 
@@ -434,7 +427,7 @@ TestResult HandleRequestNetwrok(TestRequest& request, std::map<std::string, Node
 
         if(pNextNode)
         {
-            uint32_t request_cores = pNextNode->cores() * 1.5;
+            uint32_t request_cores = pNextNode->cores() * task_factor;
             TestRequest newrequest = splitRequest(request, request_cores);
             allready_working_node.insert(pNextNode);
             std::cout << "Dispatch " << std::endl;
@@ -486,6 +479,18 @@ void testload(const char* argv)
     inst.loadFromBinFile(argv);
 }
 
+void dumpResult(TestResult& result, const std::string& dumpfile)
+{
+    std::ofstream file(dumpfile);
+    file << result.headline() << "\n";
+    for (auto& eachLine: result.resultitem())
+    {
+        file << eachLine << "\n";
+    }
+    file.close();
+
+}
+
 int main(int argc, char** argv)
 {
 
@@ -519,33 +524,36 @@ int main(int argc, char** argv)
             std::map<std::string, NodeStatus> Nodestatus;
             bool stop_recv = false;
             std::thread recvNodeStatus(recvbroadcastStatus, std::ref(Nodestatus), std::ref(stop_recv));
-            auto result = HandleRequestNetwrok(request, Nodestatus);
+            double task_factor = 1.5;
+            if (argc >= 6)
+            {
+                task_factor = boost::lexical_cast<double>(argv[5]);
+            }
+            auto result = HandleRequestNetwrok(request, Nodestatus, task_factor);
 
             std::cout << "Finished Network" << std::endl;
             stop_recv = true;
+
+            dumpResult(result, argv[4]);
             if(recvNodeStatus.joinable())   recvNodeStatus.join();
 
             return 0;
 
         }
-        else if(cmd == "backend")
-        {
-            testBedRun(argv[2],argv[3], argv[4] , argv[5]);
-        }
         else if(cmd == "tr" || cmd == "local")
         {
             auto request =  CreateTestRequest(argv[2], argv[3]);
-            HandleTestRequest(request, &datacache);
-
-            if (argc == 5)
-            {
-                int loop = boost::lexical_cast<int>(argv[4]);
-                for (int i = 0; i != loop; ++i)
-                {
-                    std::thread xxx(HandleTestRequest,request ,&datacache);
-                    xxx.join();
-                }
-            }
+            auto result = HandleTestRequest(request, &datacache);
+              dumpResult(result, argv[4]);
+            //if (argc == 5)
+            //{
+            //    int loop = boost::lexical_cast<int>(argv[4]);
+            //    for (int i = 0; i != loop; ++i)
+            //    {
+            //        std::thread xxx(HandleTestRequest,request ,&datacache);
+            //        xxx.join();
+            //    }
+            //}
         }
         else if (cmd == "usage")
         {
