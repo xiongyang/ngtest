@@ -92,7 +92,7 @@ namespace BluesTrading
 
 		//positionManager_->getAccountInfo().cash = 100000;
 
-        std::cout << "start day " << date << "\n";
+        //std::cout << "start day " << date << "\n";
 
         //TODO order Mask
         orderManager_->subscribeOrderUpdate(0,this); 
@@ -187,15 +187,15 @@ namespace BluesTrading
                instrument.tickFromLastDay =  *instrument.pre_tick;
                instrument.pre_tick = &instrument.tickFromLastDay;
             }
-			boost::format fmt("%1%,%2%,%3%,%4%,%5%,%6%");
+			boost::format fmt("%1%,%2%,%3%,%4%,%5%,%6%,%7%,%8%,%9%,%10%");
 			double pnl = positionManager_->getPosition( instrument.inst_index_).getPositionPnl();
 			int trade = positionManager_->getPosition( instrument.inst_index_).getTradeCount();
-			std::cout << "onEndDay 1 \n" ;
-			fmt % instrument.inst_index_ %  instrument.num_trades_ % instrument.pnl_ % instrument.opp_counter_self_ % trade % pnl;
+			//std::cout << "onEndDay 1 \n" ;
+			fmt % instrument.instrument_ % date % globalParas_.MA_weight_ % instrument.ppl_ % instrument.enter_sig_ %  instrument.num_trades_ % instrument.pnl_ % instrument.opp_counter_self_ % trade % pnl;
 			std::string result = fmt.str();
-			std::cout << "onEndDay 2 \n" ;
-			        logger_->LogEOD("date,par1,para2,para3,tradenum,profit", result);
-					std::cout << "onEndDay 3 \n" ;
+			//std::cout << "onEndDay 2 \n" ;
+			        logger_->LogEOD("instrument,date,maweight,trade0,pnl0,opp,trade,pnl", result);
+					//std::cout << "onEndDay 3 \n" ;
 		}
 
     }
@@ -311,7 +311,7 @@ namespace BluesTrading
 			doEnter(data, globalParas_.trading_interval_in_MSec_);
 		if(isValidExitTime)
 			doExit(data, globalParas_.trading_interval_in_MSec_);
-		if(isLiquidateTime)
+		if(isLiquidateTime && !globalParas_.is_over_night_)
 			liquidate(data, globalParas_.trading_interval_in_MSec_);
     }
 
@@ -350,19 +350,22 @@ namespace BluesTrading
 					submitRequest(request, orderManager_);
 					instrument.pre_trade_timeInMS_ = timerprovider_->getCurrentTimeMsInDay();
 					instrument.shortOpenPositionQty_ += request.orderqty;
+					//std::cout<<instrument.instrument_<<",enter short,"<<request.price<<","<<request.orderqty<<std::endl;
 					instrument.num_trades_ += request.orderqty;
 					instrument.cum_short_price_ += request.price * request.orderqty;
-					std::cout<<instrument.instrument_<<",enter short,"<<request.price<<std::endl;
+					//if (strcmp(instrument.instrument_, "jm") == 0)
+					//std::cout<<getTimeStr(timerprovider_->getCurrentTimeMsInDay())<<","<<instrument.instrument_<<",enter short,"<<request.price<<std::endl;
 				}
-			}
+			} 
 			//long
-			else if(instrument.longOpenPositionQty_ < instrument.max_pos_ && instrument.shortOpenPositionQty_ == 0 && instrument.can_long_)
+			if(instrument.longOpenPositionQty_ < instrument.max_pos_ && instrument.shortOpenPositionQty_ == 0 && instrument.can_long_)
 			{
 				if(instrument.self_bp_ <= 0 
 					&& instrument.opp_counter_self_ >= globalParas_.threshold_self_ 
 					&& (globalParas_.is_using_size_contrast_? instrument.bid_size_ >= instrument.ask_size_ : true)
 					)
 				{
+					//std::cout<<instrument.instrument_<<",enter long,"<<std::endl;
 					SHFE_NewOrderRequest request;
 					request.instrumentID = data.instIndex;
 					request.longshortflag = LongShortFlag_Long;
@@ -373,11 +376,14 @@ namespace BluesTrading
 					submitRequest(request, orderManager_);
 					instrument.pre_trade_timeInMS_ = timerprovider_->getCurrentTimeMsInDay();
 					instrument.longOpenPositionQty_ += request.orderqty;
+					//std::cout<<instrument.instrument_<<",enter long,"<<request.price<<","<<request.orderqty<<std::endl;
 					instrument.num_trades_ += request.orderqty;
 					instrument.cum_long_price_ += request.price * request.orderqty;
-					std::cout<<instrument.instrument_<<",enter long,"<<request.price<<std::endl;
+					//if (strcmp(instrument.instrument_, "jm") == 0)
+					//std::cout<<getTimeStr(timerprovider_->getCurrentTimeMsInDay())<<","<<instrument.instrument_<<",enter long,"<<request.price<<","<<instrument.num_trades_<<std::endl;
 				}
 			}
+			
 		}
 	}
 
@@ -400,9 +406,10 @@ namespace BluesTrading
 			calculatePnl( true, request.orderqty, request.price,instrument );
 			instrument.pre_trade_timeInMS_ = timerprovider_->getCurrentTimeMsInDay();
 			instrument.longOpenPositionQty_ -= request.orderqty;
-			std::cout<<instrument.instrument_<<",exit long,"<<request.price<<std::endl;
+			//if (strcmp(instrument.instrument_, "jm") == 0)
+			//std::cout<<getTimeStr(timerprovider_->getCurrentTimeMsInDay())<<","<<instrument.instrument_<<",exit long,"<<request.price<<std::endl;
 		}
-		else if(instrument.shortOpenPositionQty_ != 0 && (instrument.stoploss_ || (instrument.self_bp_ <= 0 && instrument.opp_counter_self_ >= 0 
+		if(instrument.shortOpenPositionQty_ != 0 && (instrument.stoploss_ || (instrument.self_bp_ <= 0 && instrument.opp_counter_self_ >= 0 
 			&& (globalParas_.is_using_size_contrast_? instrument.bid_size_ >= instrument.ask_size_ : true))))
 		{
 			SHFE_NewOrderRequest request;
@@ -416,7 +423,8 @@ namespace BluesTrading
 			calculatePnl( false, request.orderqty, request.price,instrument );
 			instrument.pre_trade_timeInMS_ = timerprovider_->getCurrentTimeMsInDay();
 			instrument.shortOpenPositionQty_ -= request.orderqty;
-			std::cout<<instrument.instrument_<<",exit short,"<<request.price<<std::endl;
+			//if (strcmp(instrument.instrument_, "jm") == 0)
+			//std::cout<<getTimeStr(timerprovider_->getCurrentTimeMsInDay())<<","<<instrument.instrument_<<",exit short,"<<request.price<<std::endl;
 		}
 	}
 
@@ -438,9 +446,10 @@ namespace BluesTrading
 			calculatePnl( true, request.orderqty, request.price,instrument );
 			instrument.pre_trade_timeInMS_ = timerprovider_->getCurrentTimeMsInDay();
 			instrument.longOpenPositionQty_ -= request.orderqty;
-			std::cout<<instrument.instrument_<<",liq long,"<<request.price<<std::endl;
+			//if (strcmp(instrument.instrument_, "jm") == 0)
+			//std::cout<<getTimeStr(timerprovider_->getCurrentTimeMsInDay())<<","<<instrument.instrument_<<",liq long,"<<request.price<<std::endl;
 		}
-		else if(instrument.shortOpenPositionQty_ != 0 )
+		if(instrument.shortOpenPositionQty_ != 0 )
 		{
 			SHFE_NewOrderRequest request;
 			request.instrumentID = data.instIndex;
@@ -453,7 +462,8 @@ namespace BluesTrading
 			calculatePnl( false, request.orderqty, request.price,instrument );
 			instrument.pre_trade_timeInMS_ = timerprovider_->getCurrentTimeMsInDay();
 			instrument.shortOpenPositionQty_ -= request.orderqty;
-			std::cout<<instrument.instrument_<<",liq short,"<<request.price<<std::endl;
+			//if (strcmp(instrument.instrument_, "jm") == 0)
+			//std::cout<<getTimeStr(timerprovider_->getCurrentTimeMsInDay())<<","<<instrument.instrument_<<",liq short,"<<request.price<<std::endl;
 		}
 	}
 
@@ -477,8 +487,8 @@ namespace BluesTrading
 		{
 			double avgPx = instrument.cum_short_price_/instrument.shortOpenPositionQty_;
 			pnl = exitSize * (avgPx - exitPx )/instrument.tick_size_*instrument.tick_price_;
-			std::cout<<"calcPNL:"<<instrument.tick_size_<<","<<instrument.tick_price_<<","<<instrument.cum_short_price_<<","<<instrument.shortOpenPositionQty_<<","<<avgPx
-				<<","<<exitPx<<","<<exitSize<<","<<pnl<<std::endl;
+			/*std::cout<<"calcPNL:"<<instrument.tick_size_<<","<<instrument.tick_price_<<","<<instrument.cum_short_price_<<","<<instrument.shortOpenPositionQty_<<","<<avgPx
+				<<","<<exitPx<<","<<exitSize<<","<<pnl<<std::endl;*/
 			instrument.pnl_ += pnl;
 			if(globalParas_.is_equity_)
 				instrument.net_pnl_ += pnl - exitSize * instrument.mid_price_ * 1.8/1000;
@@ -822,8 +832,8 @@ namespace BluesTrading
 			p.enter_sig_ = 1;
 			p.enter_protection_ = 0;
 			p.shape_factor_ = 0.5;
-			p.tick_size_ = 1;
-			p.tick_price_ = 15;
+			p.tick_size_ = InstrumentInfoFactory::getInstrumentTickSize(p.inst_index_);
+			p.tick_price_ = InstrumentInfoFactory::getInstrumentUnitMultiplier(p.inst_index_) * p.tick_size_;
 			p.commission_ = 5;
 			p.limit_ = 0.05;
 		}
