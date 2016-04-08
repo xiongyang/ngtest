@@ -437,6 +437,8 @@ TestResult HandleRequestNetwrok(TestRequest& request, std::map<std::string, Node
             //auto future_result =  std::async(asyncwor2k, stdallready_working_node, newrequest);
             resultfutures.push_back(std::move(future_result));
         }
+
+        std::this_thread::sleep_for(std::chrono::std::chrono::milliseconds (100));
     }
 
 
