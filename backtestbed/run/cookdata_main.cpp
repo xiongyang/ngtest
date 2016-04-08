@@ -532,7 +532,7 @@ int main(int argc, char** argv)
         {
             testBedRun(argv[2],argv[3], argv[4] , argv[5]);
         }
-        else if(cmd == "tr")
+        else if(cmd == "tr" || cmd == "local")
         {
             auto request =  CreateTestRequest(argv[2], argv[3]);
             HandleTestRequest(request, &datacache);
