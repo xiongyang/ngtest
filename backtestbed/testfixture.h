@@ -34,9 +34,8 @@ namespace BluesTrading
             std::shared_ptr<testPositionManger>   posManager;
             std::shared_ptr<IStrategy>  testStrategy;
             std::shared_ptr<FakeTimerProvider>  timerProvider;
-          //  std::shared_ptr<boost::asio::io_service::strand> strandForThisStrategy;
-             std::shared_ptr<uint32_t>  current_date;
-             std::shared_ptr<nullLogger>  logger;;
+            std::shared_ptr<uint32_t>  current_date;
+            std::shared_ptr<nullLogger>  logger;;
         };
     public:
         void Init(TestRequest& request, DataCache* data);
@@ -94,6 +93,8 @@ namespace BluesTrading
         static const int MaxDayInMemory = 15;
         void prepareDataCache(DataSrcInfo& request);
         void prepareMarketDataReplayer();
+        void processOneDay(uint32_t date);
+        void addMarketDataStoreToMarketReplay(std::shared_ptr<MarketDataReplayerMultiThread>& replayer, const std::string& instrument, uint32_t date);
 
       
     public:
@@ -120,5 +121,7 @@ namespace BluesTrading
         CDynamicLibrary* strLibrary;
         std::thread remote_IOthread;
         std::thread local_IOthread;
+        std::atomic<int>  dayInMemoryCount;
+        int maxLevels;
     };
 }

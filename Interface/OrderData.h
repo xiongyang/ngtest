@@ -83,9 +83,6 @@ namespace BluesTrading
         HedgeFlag_None = 0,
          HedgeFlag_Speculation,
          HedgeFlag_Arbitrage,
-        //OrderHedgeFlag_Hedge,
-        //OrderHedgeFlag_CFFEX_MarketMaker,
-        //OrderHedgeFlag_Unknown
     };
 
     enum LongShortFlag
@@ -155,9 +152,7 @@ namespace BluesTrading
         uint32_t instrumentID;
         double price;
         uint32_t orderqty; 
-
         LongShortFlag longshortflag;
-
     };
 
     typedef SecurityNewOrderRequest<SSE_SecurityNewOrder> SSE_SecurityNewOrderRequest;

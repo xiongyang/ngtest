@@ -101,8 +101,6 @@ namespace BluesTrading
         local_IOthread.swap(buildDataReplayer);
 
         int cores = std::thread::hardware_concurrency();
-        //int thread_num  = std::min(cores + 4,  int(cores * 1.5));
-        //thread_num = std::min(int(allStrInst.size()), thread_num);
         for (int i = 0; i != cores * 2; ++i)
         {
             auto workThread = std::make_shared<std::thread>([&](){io_.run();});
@@ -172,7 +170,7 @@ namespace BluesTrading
         data_->addDataCacheRequest(singleData);
     }
 
-    std::atomic<int>  dayInMemoryCount ;
+  
     void TestFixture::prepareMarketDataReplayer()
     {
         DataSrcInfo& target = singleDataSrcInfo;
@@ -181,186 +179,76 @@ namespace BluesTrading
         boost::gregorian::days one_day(1);
         auto timestart = std::chrono::high_resolution_clock::now();
 
-        uint32_t maxLevels = boost::lexical_cast<uint32_t>(target.datasrcInfo[2]);
+        maxLevels = boost::lexical_cast<uint32_t>(target.datasrcInfo[2]);
         dayInMemoryCount = 0;
         for (auto date = start; date < end; date += one_day)
         {
             auto dayofweek = date.day_of_week();
-            if(dayofweek ==  boost::date_time::Sunday || dayofweek ==   boost::date_time::Saturday)
+            if (dayofweek == boost::date_time::Sunday || dayofweek == boost::date_time::Saturday)
             {
                 continue;
             }
-            // waitforDataSlotAviale();
+
+            // sleep 2 milliseconds avoid the async launch not add dayInMemoryCount in time.
+            std::this_thread::sleep_for(std::chrono::milliseconds(2));
+
             while (dayInMemoryCount >= MaxDayInMemory)
             {
                 std::this_thread::sleep_for(std::chrono::seconds(1));
             }
 
-
-            uint32_t dateint = boost::lexical_cast<uint32_t>( boost::gregorian::to_iso_string(date));
-          //  std::vector<MarketDataStore> alldata;
-
-            auto deleteofDataReplayer = [&](MarketDataReplayerMultiThread* p)
-            {
-                dayInMemoryCount -- ;
-                std::cout << "Free Data For Date " << p->getDate() << "\n";
-                delete p;
-            };
-
-            std::shared_ptr<MarketDataReplayerMultiThread> data(new MarketDataReplayerMultiThread( dateint),  deleteofDataReplayer);
-
-            std::vector<std::future<void>> retVec;
-
-            for (auto& instrument :    datasrc[0].instruments)
-            {
-                auto loadDataStore = [=]( )
-                {
-                    uint32_t date_instrument = getInstrumentIndex(instrument);
-                    std::string cache_path;
-                    do 
-                    {
-                        cache_path =  data_->getDataCache(date_instrument, dateint, maxLevels);
-                        if (cache_path.empty())
-                        {
-                            std::this_thread::sleep_for(std::chrono::seconds(1));
-                            std::cout << "data not ready  Inst:"  << date_instrument << " date:" << dateint << "\n";
-                        }
-                    } while (cache_path.empty());
-
-                    data->addDataStore(std::move( MarketDataStore(cache_path)));
-                };
-
-               loadDataStore();
-            //  retVec.emplace_back( std::async(std::launch::async, loadDataStore));
-            }
-
-  /*          for (auto& eachret : retVec)
-            {
-                eachret.get();
-            }*/
-            dayInMemoryCount++;
-            for (auto inst : allStrInst)
-            {
-                std::function<void()> runDonday=  std::bind( &TestFixture::runDataOnDay, this, inst, data );
-                io_.post(runDonday);
-            }
-            
+            uint32_t dateint = boost::lexical_cast<uint32_t>(boost::gregorian::to_iso_string(date));
+            std::async(std::launch::async, &TestFixture::processOneDay, this, dateint);
         }
     }
+    
 
-    //void TestFixture::waitforDataSlotAviale()
-    //{
-    //    do 
-    //    {
-    //         cleanFinishedDataReplyer();
-    //         if (dateReplayerStored.size() >= MaxDayInMemory)
-    //         {
-    //              std::this_thread::sleep_for(std::chrono::seconds(1));
-    //         }
-    //    } while (dateReplayerStored.size() >= MaxDayInMemory);
+    void TestFixture::addMarketDataStoreToMarketReplay(std::shared_ptr<MarketDataReplayerMultiThread>& replayer, const std::string& instrument, uint32_t date)
+    {
+        uint32_t date_instrument = getInstrumentIndex(instrument);
+        std::string cache_path;
+        do
+        {
+            cache_path = data_->getDataCache(date_instrument, date, maxLevels);
+            if (cache_path.empty())
+            {
+                std::this_thread::sleep_for(std::chrono::seconds(1));
+            }
+        } while (cache_path.empty());
+        replayer->addDataStore(std::move(MarketDataStore(cache_path)));
+    }
 
-    //}
+    void TestFixture::processOneDay(uint32_t date)
+    {
+        uint32_t maxLevels = boost::lexical_cast<uint32_t>(singleDataSrcInfo.datasrcInfo[2]);
+        auto deleteofDataReplayer = [&](MarketDataReplayerMultiThread* p)
+        {
+            dayInMemoryCount--;
+            std::cout << "Free Data For Date " << p->getDate() << "\n";
+            delete p;
+        };
+        ++dayInMemoryCount;
+        std::shared_ptr<MarketDataReplayerMultiThread> data(new MarketDataReplayerMultiThread(date), deleteofDataReplayer);
+        std::vector<std::future<void>> loadresult;
+        for (auto& instrument : datasrc[0].instruments)
+        {
+            loadresult.emplace_back(
+                std::async(std::launch::async, &TestFixture::addMarketDataStoreToMarketReplay, this, std::ref(data), std::ref(instrument), date));
+        }
 
-    //void TestFixture::cleanFinishedDataReplyer()
-    //{
-    //    uint32_t min_usage_date = 0;
-    //    for (auto& str : allStrInst)
-    //    {
-    //        if (*str.current_date == 0)
-    //        {
-    //            //  it not finished any day yet. so no clean
-    //            return;
-    //        }
+        for (auto& ret: loadresult)
+        {
+            ret.get();
+        }
 
-    //        if (min_usage_date == 0)
-    //        {
-    //            min_usage_date = *str.current_date;
-    //        }
-    //        else
-    //        {
-    //            min_usage_date = std::min(min_usage_date, *str.current_date);
-    //        }
-    //    }
+        for (auto inst : allStrInst)
+        {
+            std::function<void()> runDonday = std::bind(&TestFixture::runDataOnDay, this, inst, data);
+            io_.post(runDonday);
+        }
 
-    //    std::set<uint32_t> removedays;
-    //    for (auto& each : dateReplayerStored)
-    //    {
-    //        if(each.first <= min_usage_date)
-    //            removedays.insert(each.first);
-    //    }
+    }
 
-    //    {
-    //        std::lock_guard<std::shared_timed_mutex>  guard(dateReplayerMutex);
-    //        for(auto & each_remove_day : removedays)
-    //        {
-    //            dateReplayerStored.erase(each_remove_day);
-    //        }
-    //    }
-
-
-    //    std::cout << "Remove " << removedays.size() << " Days Date From Memory" << std::endl;
-    //}
-
-    //void TestFixture::runForDay(TestInstGroup inst)
-    //{
-
-    //   uint32_t targetDate = 0;
-    //   if (*inst.current_date == 0)
-    //   {
-    //       targetDate = datasrc[0].start_date;
-    //   }
-    //   else
-    //   {
-    //       auto start_ = getDateFromNum( *inst.current_date);
-    //       start_ += boost::gregorian::days(1);
-
-    //       targetDate = getNumFromDate(start_);
-    //       
-    //   }
-
-
-    //   if (targetDate >= datasrc[0].end_date)
-    //   {
-    //       std::cout << "Finished to Date " << targetDate << " endDate:" <<  datasrc[0].end_date << std::endl;
-    //       //end run of this inst
-    //       return;
-    //   }
-    //    
-
-    //   std::shared_ptr<MarketDataReplayerMultiThread> data =  getMarketReplayer(targetDate);
-    //   if (data)
-    //   {
-    //       std::cout << "runForDay Start Run Day " << targetDate << "data Date:" << data->getDate()  << " ThreadID :" << std::this_thread::get_id() << "\n";
-    //       std::set<ITickDataConsumer*> consumer;
-    //       consumer.insert(inst.testStrategy.get());
-    //       consumer.insert(inst.posManager.get());
-
-    //       data->StartReplay(consumer, inst.timerProvider.get());
-    //        std::cout << "runForDay Finished Run Day " << targetDate << "\n";
-    //       *inst.current_date = targetDate;
-    //       postRunWork(inst);
-    //   }
-    //   else
-    //   {
-    //      //std::cout << "Not get Data for Date Yet." << targetDate << "\n";
-    //      //std::this_thread::sleep_for(std::chrono::seconds(1));
-    //      postRunWork(inst);
-    //   }
-    //}
-
-    //std::shared_ptr<MarketDataReplayerMultiThread> TestFixture::getMarketReplayer(uint32_t date)
-    //{
-    //   std::shared_lock<std::shared_timed_mutex>  shared_lock(dateReplayerMutex);
-    //   auto iter =  dateReplayerStored.find(date);
-    //   if (iter != dateReplayerStored.end())
-    //   {
-    //       return iter->second;
-    //   }
-    //   else
-    //   {
-    //       return std::shared_ptr<MarketDataReplayerMultiThread>();
-    //   }
-    //}
 
     void TestFixture::run()
     {
