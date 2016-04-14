@@ -67,24 +67,66 @@ namespace BluesTrading
 
     void DataCache::addDataCacheRequest(const DataSrcInfo& datarequest)
     {
+        switch (datarequest.datasrcType)
+        {
+        case 1:
+            addDataCacheRquetMSSql(datarequest);
+
+        default:
+            break;
+        }
+        return;
+    }
+
+
+    std::once_flag init_db_flag;
+    void initDbSystem()
+    {
+        otl_connect::otl_initialize();
+    }
+
+    void DataCache::addDataCacheRquetMSSql(const DataSrcInfo& datarequest)
+    {
+        std::call_once(init_db_flag, initDbSystem);
+        const std::string& mssql_dsn = datarequest.datasrcInfo.at(0);
+        const std::string& mssql_table = datarequest.datasrcInfo.at(1);
+        uint32_t max_levels = 10;
+        if (datarequest.datasrcInfo.size() > 2)
+        {
+            max_levels = atoi(datarequest.datasrcInfo.at(2).c_str());
+        }
+        otl_connect db;
+        try
+        {
+            std::string loginstring = "DSN=" + mssql_dsn;
+            db.rlogon(loginstring.c_str());
+        }
+        catch (otl_exception& p) { // intercept OTL exceptions
+            using namespace std;
+            cerr << p.msg << endl; // print out error message
+            cerr << p.stm_text << endl; // print out SQL that caused the error
+            cerr << p.sqlstate << endl; // print out SQLSTATE message
+            cerr << p.var_info << endl; // print out the variable that caused the error
+        }
+     
+
         boost::gregorian::date start = getDateFromNum(datarequest.start_date);
-        boost::gregorian::date end = getDateFromNum(datarequest.end_date); 
+        boost::gregorian::date end = getDateFromNum(datarequest.end_date);
         boost::gregorian::days one_day(1);
 
         for (auto date = start; date != end; date += one_day)
         {
 
             auto dayofweek = date.day_of_week();
-            if(dayofweek ==  boost::date_time::Sunday || dayofweek ==  boost::date_time::Saturday)
+            if (dayofweek == boost::date_time::Sunday || dayofweek == boost::date_time::Saturday)
             {
                 continue;
             }
 
             uint32_t dateint = getNumFromDate(date);
-            getDataFromRemote(datarequest.instruments, datarequest.datasrcInfo, datarequest.datasrcType, dateint);
+            getDataFromMSSql(datarequest.instruments, datarequest.datasrcInfo, dateint, &db, max_levels, mssql_table);
         }
     }
-
 
     std::string DataCache::getDataCache(uint32_t inst, uint32_t date, uint32_t maxLevels)
     {
@@ -103,43 +145,13 @@ namespace BluesTrading
     }
 
 
-    void DataCache::getDataFromRemote(const std::vector<std::string>& instruments, const std::vector<std::string>& dateinfos, uint32_t datatype, uint32_t date)
+
+
+    void DataCache::getDataFromMSSql(const std::vector<std::string>& instruments, const std::vector<std::string>& dateinfos, uint32_t date, otl_connect* pdb, uint32_t max_levels, const std::string& sqlTable)
     {
-        switch (datatype)
-        {
-        case 1:
-            getDataFromMSSql(instruments, dateinfos, date);
-        default:
-            break;
-        }
-    }
-
-
-    std::once_flag init_db_flag;
-    void initDbSystem()
-    {
-        otl_connect::otl_initialize();
-    }
-
-
-    void DataCache::getDataFromMSSql(const std::vector<std::string>& instruments, const std::vector<std::string>& dateinfos, uint32_t date)
-    {
+        otl_connect& db = *pdb;
         try
         {
-            std::call_once(init_db_flag, initDbSystem);
-            const std::string& mssql_dsn = dateinfos.at(0);
-            const std::string& mssql_table = dateinfos.at(1);
-            uint32_t max_levels = 10;
-            if (dateinfos.size() > 2)
-            {
-                max_levels = atoi(dateinfos.at(2).c_str());
-            }
-            otl_connect db;
-            std::string loginstring = "DSN=" + mssql_dsn;
-            db.rlogon(loginstring.c_str());
-#ifdef DEBUG_LOG
-            std::cout << "Login to " << loginstring << std::endl;
-#endif
             for (auto& inst : instruments)
             {
                 uint32_t inst_index = getInstrumentIndex(inst);
@@ -205,7 +217,7 @@ namespace BluesTrading
                     }
                     
                     tick.instIndex = inst_index;
-                    std::string query_str = "select fulltime,totalvol,openinterest,tradeprice,turnover," + query_depth_string +   " from " + mssql_table;
+                    std::string query_str = "select fulltime,totalvol,openinterest,tradeprice,turnover," + query_depth_string +   " from " + sqlTable;
                     query_str += " where instrument = '";
                     query_str += inst;
                     query_str += "' and fulltime >:startTime<timestamp>  and fulltime <:endTime<timestamp> ";
